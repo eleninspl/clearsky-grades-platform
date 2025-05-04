@@ -45,6 +45,14 @@ services:
     depends_on:
       - db-service
 
+  course-service:
+      build: ../backend/course-service
+      ports:
+        - "5005:5005"
+      env_file:
+        - ../backend/course-service/.env
+      depends_on:
+        - db-service
 
 volumes:
   postgres_data:

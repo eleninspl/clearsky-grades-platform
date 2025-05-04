@@ -37,6 +37,11 @@ app.get('/grades/:id', async (req, res) => {
 // POST new grade
 app.post('/grades', async (req, res) => {
   const { type, value, user_id, course_id, grade_batch_id } = req.body;
+
+  if (!type || value == null || !user_id || !course_id || !grade_batch_id) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
   try {
     const result = await pool.query(`
       INSERT INTO clearsky.grade (type, value, user_id, course_id, grade_batch_id)
