@@ -262,3 +262,7 @@ ALTER INDEX uq_user_external_id RENAME TO uq_users_external_id;
 
 COMMIT;
 -- End of schema v4 --------------------------------------------------------
+
+-- Insert default institution for testing
+INSERT INTO clearsky.institution (name, email)
+VALUES ('Default Institution', 'info@institution.edu');
