@@ -1,19 +1,16 @@
 version: '3.9'
 services:
 
-  postgres-db:
-    image: postgres:17
-    container_name: postgres-db
-    restart: always
-    environment:
-      POSTGRES_USER: postgre
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: clearSKY
+  db-service:
+    build: ../db
     ports:
       - "5432:5432"
+    env_file:
+      - ../db/.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ../db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: always
 
 
   auth-service:
