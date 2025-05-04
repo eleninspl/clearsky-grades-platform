@@ -68,7 +68,7 @@ app.post('/review-responses', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5005;
+const PORT = process.env.PORT || 5006;
 app.listen(PORT, () => {
   console.log(`Review service running on port ${PORT}`);
 });

@@ -57,11 +57,20 @@ services:
   review-service:
     build: ../backend/review-service
     ports:
-      - "5006:5005"
+      - "5006:5006"
     env_file:
       - ../backend/review-service/.env
     depends_on:
       - db-service
+
+  statistics-service:
+    build: ../backend/statistics-service
+    ports:
+      - "5007:5007"
+    env_file:
+      - ../backend/statistics-service/.env
+    depends_on:
+      - db-service  
 
 volumes:
   postgres_data:
