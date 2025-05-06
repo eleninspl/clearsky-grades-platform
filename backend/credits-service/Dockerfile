@@ -8,5 +8,5 @@ RUN npm install
 COPY ./src ./src
 COPY .env .env
 
-EXPOSE 5007
+EXPOSE 5008
 CMD ["node", "src/index.js"]
