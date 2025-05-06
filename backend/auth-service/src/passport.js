@@ -8,7 +8,6 @@ passport.use(new GoogleStrategy({
   callbackURL: "/auth/google/callback"
 },
 (accessToken, refreshToken, profile, done) => {
-  // Εδώ μπορείς να κάνεις save user στη ΒΔ αν θες
   return done(null, profile);
 }));
 

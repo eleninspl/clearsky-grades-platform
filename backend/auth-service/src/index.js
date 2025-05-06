@@ -1,40 +1,23 @@
 const express = require('express');
 const cors = require('cors');
-const passport = require('passport');
 require('dotenv').config();
-require('./passport'); // load strategy
+require('./passport');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(passport.initialize());
+app.use(require('passport').initialize());
 
-// Test route
+// Healthcheck
 app.get('/', (req, res) => {
   res.send('Auth service running 🚀');
 });
 
-// Step 1: Redirect user to Google login
-app.get('/auth/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
-);
+// Routes
+app.use('/auth', authRoutes);
 
-// Step 2: Callback from Google
-app.get('/auth/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: '/' }),
-  (req, res) => {
-    const jwt = require('jsonwebtoken');
-    const token = jwt.sign({
-      id: req.user.id,
-      name: req.user.displayName,
-      email: req.user.emails[0].value,
-    }, process.env.JWT_SECRET);
-
-    res.send(`✅ Login success!<br><br>Your token:<br><code>${token}</code>`);
-  }
-);
-
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Auth service running on port ${PORT}`);
 });

@@ -5,8 +5,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-COPY . .
+COPY ./src ./src
+COPY .env .env
 
-EXPOSE 5005
-
+EXPOSE 5006
 CMD ["node", "src/index.js"]
