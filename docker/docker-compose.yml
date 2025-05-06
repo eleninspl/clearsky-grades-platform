@@ -81,5 +81,12 @@ services:
     depends_on:
       - db-service
 
+  upload-service:
+    build: ../backend/upload-service
+    ports:
+      - "5009:5009"
+    env_file:
+      - ../backend/upload-service/.env
+      
 volumes:
   postgres_data:
