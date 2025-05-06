@@ -1,14 +1,17 @@
 const express = require('express');
 require('dotenv').config();
-const creditRoutes = require('./routes/uploadRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 const app = express();
 app.use(express.json());
 
-app.get('/', (req, res) => res.send('Credits service running 💰'));
-app.use('/credits', creditRoutes);
+app.get('/', (req, res) => {
+  res.send('Upload service running 📤');
+});
 
-const PORT = process.env.PORT || 5008;
+app.use('/', uploadRoutes);
+
+const PORT = process.env.PORT || 5009;
 app.listen(PORT, () => {
-  console.log(`Credits service running on port ${PORT}`);
+  console.log(`Upload service running on port ${PORT}`);
 });
