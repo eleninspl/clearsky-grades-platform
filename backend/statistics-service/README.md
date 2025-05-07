@@ -14,11 +14,8 @@ Provides statistical insights based on grade data.
 ## ENV
 
 PORT=5007
-DB_HOST=db-service
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_NAME=postgres
+DB_URL=postgresql://postgres:postgres@db-service:5432/clearsky?search_path=clearsky
+JWT_SECRET=my_jwt_secret
 
 ## Notes
 

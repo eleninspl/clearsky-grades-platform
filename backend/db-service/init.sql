@@ -36,7 +36,7 @@ CREATE TABLE institution (
     created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE "user" (
+CREATE TABLE users (
     id             SERIAL PRIMARY KEY,
     username       VARCHAR(30)   NOT NULL UNIQUE,
     email          VARCHAR(80)   NOT NULL UNIQUE,
@@ -49,7 +49,7 @@ CREATE TABLE "user" (
     CONSTRAINT fk_user_institution FOREIGN KEY (institution_id)
         REFERENCES institution(id) ON UPDATE CASCADE ON DELETE RESTRICT
 );
-CREATE UNIQUE INDEX uq_user_external_id ON "user" (external_id) WHERE external_id IS NOT NULL;
+CREATE UNIQUE INDEX uq_users_external_id ON users (external_id) WHERE external_id IS NOT NULL;
 
 -- 2b. Authentication & identities -----------------------------------------
 -- Each user may have multiple auth accounts (eg. Google + institutional SSO)
@@ -63,7 +63,7 @@ CREATE TABLE auth_account (
     created_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_login      TIMESTAMP,
     CONSTRAINT fk_auth_user FOREIGN KEY (user_id)
-        REFERENCES "user"(id) ON DELETE CASCADE,
+        REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT uq_provider_uid UNIQUE (provider, provider_uid)
 );
 CREATE INDEX idx_auth_user ON auth_account (user_id);
@@ -76,7 +76,7 @@ CREATE TABLE course (
     instructor_id  INTEGER      NOT NULL,
     institution_id INTEGER      NOT NULL,
     created_at     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_course_instructor  FOREIGN KEY (instructor_id)  REFERENCES "user"(id),
+    CONSTRAINT fk_course_instructor  FOREIGN KEY (instructor_id)  REFERENCES users(id),
     CONSTRAINT fk_course_institution FOREIGN KEY (institution_id) REFERENCES institution(id)
 );
 
@@ -84,7 +84,7 @@ CREATE TABLE teaches (
     user_id   INTEGER NOT NULL,
     course_id INTEGER NOT NULL,
     PRIMARY KEY (user_id, course_id),
-    CONSTRAINT fk_teaches_user   FOREIGN KEY (user_id)   REFERENCES "user"(id)   ON DELETE CASCADE,
+    CONSTRAINT fk_teaches_user   FOREIGN KEY (user_id)   REFERENCES users(id)   ON DELETE CASCADE,
     CONSTRAINT fk_teaches_course FOREIGN KEY (course_id) REFERENCES course(id)     ON DELETE CASCADE
 );
 
@@ -99,7 +99,7 @@ CREATE TABLE credit_transaction (
     created_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by      INTEGER,
     CONSTRAINT fk_ct_institution FOREIGN KEY (institution_id) REFERENCES institution(id),
-    CONSTRAINT fk_ct_user        FOREIGN KEY (created_by)     REFERENCES "user"(id)
+    CONSTRAINT fk_ct_user        FOREIGN KEY (created_by)     REFERENCES users(id)
 );
 CREATE INDEX idx_ct_inst_date ON credit_transaction (institution_id, created_at DESC);
 
@@ -114,7 +114,7 @@ CREATE TABLE grade_batch (
     uploaded_at     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     academic_year   SMALLINT GENERATED ALWAYS AS (EXTRACT(YEAR FROM uploaded_at)) STORED,
     CONSTRAINT fk_gb_course   FOREIGN KEY (course_id)   REFERENCES course(id),
-    CONSTRAINT fk_gb_uploader FOREIGN KEY (uploader_id) REFERENCES "user"(id)
+    CONSTRAINT fk_gb_uploader FOREIGN KEY (uploader_id) REFERENCES users(id)
 );
 CREATE INDEX idx_gb_course_year ON grade_batch (course_id, academic_year);
 
@@ -143,7 +143,7 @@ CREATE TABLE grade (
     course_id          INTEGER        NOT NULL,
     grade_batch_id     INTEGER        NOT NULL,
     grade_statistic_id INTEGER,
-    CONSTRAINT fk_grade_user    FOREIGN KEY (user_id)        REFERENCES "user"(id)          ON DELETE CASCADE,
+    CONSTRAINT fk_grade_user    FOREIGN KEY (user_id)        REFERENCES users(id)          ON DELETE CASCADE,
     CONSTRAINT fk_grade_course  FOREIGN KEY (course_id)      REFERENCES course(id)           ON DELETE CASCADE,
     CONSTRAINT fk_grade_batch   FOREIGN KEY (grade_batch_id) REFERENCES grade_batch(id)      ON DELETE CASCADE,
     CONSTRAINT fk_grade_stat    FOREIGN KEY (grade_statistic_id) REFERENCES grade_statistic(id) ON DELETE SET NULL,
@@ -159,7 +159,7 @@ CREATE TABLE review_request (
     submitted_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     user_id       INTEGER       NOT NULL,
     CONSTRAINT fk_rr_grade FOREIGN KEY (grade_id) REFERENCES grade(id) ON DELETE CASCADE,
-    CONSTRAINT fk_rr_user  FOREIGN KEY (user_id)  REFERENCES "user"(id) ON DELETE CASCADE,
+    CONSTRAINT fk_rr_user  FOREIGN KEY (user_id)  REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT uq_rr_grade UNIQUE (grade_id)
 );
 
@@ -170,7 +170,7 @@ CREATE TABLE review_response (
     message         VARCHAR(256) NOT NULL,
     response_date   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_resp_rr   FOREIGN KEY (review_request_id) REFERENCES review_request(id) ON DELETE CASCADE,
-    CONSTRAINT fk_resp_user FOREIGN KEY (responder_id)     REFERENCES "user"(id)         ON DELETE CASCADE
+    CONSTRAINT fk_resp_user FOREIGN KEY (responder_id)     REFERENCES users(id)         ON DELETE CASCADE
 );
 
 -- 9. Functions & triggers -------------------------------------------------
@@ -253,12 +253,6 @@ CREATE INDEX idx_grade_user_course       ON grade (user_id, course_id);
 CREATE INDEX idx_rr_user_status          ON review_request (user_id, status);
 CREATE INDEX idx_course_institution      ON course (institution_id);
 
-
--- 11. ------------------------------------------------
-BEGIN;
-
-ALTER TABLE "user" RENAME TO users;
-ALTER INDEX uq_user_external_id RENAME TO uq_users_external_id;
-
 COMMIT;
+
 -- End of schema v4 --------------------------------------------------------
