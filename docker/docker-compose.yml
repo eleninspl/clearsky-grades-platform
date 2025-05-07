@@ -2,15 +2,15 @@
 services:
 
   db-service:
-    build: ../db
+    build: ./db-service
     ports:
       - "5433:5432"
     env_file:
-      - ../db/.env
+      - ./db-service/.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ../db/init.sql:/docker-entrypoint-initdb.d/01-init.sql
-      - ../db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+      - ./db-service/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./db-service/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
     restart: always
 
   auth-service:
