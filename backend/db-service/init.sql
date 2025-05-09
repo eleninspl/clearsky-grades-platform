@@ -134,14 +134,14 @@ CREATE TABLE grade_statistic (
 -- 7. Grades ---------------------------------------------------------------
 CREATE TABLE grade (
     id                 SERIAL PRIMARY KEY,
-    type               grade_type     NOT NULL,
-    value              INTEGER        NOT NULL CHECK (value BETWEEN 0 AND 100),
+    type               grade_type     NOT NULL DEFAULT 'INITIAL',
+    value              INTEGER        NOT NULL CHECK (value BETWEEN 0 AND 10),
     status             grade_status   NOT NULL DEFAULT 'VOID',
     uploaded_at        TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     detailed_grade_json JSONB,
     user_id            INTEGER        NOT NULL,
     course_id          INTEGER        NOT NULL,
-    grade_batch_id     INTEGER        NOT NULL,
+    grade_batch_id     INTEGER        ,
     grade_statistic_id INTEGER,
     CONSTRAINT fk_grade_user    FOREIGN KEY (user_id)        REFERENCES users(id)          ON DELETE CASCADE,
     CONSTRAINT fk_grade_course  FOREIGN KEY (course_id)      REFERENCES course(id)           ON DELETE CASCADE,

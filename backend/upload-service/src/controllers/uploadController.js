@@ -1,51 +1,76 @@
+const XLSX = require('xlsx');
 const fs = require('fs');
-const xlsx = require('xlsx');
-const axios = require('axios');
+const pool = require('../db.js');
 
 exports.handleUpload = async (req, res) => {
+  const filePath = req.file.path;
+
   try {
-    const file = req.file;
-    if (!file) return res.status(400).json({ error: 'Missing file' });
+    const workbook = XLSX.readFile(filePath);
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { range: 2 }); // skip first two header rows
 
-    const workbook = xlsx.readFile(file.path);
-    const sheetName = workbook.SheetNames[0];
-    const rows = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+    const client = await pool.connect();
 
-    const errors = [];
     for (const row of rows) {
-      const { user_id, course_id, value, type, grade_batch_id } = row;
-      if (!user_id || !course_id || value == null || !type || !grade_batch_id) {
-        errors.push(row);
-        continue;
+      const am = row['Αριθμός Μητρώου'];
+      const full_name = row['Ονοματεπώνυμο'];
+      const email = row['Ακαδημαϊκό E-mail'];
+      const grade = row['Βαθμολογία'];
+
+      // Detailed grade JSON
+      const detailed = {};
+      for (let i = 1; i <= 10; i++) {
+        const q = `Q${i.toString().padStart(2, '0')}`;
+        detailed[q] = row[q] ?? null;
       }
 
-      try {
-        await axios.post('http://grades-service:5004/grades', {
-          user_id,
-          course_id,
-          value,
-          type,
-          grade_batch_id
-        }, {
-          headers: {
-            Authorization: req.headers['authorization']
-          }
-        });
-      } catch (err) {
-        errors.push(row);
+      // 1. Insert or find user
+      const findUser = await client.query(
+        'SELECT id FROM clearsky.users WHERE am = $1',
+        [am]
+      );
+
+      let userId;
+      if (findUser.rowCount > 0) {
+        userId = findUser.rows[0].id;
+      } else {
+        const insertUser = await client.query(
+          `INSERT INTO clearsky.users (username, email, full_name, role, external_id, am, institution_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+          [
+            `user_${am}`,
+            email,
+            full_name,
+            'STUDENT',
+            null,
+            am,
+            1
+          ]
+        );
+        userId = insertUser.rows[0].id;
       }
+
+      // 2. Insert grade
+      await client.query(
+        `INSERT INTO clearsky.grade (
+          value, user_id, course_id, grade_batch_id, detailed_grade_json
+        ) VALUES ($1, $2, $3, $4, $5)`,
+        [
+          grade,
+          userId,
+          1, // course_id placeholder
+          1, // grade_batch_id placeholder
+          detailed
+        ]
+      );
     }
 
-    fs.unlinkSync(file.path); // καθαρισμός
-
-    if (errors.length > 0) {
-      return res.status(207).json({ message: 'Some grades failed', failed: errors });
-    }
-
-    res.json({ message: 'Upload successful' });
-
+    client.release();
+    fs.unlinkSync(filePath);
+    res.status(200).json({ message: 'Data inserted successfully' });
   } catch (err) {
-    console.error('Upload error:', err);
+    console.error(err);
     res.status(500).json({ error: 'Upload failed' });
   }
 };
