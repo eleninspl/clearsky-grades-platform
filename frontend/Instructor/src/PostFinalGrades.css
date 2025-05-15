@@ -1,0 +1,134 @@
+.grades-container {
+  font-family: 'Segoe UI', 'Arial', sans-serif;
+  background: #fafbfc;
+  min-height: 100vh;
+}
+
+.grades-header {
+  background: #ededed;
+  border: 1px solid #aaa;
+  margin: 24px 40px 0 40px;
+  padding: 20px;
+  border-radius: 2px;
+}
+
+.grades-header-content {
+  font-size: 1.2rem;
+  color: #444;
+}
+
+.grades-main {
+  max-width: 900px;
+  margin: 48px auto 0 auto;
+  padding: 0 16px;
+}
+
+.instructor-name {
+  font-size: 1.6rem;
+  margin-bottom: 18px;
+  font-family: 'Caveat', 'Comic Sans MS', cursive;
+}
+
+.grades-section {
+  background: #f5f5f5;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 24px;
+  padding-bottom: 8px;
+}
+
+.grades-section-title {
+  padding: 8px 16px;
+  background: #ededed;
+  border-bottom: 1px solid #e0e0e0;
+  color: #555;
+  font-size: 1.1rem;
+  border-radius: 8px 8px 0 0;
+}
+
+.grades-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 24px 18px 24px;
+}
+
+.grades-file-input {
+  flex: 1;
+  padding: 10px;
+  font-size: 1rem;
+  border: 2px solid #bbb;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.grades-btn {
+  padding: 8px 24px;
+  font-size: 1.05rem;
+  border: 2px solid #888;
+  border-radius: 6px;
+  background: #eaeaea;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: background 0.2s;
+}
+
+.grades-btn:hover {
+  background: #d6e4f0;
+}
+
+.grades-parsing-form {
+  padding: 18px 24px 18px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.grades-form-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.grades-form-row label {
+  min-width: 90px;
+  font-size: 1rem;
+  color: #444;
+}
+
+.grades-input {
+  flex: 1;
+  padding: 10px;
+  font-size: 1rem;
+  border: 2px solid #bbb;
+  border-radius: 4px;
+}
+
+.grades-btn-row {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.grades-message-area {
+  background: #f5f5f5;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  margin-top: 12px;
+}
+
+.grades-message-title {
+  padding: 8px 16px;
+  background: #ededed;
+  border-bottom: 1px solid #e0e0e0;
+  color: #555;
+  font-size: 1rem;
+}
+
+.grades-message-box {
+  min-height: 60px;
+  padding: 12px 16px;
+  color: #444;
+} 

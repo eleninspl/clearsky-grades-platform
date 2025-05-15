@@ -1,0 +1,193 @@
+.navbar {
+  width: 100%;
+  background: #22586A;
+  border-bottom: 1.5px solid #aaa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  height: 50px;
+  box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10;
+}
+
+/* Logo image styling */
+.navbar-img-logo {
+  height: 38px;
+  margin-right: 18px;
+  vertical-align: middle;
+}
+
+/* To change the color of other sections, edit their respective CSS files:
+   - .grades-section in PostInitialGrades.css/PostFinalGrades.css
+   - .stats-table-section or .stats-charts-section in CourseStatistics.css
+   - .notifications-table in Notifications.css
+   and so on. */
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.navbar-logo {
+  font-family: 'Caveat', 'Comic Sans MS', cursive;
+  font-size: 1.5rem;
+  color: #2a4d7a;
+  margin-right: 18px;
+}
+
+.navbar-link {
+  color: #68B6FF;
+  text-decoration: none;
+  font-size: 1.08rem;
+  padding: 6px 12px;
+  border-radius: 5px;
+  transition: background 0.18s, color 0.18s;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.navbar-link:hover {
+  background: #d6e4f0;
+  color: #68B6FF;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.navbar-profile-pic {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #bbb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+
+.navbar-profile-pic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Profile dropdown */
+.navbar-profile-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.navbar-profile-btn {
+  font-size: 1.08rem;
+  background: none;
+  border: none;
+  color: #68B6FF;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+}
+
+.navbar-profile-btn:hover {
+  background: #d6e4f0;
+  color: #68B6FF;
+}
+
+.navbar-profile-dropdown {
+  position: absolute;
+  top: 110%;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid #bbb;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  min-width: 140px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0;
+}
+
+.navbar-profile-dropdown-btn {
+  background: none;
+  border: none;
+  color: #444;
+  font-size: 1.05rem;
+  padding: 10px 18px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background 0.18s, color 0.18s;
+}
+
+.navbar-profile-dropdown-btn:hover {
+  background: #d6e4f0;
+  color: #1a2a3a;
+}
+
+/* Post Grades dropdown */
+.navbar-grades-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.navbar-grades-btn {
+  font-size: 1.08rem;
+  background: none;
+  border: none;
+  color: #68B6FF;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+}
+
+.navbar-grades-btn:hover {
+  background: #d6e4f0;
+  color: #68B6FF;
+}
+
+.navbar-grades-dropdown {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  background: #fff;
+  border: 1.5px solid #bbb;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  min-width: 180px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0;
+}
+
+.navbar-grades-dropdown-btn {
+  background: none;
+  border: none;
+  color: #444;
+  font-size: 1.05rem;
+  padding: 10px 18px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background 0.18s, color 0.18s;
+  text-decoration: none;
+  display: block;
+}
+
+.navbar-grades-dropdown-btn:hover {
+  background: #d6e4f0;
+  color: #1a2a3a;
+} 

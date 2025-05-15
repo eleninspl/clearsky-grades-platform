@@ -1,0 +1,16 @@
+.logo-bar {
+  width: 100%;
+  background: #22586A;
+  border-bottom: 1.5px solid #aaa;
+  display: flex;
+  align-items: center;
+  padding: 0 40px;
+  height: 68px;
+  box-sizing: border-box;
+}
+
+.logo-bar-logo {
+  font-family: 'Caveat', 'Comic Sans MS', cursive;
+  font-size: 1.5rem;
+  color: #2a4d7a;
+} 
