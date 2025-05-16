@@ -1,15 +1,27 @@
-const express = require('express');
-const router = express.Router();
-const passport = require('passport');
-const authController = require('../controllers/authController');
+const express   = require('express');
+const passport  = require('../passport');
+const ctrl      = require('../controllers/authController');
+const authorize = require('../middleware/authorize');
 
-// Step 1: Redirect to Google
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+module.exports = app => {
+  const r = express.Router();
 
-// Step 2: Callback
-router.get('/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: '/' }),
-  authController.handleGoogleCallback
-);
+  // Local signup/login
+  r.post('/signup', ctrl.signup);
+  r.post('/login',  ctrl.login);
 
-module.exports = router;
+  // Google OAuth
+  r.get('/google', passport.authenticate('google',
+        { scope:['profile','email'], session:false }));
+  r.get('/google/callback',
+        passport.authenticate('google', { session:false }),
+        (req,res) => res.json({ token: jwt.sign(
+          { sub:req.user.id, role:req.user.role, inst:req.user.institution_id },
+          process.env.JWT_SECRET, { expiresIn:'7d' })})
+  );
+
+  // User provisioning (teachers / reps)
+  r.post('/users', authorize(['ADMIN','INST_REP']), ctrl.createUserByRole);
+
+  app.use('/auth', r);
+};

@@ -52,6 +52,14 @@ CREATE TABLE users (
 );
 CREATE UNIQUE INDEX uq_users_external_id ON users (external_id) WHERE external_id IS NOT NULL;
 
+-- ➜ ✱✱ ΝΕΟΣ περιορισμός: max 1 INST_REP ανά ίδρυμα ✱✱
+ALTER TABLE users
+ADD CONSTRAINT uq_one_rep_per_inst
+    UNIQUE (institution_id)
+    DEFERRABLE INITIALLY DEFERRED
+    USING INDEX
+    WHERE role = 'INST_REP';
+    
 -- 2b. Authentication & identities -----------------------------------------
 -- Each user may have multiple auth accounts (eg. Google + institutional SSO)
 CREATE TABLE auth_account (
