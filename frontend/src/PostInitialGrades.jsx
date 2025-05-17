@@ -1,22 +1,18 @@
 import React from 'react';
 import './PostInitialGrades.css';
-import { useNavigate } from 'react-router-dom';
-import Navbar from './Navbar';
+import Navbar from './Navbar.jsx';
 
-function PostInitialGrades() {
-  const navigate = useNavigate();
-
+function PostInitialGrades({ setCurrentComponent }) {
   const handleConfirm = (e) => {
     e.preventDefault();
-    navigate('/course-statistics');
+    setCurrentComponent('CourseStatistics');
   };
 
   return (
     <div className="grades-container">
-      <Navbar />
+      <Navbar setCurrentComponent={setCurrentComponent} />
       <main className="grades-main">
         <h2 className="instructor-name">Instructor name</h2>
-        {/* ... υπόλοιπο component ... */}
         <section className="grades-section">
           <div className="grades-section-title">INITIAL GRADES POSTING</div>
           <div className="grades-upload-row">
@@ -54,4 +50,4 @@ function PostInitialGrades() {
   );
 }
 
-export default PostInitialGrades; 
+export default PostInitialGrades;

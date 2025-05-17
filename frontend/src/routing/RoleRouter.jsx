@@ -1,28 +1,15 @@
-import { Routes, Route } from 'react-router-dom';
 import StudentDashboard from '../student/Dashboard';
 import InstructorDashboard from '../instructor/Dashboard';
 import InstitutionDashboard from '../institution/Dashboard';
 
-export default function RoleRouter({ role }) {
+export default function RoleRouter({ role, setCurrentComponent }) {
   switch (role) {
     case 'STUDENT':
-      return (
-        <Routes>
-          <Route path="/" element={<StudentDashboard />} />
-        </Routes>
-      );
+      return <StudentDashboard setCurrentComponent={setCurrentComponent} />;
     case 'INSTRUCTOR':
-      return (
-        <Routes>
-          <Route path="/" element={<InstructorDashboard />} />
-        </Routes>
-      );
+      return <InstructorDashboard setCurrentComponent={setCurrentComponent} />;
     case 'INST_REP':
-      return (
-        <Routes>
-          <Route path="/" element={<InstitutionDashboard />} />
-        </Routes>
-      );
+      return <InstitutionDashboard setCurrentComponent={setCurrentComponent} />;
     default:
       return <div>No role selected. Please log in.</div>;
   }

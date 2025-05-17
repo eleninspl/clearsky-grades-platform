@@ -1,11 +1,15 @@
 import React from 'react';
 import './PostFinalGrades.css';
-import Navbar from './Navbar';
+import Navbar from './Navbar.jsx';
 
-function PostFinalGrades() {
+function PostFinalGrades({ setCurrentComponent }) {
+  const handleConfirm = () => {
+    setCurrentComponent('CourseStatistics');
+  };
+
   return (
     <div className="grades-container">
-      <Navbar />
+      <Navbar setCurrentComponent={setCurrentComponent} />
       <main className="grades-main">
         <h2 className="instructor-name">Instructor name</h2>
 
@@ -33,7 +37,7 @@ function PostFinalGrades() {
               <input type="text" className="grades-input" placeholder="N" />
             </div>
             <div className="grades-btn-row">
-              <button className="grades-btn">CONFIRM</button>
+              <button className="grades-btn" onClick={handleConfirm}>CONFIRM</button>
               <button className="grades-btn">CANCEL</button>
             </div>
           </div>
@@ -48,4 +52,4 @@ function PostFinalGrades() {
   );
 }
 
-export default PostFinalGrades; 
+export default PostFinalGrades;

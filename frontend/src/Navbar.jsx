@@ -1,14 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './Navbar.css';
-import { Link, useNavigate } from 'react-router-dom';
 import logo from './assets/clearSKY-logo.png';
 
-function Navbar() {
+function Navbar({ setCurrentComponent }) {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showGradesDropdown, setShowGradesDropdown] = useState(false);
   const profileDropdownRef = useRef(null);
   const gradesDropdownRef = useRef(null);
-  const navigate = useNavigate();
 
   // Κλείσιμο dropdown όταν κάνεις click εκτός
   useEffect(() => {
@@ -26,27 +24,27 @@ function Navbar() {
 
   const handleLogout = () => {
     setShowProfileDropdown(false);
-    navigate('/');
+    setCurrentComponent('Login');
   };
 
   return (
     <nav className="navbar">
       <div className="navbar-left">
         <img src={logo} alt="clearSKY logo" className="navbar-img-logo" />
-        <Link to="/course-statistics" className="navbar-link">My Courses</Link>
-        <Link to="/notifications" className="navbar-link">Notifications</Link>
+        <button className="navbar-link" onClick={() => setCurrentComponent('CourseStatistics')}>My Courses</button>
+        <button className="navbar-link" onClick={() => setCurrentComponent('Notifications')}>Notifications</button>
         <div className="navbar-grades-wrapper" ref={gradesDropdownRef}>
           <button className="navbar-link navbar-grades-btn" onClick={() => setShowGradesDropdown(v => !v)}>
             Post Grades
           </button>
           {showGradesDropdown && (
             <div className="navbar-grades-dropdown">
-              <Link to="/post-initial-grades" className="navbar-grades-dropdown-btn" onClick={() => setShowGradesDropdown(false)}>
+              <button className="navbar-grades-dropdown-btn" onClick={() => setCurrentComponent('PostInitialGrades')}>
                 Post initial grades
-              </Link>
-              <Link to="/post-final-grades" className="navbar-grades-dropdown-btn" onClick={() => setShowGradesDropdown(false)}>
+              </button>
+              <button className="navbar-grades-dropdown-btn" onClick={() => setCurrentComponent('PostFinalGrades')}>
                 Post final grades
-              </Link>
+              </button>
             </div>
           )}
         </div>
@@ -72,4 +70,4 @@ function Navbar() {
   );
 }
 
-export default Navbar; 
+export default Navbar;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Navbar from './Navbar';
+import Navbar from './Navbar.jsx';
 import './Notifications.css';
 
 const notifications = [
@@ -8,14 +8,14 @@ const notifications = [
   { course: 'software I', period: 'fall 2024', student: 'george smith' },
 ];
 
-function Notifications() {
+function Notifications({ setCurrentComponent }) {
   const [selectedReply, setSelectedReply] = useState(null);
   const [action, setAction] = useState('Total accept');
   const [message, setMessage] = useState('');
 
   return (
     <div className="notifications-container">
-      <Navbar />
+      <Navbar setCurrentComponent={setCurrentComponent} />
       <main className="notifications-main">
         <h2 className="notifications-instructor">Instructor name</h2>
         <table className="notifications-table">
@@ -80,4 +80,4 @@ function Notifications() {
   );
 }
 
-export default Notifications; 
+export default Notifications;

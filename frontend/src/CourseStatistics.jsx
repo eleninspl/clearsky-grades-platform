@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './CourseStatistics.css';
-import Navbar from './Navbar';
+import Navbar from './Navbar.jsx';
 
 const courses = [
   {

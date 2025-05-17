@@ -1,0 +1,62 @@
+.rep-credits-container {
+  font-family: 'Segoe UI', 'Arial', sans-serif;
+  background: #fafbfc;
+  min-height: 100vh;
+}
+
+.rep-credits-main {
+  max-width: 600px;
+  margin: 80px auto 0 auto;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.rep-credits-section {
+  background: #f5f5f5;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 32px 24px 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.rep-credits-title {
+  padding: 10px 0 18px 0;
+  color: #22586A;
+  font-size: 1.2rem;
+  font-family: 'Caveat', 'Comic Sans MS', cursive;
+}
+
+.rep-credits-form-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.rep-credits-input {
+  width: 80px;
+  padding: 8px;
+  font-size: 1rem;
+  border: 2px solid #bbb;
+  border-radius: 4px;
+}
+
+.rep-credits-buy-btn {
+  padding: 8px 28px;
+  font-size: 1.1rem;
+  border: 2px solid #888;
+  border-radius: 6px;
+  background: #eaeaea;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.rep-credits-buy-btn:hover {
+  background: #d6e4f0;
+} 
