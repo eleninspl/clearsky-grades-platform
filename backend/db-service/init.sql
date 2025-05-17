@@ -46,6 +46,7 @@ CREATE TABLE users (
     am             INTEGER,
     institution_id INTEGER       NOT NULL,
     created_at     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_users_am UNIQUE (am),
     CONSTRAINT fk_user_institution FOREIGN KEY (institution_id)
         REFERENCES institution(id) ON UPDATE CASCADE ON DELETE RESTRICT
 );
@@ -135,19 +136,19 @@ CREATE TABLE grade_statistic (
 CREATE TABLE grade (
     id                 SERIAL PRIMARY KEY,
     type               grade_type     NOT NULL DEFAULT 'INITIAL',
-    value              INTEGER        NOT NULL CHECK (value BETWEEN 0 AND 10),
+    value              INTEGER        NOT NULL CHECK (value BETWEEN 0 AND 100),
     status             grade_status   NOT NULL DEFAULT 'VOID',
     uploaded_at        TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     detailed_grade_json JSONB,
-    user_id            INTEGER        NOT NULL,
+    user_am            INTEGER        NOT NULL,
     course_id          INTEGER        NOT NULL,
     grade_batch_id     INTEGER        ,
     grade_statistic_id INTEGER,
-    CONSTRAINT fk_grade_user    FOREIGN KEY (user_id)        REFERENCES users(id)          ON DELETE CASCADE,
+    CONSTRAINT fk_grade_user_am    FOREIGN KEY (user_am)        REFERENCES users(am)          ON DELETE CASCADE,
     CONSTRAINT fk_grade_course  FOREIGN KEY (course_id)      REFERENCES course(id)           ON DELETE CASCADE,
     CONSTRAINT fk_grade_batch   FOREIGN KEY (grade_batch_id) REFERENCES grade_batch(id)      ON DELETE CASCADE,
     CONSTRAINT fk_grade_stat    FOREIGN KEY (grade_statistic_id) REFERENCES grade_statistic(id) ON DELETE SET NULL,
-    CONSTRAINT uq_grade_user_course_type UNIQUE (user_id, course_id, type)
+    CONSTRAINT uq_grade_user_course_type UNIQUE (user_am, course_id, type)
 );
 
 -- 8. Review workflow ------------------------------------------------------
@@ -249,7 +250,7 @@ END;$$;
 CREATE TRIGGER tg_grade_aiud_refresh_stats AFTER INSERT OR UPDATE OR DELETE ON clearsky.grade FOR EACH ROW EXECUTE FUNCTION clearsky.fn_refresh_grade_stats();
 
 -- 10. Helpful indexes ------------------------------------------------------
-CREATE INDEX idx_grade_user_course       ON grade (user_id, course_id);
+CREATE INDEX idx_grade_user_course       ON grade (user_am, course_id);
 CREATE INDEX idx_rr_user_status          ON review_request (user_id, status);
 CREATE INDEX idx_course_institution      ON course (institution_id);
 
