@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './RepNavbar.css';
-import { Link, useNavigate } from 'react-router-dom';
 import logo from './assets/clearSKY-logo.png';
 
-function RepNavbar() {
-  const navigate = useNavigate();
+function RepNavbar({ setCurrentComponent }) {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const profileDropdownRef = useRef(null);
 
@@ -20,30 +18,32 @@ function RepNavbar() {
 
   const handleLogout = () => {
     setShowProfileDropdown(false);
-    navigate('/');
+    localStorage.removeItem('role');
+    setCurrentComponent('Login');
   };
 
   return (
-    <nav className="navbar">
-      <div className="navbar-left">
-        <img src={logo} alt="clearSKY logo" className="navbar-img-logo" />
-        <Link to="/register-institution" className="navbar-link">Home</Link>
-        <Link to="/rep-grades" className="navbar-link">Grades</Link>
-        <Link to="/rep-credits" className="navbar-link">Credits</Link>
+    <nav className="rep-navbar">
+      <div className="rep-navbar-left">
+        <img src={logo} alt="clearSKY logo" className="rep-navbar-img-logo" />
+        <button className="rep-navbar-link" onClick={() => setCurrentComponent('RegisterInstitution')}>Register Institution</button>
+        <button className="rep-navbar-link" onClick={() => setCurrentComponent('RepStatistics')}>Statistics</button>
+        <button className="rep-navbar-link" onClick={() => setCurrentComponent('RepCredits')}>Credits</button>
+        <button className="rep-navbar-link" onClick={() => setCurrentComponent('AddUser')}>Add User</button>
       </div>
-      <div className="navbar-right">
-        <div className="navbar-profile-wrapper" ref={profileDropdownRef}>
-          <button className="navbar-link navbar-profile-btn" onClick={() => setShowProfileDropdown(v => !v)}>
+      <div className="rep-navbar-right">
+        <div className="rep-navbar-profile-wrapper" ref={profileDropdownRef}>
+          <button className="rep-navbar-link rep-navbar-profile-btn" onClick={() => setShowProfileDropdown(v => !v)}>
             Profile
           </button>
           {showProfileDropdown && (
-            <div className="navbar-profile-dropdown">
-              <button className="navbar-profile-dropdown-btn">Profile</button>
-              <button className="navbar-profile-dropdown-btn" onClick={handleLogout}>Logout</button>
+            <div className="rep-navbar-profile-dropdown">
+              <button className="rep-navbar-profile-dropdown-btn">Profile</button>
+              <button className="rep-navbar-profile-dropdown-btn" onClick={handleLogout}>Logout</button>
             </div>
           )}
         </div>
-        <div className="navbar-profile-pic">
+        <div className="rep-navbar-profile-pic">
           <img src="https://www.gravatar.com/avatar/?d=mp" alt="profile" />
         </div>
       </div>

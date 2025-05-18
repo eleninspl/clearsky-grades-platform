@@ -9,15 +9,17 @@ function Login({ setCurrentComponent }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  // Map of valid credentials to components
+  // Map of valid credentials to components and roles
   const credentialsMap = {
     instructor: {
       password: 'instructor',
       component: 'CourseStatistics',
+      role: 'INSTRUCTOR'
     },
     represent: {
       password: 'represent',
       component: 'RegisterInstitution',
+      role: 'INST_REP'
     },
   };
 
@@ -27,7 +29,8 @@ function Login({ setCurrentComponent }) {
 
     const user = credentialsMap[username];
     if (user && user.password === password) {
-      setCurrentComponent(user.component); // Pass component name as string
+      localStorage.setItem('role', user.role);
+      setCurrentComponent(user.component);
     } else {
       setError('Invalid username or password');
     }

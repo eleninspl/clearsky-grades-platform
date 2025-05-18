@@ -6,6 +6,9 @@ import Notifications from './Notifications.jsx';
 import PostInitialGrades from './PostInitialGrades.jsx';
 import PostFinalGrades from './PostFinalGrades.jsx';
 import RegisterInstitution from './RegisterInstitution.jsx';
+import RepStatistics from './RepStatistics.jsx';
+import RepCredits from './RepCredits.jsx';
+import AddUser from './AddUser.jsx';
 
 function App() {
   const [currentComponent, setCurrentComponent] = useState(null);
@@ -17,6 +20,9 @@ function App() {
       PostInitialGrades: <PostInitialGrades setCurrentComponent={setCurrentComponent} />,
       PostFinalGrades: <PostFinalGrades setCurrentComponent={setCurrentComponent} />,
       RegisterInstitution: <RegisterInstitution setCurrentComponent={setCurrentComponent} />,
+      RepStatistics: <RepStatistics setCurrentComponent={setCurrentComponent} />,
+      RepCredits: <RepCredits setCurrentComponent={setCurrentComponent} />,
+      AddUser: <AddUser setCurrentComponent={setCurrentComponent} />,
       Login: <Login setCurrentComponent={setCurrentComponent} />,
     }[currentComponent];
 

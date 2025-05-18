@@ -8,7 +8,7 @@ const userTypes = [
   { value: 'student', label: 'Student' },
 ];
 
-function AddUser() {
+function AddUser({ setCurrentComponent }) {
   const [type, setType] = useState(userTypes[0].value);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -16,7 +16,7 @@ function AddUser() {
 
   return (
     <div className="adduser-container">
-      <RepNavbar />
+      <RepNavbar setCurrentComponent={setCurrentComponent} />
       <main className="adduser-main">
         <section className="adduser-section">
           <div className="adduser-title">Users</div>

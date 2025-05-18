@@ -47,12 +47,12 @@ const dummyCharts = {
   ],
 };
 
-function CourseStatistics() {
+function CourseStatistics({ setCurrentComponent }) {
   const [selectedCourse, setSelectedCourse] = useState(courses[0].name);
 
   return (
     <div className="stats-container">
-      <Navbar />
+      <Navbar setCurrentComponent={setCurrentComponent} />
       <main className="stats-main">
         <div className="stats-table-section">
           <h2 className="stats-title">Available course statistics</h2>

@@ -1,104 +1,41 @@
-import React, { useState } from 'react';
-import RepNavbar from './RepNavbar.jsx';
+import React from 'react';
 import './RepStatistics.css';
+import RepNavbar from './RepNavbar.jsx';
 
-const courses = [
-  {
-    name: 'physics',
-    period: 'fall 2024',
-    initial: '2025-02-22',
-    final: '2025-02-28',
-  },
-  {
-    name: 'software',
-    period: 'fall 2024',
-    initial: '2025-02-01',
-    final: '',
-  },
-  {
-    name: 'mathematics',
-    period: 'fall 2024',
-    initial: '2025-02-02',
-    final: '2025-02-14',
-  },
-];
-
-const dummyCharts = {
-  physics: [
-    { title: 'physics - spring 2025 - total' },
-    { title: 'physics - spring 2025 - Q1' },
-    { title: 'physics - spring 2025 - Q2' },
-    { title: 'physics - spring 2025 - Q3' },
-    { title: 'physics - spring 2025 - Q4' },
-  ],
-  software: [
-    { title: 'software - spring 2025 - total' },
-    { title: 'software - spring 2025 - Q1' },
-    { title: 'software - spring 2025 - Q2' },
-    { title: 'software - spring 2025 - Q3' },
-    { title: 'software - spring 2025 - Q4' },
-  ],
-  mathematics: [
-    { title: 'mathematics - spring 2025 - total' },
-    { title: 'mathematics - spring 2025 - Q1' },
-    { title: 'mathematics - spring 2025 - Q2' },
-    { title: 'mathematics - spring 2025 - Q3' },
-    { title: 'mathematics - spring 2025 - Q4' },
-  ],
-};
-
-function RepStatistics() {
-  const [selectedCourse, setSelectedCourse] = useState(courses[0].name);
-
+function RepStatistics({ setCurrentComponent }) {
   return (
     <div className="rep-stats-container">
-      <RepNavbar />
+      <RepNavbar setCurrentComponent={setCurrentComponent} />
       <main className="rep-stats-main">
-        <div className="rep-stats-table-section">
-          <h2 className="rep-stats-title">Available course statistics</h2>
-          <button className="rep-stats-goto-btn">Go to my courses</button>
-          <table className="rep-stats-table">
-            <thead>
-              <tr>
-                <th>course name</th>
-                <th>exam period</th>
-                <th>initial grades submission</th>
-                <th>final grades submission</th>
-              </tr>
-            </thead>
-            <tbody>
-              {courses.map((course) => (
-                <tr
-                  key={course.name}
-                  className={selectedCourse === course.name ? 'rep-stats-row-selected' : ''}
-                  onClick={() => setSelectedCourse(course.name)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <td>{course.name}</td>
-                  <td>{course.period}</td>
-                  <td>{course.initial}</td>
-                  <td>{course.final}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="rep-stats-charts-section">
-          {dummyCharts[selectedCourse].map((chart, idx) => (
-            <div
-              key={chart.title}
-              className={
-                idx === 0
-                  ? 'rep-stats-chart-cell rep-stats-chart-large'
-                  : 'rep-stats-chart-cell'
-              }
-            >
-              <div className="rep-stats-chart-title">{chart.title}</div>
-              <div className="rep-stats-chart-placeholder">[Chart Placeholder]</div>
+        <div className="rep-stats-section">
+          <h2 className="rep-stats-title">Institution Statistics</h2>
+          <div className="rep-stats-grid">
+            <div className="rep-stats-card">
+              <h3>Total Students</h3>
+              <div className="rep-stats-value">1,234</div>
             </div>
-          ))}
-          <div className="rep-stats-chart-cell rep-stats-chart-ellipsis">
-            <div className="rep-stats-chart-placeholder">...</div>
+            <div className="rep-stats-card">
+              <h3>Total Instructors</h3>
+              <div className="rep-stats-value">45</div>
+            </div>
+            <div className="rep-stats-card">
+              <h3>Active Courses</h3>
+              <div className="rep-stats-value">67</div>
+            </div>
+            <div className="rep-stats-card">
+              <h3>Average Grade</h3>
+              <div className="rep-stats-value">7.8</div>
+            </div>
+          </div>
+          <div className="rep-stats-charts">
+            <div className="rep-stats-chart">
+              <h3>Grade Distribution</h3>
+              <div className="rep-stats-chart-placeholder">[Grade Distribution Chart]</div>
+            </div>
+            <div className="rep-stats-chart">
+              <h3>Course Enrollment</h3>
+              <div className="rep-stats-chart-placeholder">[Course Enrollment Chart]</div>
+            </div>
           </div>
         </div>
       </main>

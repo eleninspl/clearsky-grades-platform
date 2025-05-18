@@ -1,29 +1,36 @@
-import React, { useState } from 'react';
-import RepNavbar from './RepNavbar.jsx';
+import React from 'react';
 import './RepCredits.css';
+import RepNavbar from './RepNavbar.jsx';
 
-function RepCredits() {
-  const [credits, setCredits] = useState(1);
-
+function RepCredits({ setCurrentComponent }) {
   return (
     <div className="rep-credits-container">
-      <RepNavbar />
+      <RepNavbar setCurrentComponent={setCurrentComponent} />
       <main className="rep-credits-main">
-        <section className="rep-credits-section">
-          <div className="rep-credits-title">Buy Credits</div>
-          <div className="rep-credits-form-row">
-            <label htmlFor="credits-input">Number of credits:</label>
-            <input
-              id="credits-input"
-              type="number"
-              min="1"
-              value={credits}
-              onChange={e => setCredits(Math.max(1, parseInt(e.target.value) || 1))}
-              className="rep-credits-input"
-            />
+        <div className="rep-credits-section">
+          <h2 className="rep-credits-title">Credits Management</h2>
+          <div className="rep-credits-grid">
+            <div className="rep-credits-card">
+              <h3>Total Credits</h3>
+              <div className="rep-credits-value">5,000</div>
+              <div className="rep-credits-description">Available credits for the institution</div>
+            </div>
+            <div className="rep-credits-card">
+              <h3>Used Credits</h3>
+              <div className="rep-credits-value">2,345</div>
+              <div className="rep-credits-description">Credits used in current period</div>
+            </div>
+            <div className="rep-credits-card">
+              <h3>Remaining Credits</h3>
+              <div className="rep-credits-value">2,655</div>
+              <div className="rep-credits-description">Credits available for use</div>
+            </div>
           </div>
-          <button className="rep-credits-buy-btn">Buy</button>
-        </section>
+          <div className="rep-credits-actions">
+            <button className="rep-credits-btn">Purchase Credits</button>
+            <button className="rep-credits-btn">View Usage History</button>
+          </div>
+        </div>
       </main>
     </div>
   );
