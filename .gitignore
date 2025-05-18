@@ -18,4 +18,8 @@ Thumbs.db
 .vscode/
 
 
+
 .DS_Store
+
+node_modules/
+f285de5 (chore: ignore node_modules)
