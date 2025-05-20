@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import RepNavbar from '../RepNavbar.jsx';
+import RepNavbar from './RepNavbar.jsx';
 
-export default function InstitutionDashboard({ setCurrentComponent }) {
+export default function RepresentativeDashboard({ setCurrentComponent }) {
   useEffect(() => {
     setCurrentComponent('RegisterInstitution');
   }, [setCurrentComponent]);
@@ -10,9 +10,8 @@ export default function InstitutionDashboard({ setCurrentComponent }) {
     <div>
       <RepNavbar setCurrentComponent={setCurrentComponent} />
       <main>
-        <h1>Institution Dashboard</h1>
+        <h1>Representative Dashboard</h1>
       </main>
     </div>
   );
-}
-  
+} 

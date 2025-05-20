@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import Login from './Login.jsx';
-import RoleRouter from './routing/RoleRouter';
-import CourseStatistics from './CourseStatistics.jsx';
-import Notifications from './Notifications.jsx';
-import PostInitialGrades from './PostInitialGrades.jsx';
-import PostFinalGrades from './PostFinalGrades.jsx';
-import RegisterInstitution from './RegisterInstitution.jsx';
-import RepStatistics from './RepStatistics.jsx';
-import RepCredits from './RepCredits.jsx';
-import AddUser from './AddUser.jsx';
+import Login from '../auth/Login.jsx';
+import RoleRouter from '../routing/RoleRouter';
+import CourseStatistics from '../instructor/CourseStatistics.jsx';
+import Notifications from '../components/Notifications.jsx';
+import PostInitialGrades from '../instructor/grades/PostInitialGrades.jsx';
+import PostFinalGrades from '../instructor/grades/PostFinalGrades.jsx';
+import RegisterInstitution from '../auth/RegisterInstitution.jsx';
+import RepStatistics from '../representative/RepStatistics.jsx';
+import RepCredits from '../representative/RepCredits.jsx';
+import AddUser from '../components/AddUser.jsx';
 
 function App() {
   const [currentComponent, setCurrentComponent] = useState(null);
