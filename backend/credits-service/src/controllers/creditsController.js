@@ -28,6 +28,13 @@ exports.buyCredits = async (req, res) => {
     `, [amount, institutionId]);
 
     if (result.rows.length === 0) return res.status(404).json({ error: 'Institution not found' });
+
+    // Καταγραφή συναλλαγής
+    await pool.query(`
+      INSERT INTO clearsky.credit_transactions (institution_id, type, amount)
+      VALUES ($1, 'buy', $2)
+    `, [institutionId, amount]);
+
     res.json({ message: 'Credits added', new_balance: result.rows[0].credits_balance });
   } catch (err) {
     res.status(500).json({ error: 'Database error' });
@@ -49,7 +56,30 @@ exports.consumeCredit = async (req, res) => {
       return res.status(400).json({ error: 'Insufficient credits' });
     }
 
+    // Καταγραφή συναλλαγής
+    await pool.query(`
+      INSERT INTO clearsky.credit_transactions (institution_id, type, amount)
+      VALUES ($1, 'consume', 1)
+    `, [institutionId]);
+
     res.json({ message: 'Credit consumed', remaining: result.rows[0].credits_balance });
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+};
+
+exports.getHistory = async (req, res) => {
+  const { institutionId } = req.params;
+
+  try {
+    const result = await pool.query(`
+      SELECT type, amount, timestamp
+      FROM clearsky.credit_transactions
+      WHERE institution_id = $1
+      ORDER BY timestamp DESC
+    `, [institutionId]);
+
+    res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: 'Database error' });
   }

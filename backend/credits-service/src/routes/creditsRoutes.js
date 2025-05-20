@@ -9,4 +9,6 @@ router.get('/:institutionId', controller.getBalance);
 router.post('/:institutionId/buy', authenticateToken, controller.buyCredits);
 router.post('/:institutionId/use', authenticateToken, controller.consumeCredit);
 
+router.get('/:institutionId/history', authenticateToken, controller.getHistory);
+
 module.exports = router;
