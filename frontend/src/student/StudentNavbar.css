@@ -1,0 +1,93 @@
+.student-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: white;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.student-navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.student-navbar-img-logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
+.student-navbar-link {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease;
+  border-radius: 4px;
+}
+
+.student-navbar-link:hover {
+  color: var(--primary-color);
+  background-color: var(--background-color);
+}
+
+.student-navbar-profile-wrapper {
+  position: relative;
+}
+
+.student-navbar-profile-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  box-shadow: var(--shadow);
+  border-radius: 4px;
+  padding: 0.5rem 0;
+  min-width: 200px;
+  z-index: 1000;
+  margin-top: 0.5rem;
+}
+
+.student-navbar-profile-dropdown-btn {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-color);
+  transition: background-color 0.3s ease;
+}
+
+.student-navbar-profile-dropdown-btn:hover {
+  background-color: var(--background-color);
+  color: var(--primary-color);
+}
+
+.student-navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.student-navbar-profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--border-color);
+}
+
+.student-navbar-profile-pic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+} 

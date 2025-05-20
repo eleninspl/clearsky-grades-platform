@@ -26,7 +26,6 @@ function RepNavbar({ setCurrentComponent }) {
     <nav className="rep-navbar">
       <div className="rep-navbar-left">
         <img src={logo} alt="clearSKY logo" className="rep-navbar-img-logo" />
-        <button className="rep-navbar-link" onClick={() => setCurrentComponent('RegisterInstitution')}>Register Institution</button>
         <button className="rep-navbar-link" onClick={() => setCurrentComponent('RepStatistics')}>Statistics</button>
         <button className="rep-navbar-link" onClick={() => setCurrentComponent('RepCredits')}>Credits</button>
         <button className="rep-navbar-link" onClick={() => setCurrentComponent('AddUser')}>Add User</button>

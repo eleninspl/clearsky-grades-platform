@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import RepNavbar from '../representative/RepNavbar.jsx';
+import RepNavbar from './RepNavbar.jsx';
 import './AddUser.css';
 
 const userTypes = [
@@ -14,13 +14,24 @@ function AddUser({ setCurrentComponent }) {
   const [password, setPassword] = useState('');
   const [id, setId] = useState('');
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // TODO: Add API call to create user
+    setCurrentComponent('RepStatistics'); // Return to representative dashboard
+  };
+
+  const handleChangePassword = () => {
+    // TODO: Add change password functionality
+    setCurrentComponent('RepStatistics'); // Return to representative dashboard
+  };
+
   return (
     <div className="adduser-container">
       <RepNavbar setCurrentComponent={setCurrentComponent} />
       <main className="adduser-main">
         <section className="adduser-section">
           <div className="adduser-title">Users</div>
-          <form className="adduser-form">
+          <form className="adduser-form" onSubmit={handleSubmit}>
             <div className="adduser-form-row">
               <label>type</label>
               <select value={type} onChange={e => setType(e.target.value)} className="adduser-input">
@@ -42,8 +53,8 @@ function AddUser({ setCurrentComponent }) {
               <input type="text" className="adduser-input" value={id} onChange={e => setId(e.target.value)} />
             </div>
             <div className="adduser-btn-row">
-              <button type="button" className="adduser-btn">Add user</button>
-              <button type="button" className="adduser-btn">Change passw</button>
+              <button type="submit" className="adduser-btn">Add user</button>
+              <button type="button" className="adduser-btn" onClick={handleChangePassword}>Change passw</button>
             </div>
           </form>
         </section>

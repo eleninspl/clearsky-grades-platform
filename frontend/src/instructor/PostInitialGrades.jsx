@@ -1,9 +1,10 @@
 import React from 'react';
-import './PostFinalGrades.css';
-import Navbar from '../../components/Navbar.jsx';
+import './PostInitialGrades.css';
+import Navbar from './InstNavbar.jsx';
 
-function PostFinalGrades({ setCurrentComponent }) {
-  const handleConfirm = () => {
+function PostInitialGrades({ setCurrentComponent }) {
+  const handleConfirm = (e) => {
+    e.preventDefault();
     setCurrentComponent('CourseStatistics');
   };
 
@@ -12,18 +13,16 @@ function PostFinalGrades({ setCurrentComponent }) {
       <Navbar setCurrentComponent={setCurrentComponent} />
       <main className="grades-main">
         <h2 className="instructor-name">Instructor name</h2>
-
         <section className="grades-section">
-          <div className="grades-section-title">FINAL GRADES POSTING</div>
+          <div className="grades-section-title">INITIAL GRADES POSTING</div>
           <div className="grades-upload-row">
             <input type="file" className="grades-file-input" />
-            <button className="grades-btn">submit FINAL grades</button>
+            <button className="grades-btn">submit initial grades</button>
           </div>
         </section>
-
         <section className="grades-section">
           <div className="grades-section-title">XLSX file parsing</div>
-          <div className="grades-parsing-form">
+          <form className="grades-parsing-form">
             <div className="grades-form-row">
               <label>Course:</label>
               <input type="text" className="grades-input" placeholder="Course name" />
@@ -37,12 +36,11 @@ function PostFinalGrades({ setCurrentComponent }) {
               <input type="text" className="grades-input" placeholder="N" />
             </div>
             <div className="grades-btn-row">
-              <button className="grades-btn" onClick={handleConfirm}>CONFIRM</button>
-              <button className="grades-btn">CANCEL</button>
+              <button className="grades-btn" type="submit" onClick={handleConfirm}>CONFIRM</button>
+              <button className="grades-btn" type="button">CANCEL</button>
             </div>
-          </div>
+          </form>
         </section>
-
         <section className="grades-message-area">
           <div className="grades-message-title">Message area</div>
           <div className="grades-message-box"></div>
@@ -52,4 +50,4 @@ function PostFinalGrades({ setCurrentComponent }) {
   );
 }
 
-export default PostFinalGrades;
+export default PostInitialGrades;

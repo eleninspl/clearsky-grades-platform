@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import './Navbar.css';
+import './InstNavbar.css';
 import logo from '../assets/clearSKY-logo.png';
 
 function Navbar({ setCurrentComponent }) {

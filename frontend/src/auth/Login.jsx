@@ -16,9 +16,14 @@ function Login({ setCurrentComponent }) {
     },
     represent: {
       password: 'represent',
-      component: 'RegisterInstitution',
+      component: 'RepStatistics',
       role: 'INST_REP'
     },
+    student: {
+      password: 'student',
+      component: 'StudentDashboard',
+      role: 'STUDENT'
+    }
   };
 
   const handleSubmit = (e) => {

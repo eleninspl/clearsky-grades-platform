@@ -3,7 +3,7 @@ import RepNavbar from './RepNavbar.jsx';
 
 export default function RepresentativeDashboard({ setCurrentComponent }) {
   useEffect(() => {
-    setCurrentComponent('RegisterInstitution');
+    setCurrentComponent('RepStatistics');
   }, [setCurrentComponent]);
 
   return (
