@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './RepNavbar.css';
-import logo from './assets/clearSKY-logo.png';
+import logo from '../assets/clearSKY-logo.png';
 
 function RepNavbar({ setCurrentComponent }) {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);

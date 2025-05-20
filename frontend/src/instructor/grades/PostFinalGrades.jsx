@@ -1,6 +1,6 @@
 import React from 'react';
 import './PostFinalGrades.css';
-import Navbar from './Navbar.jsx';
+import Navbar from '../../components/Navbar.jsx';
 
 function PostFinalGrades({ setCurrentComponent }) {
   const handleConfirm = () => {

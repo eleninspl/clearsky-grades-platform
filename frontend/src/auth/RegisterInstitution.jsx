@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import RepNavbar from './RepNavbar.jsx';
+import RepNavbar from '../representative/RepNavbar.jsx';
 import './RegisterInstitution.css';
 
 const userTypes = [

@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import './Login.css';
-import logo from './assets/clearSKY-logo.png';
-import CourseStatistics from './CourseStatistics.jsx';
-import RegisterInstitution from './RegisterInstitution.jsx';
+import logo from '../assets/clearSKY-logo.png';
 
 function Login({ setCurrentComponent }) {
   const [username, setUsername] = useState('');
