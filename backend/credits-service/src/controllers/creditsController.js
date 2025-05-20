@@ -31,8 +31,8 @@ exports.buyCredits = async (req, res) => {
 
     // Καταγραφή συναλλαγής
     await pool.query(`
-      INSERT INTO clearsky.credit_transactions (institution_id, type, amount)
-      VALUES ($1, 'buy', $2)
+      INSERT INTO clearsky.credit_transaction (institution_id, amount, tx_type, description)
+      VALUES ($1, $2, 'PURCHASE', 'Buy credits')
     `, [institutionId, amount]);
 
     res.json({ message: 'Credits added', new_balance: result.rows[0].credits_balance });
@@ -58,8 +58,8 @@ exports.consumeCredit = async (req, res) => {
 
     // Καταγραφή συναλλαγής
     await pool.query(`
-      INSERT INTO clearsky.credit_transactions (institution_id, type, amount)
-      VALUES ($1, 'consume', 1)
+      INSERT INTO clearsky.credit_transaction (institution_id, amount, tx_type, description)
+      VALUES ($1, -1, 'CONSUME', 'Consumed 1 credit')
     `, [institutionId]);
 
     res.json({ message: 'Credit consumed', remaining: result.rows[0].credits_balance });
@@ -73,10 +73,10 @@ exports.getHistory = async (req, res) => {
 
   try {
     const result = await pool.query(`
-      SELECT type, amount, timestamp
-      FROM clearsky.credit_transactions
+      SELECT tx_type, amount, created_at
+      FROM clearsky.credit_transaction
       WHERE institution_id = $1
-      ORDER BY timestamp DESC
+      ORDER BY created_at DESC
     `, [institutionId]);
 
     res.json(result.rows);
