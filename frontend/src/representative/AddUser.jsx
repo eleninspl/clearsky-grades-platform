@@ -3,7 +3,6 @@ import RepNavbar from './RepNavbar.jsx';
 import './AddUser.css';
 
 const userTypes = [
-  { value: 'representative', label: 'Representative' },
   { value: 'instructor', label: 'Instructor' },
   { value: 'student', label: 'Student' },
 ];

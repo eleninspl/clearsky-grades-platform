@@ -55,8 +55,15 @@ function CourseStatistics({ setCurrentComponent }) {
       <Navbar setCurrentComponent={setCurrentComponent} />
       <main className="stats-main">
         <div className="stats-table-section">
-          <h2 className="stats-title">Available course statistics</h2>
-          <button className="stats-goto-btn">Go to my courses</button>
+          <div className="stats-header">
+            <h2 className="stats-title">Available course statistics</h2>
+            <button 
+              className="stats-goto-btn"
+              onClick={() => setCurrentComponent('AllCourses')}
+            >
+              Go to my courses
+            </button>
+          </div>
           <table className="stats-table">
             <thead>
               <tr>

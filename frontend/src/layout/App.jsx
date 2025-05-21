@@ -8,20 +8,27 @@ import PostFinalGrades from '../instructor/PostFinalGrades.jsx';
 import RepStatistics from '../representative/RepStatistics.jsx';
 import RepCredits from '../representative/RepCredits.jsx';
 import AddUser from '../representative/AddUser.jsx';
+import AllCourses from '../instructor/AllCourses.jsx';
 
 function App() {
   const [currentComponent, setCurrentComponent] = useState(null);
 
+  const handleComponentChange = (component) => {
+    console.log('Changing component to:', component);
+    setCurrentComponent(component);
+  };
+
   if (currentComponent) {
     const ComponentToRender = {
-      CourseStatistics: <CourseStatistics setCurrentComponent={setCurrentComponent} />,
-      Notifications: <Notifications setCurrentComponent={setCurrentComponent} />,
-      PostInitialGrades: <PostInitialGrades setCurrentComponent={setCurrentComponent} />,
-      PostFinalGrades: <PostFinalGrades setCurrentComponent={setCurrentComponent} />,
-      RepStatistics: <RepStatistics setCurrentComponent={setCurrentComponent} />,
-      RepCredits: <RepCredits setCurrentComponent={setCurrentComponent} />,
-      AddUser: <AddUser setCurrentComponent={setCurrentComponent} />,
-      Login: <Login setCurrentComponent={setCurrentComponent} />,
+      CourseStatistics: <CourseStatistics setCurrentComponent={handleComponentChange} />,
+      Notifications: <Notifications setCurrentComponent={handleComponentChange} />,
+      PostInitialGrades: <PostInitialGrades setCurrentComponent={handleComponentChange} />,
+      PostFinalGrades: <PostFinalGrades setCurrentComponent={handleComponentChange} />,
+      RepStatistics: <RepStatistics setCurrentComponent={handleComponentChange} />,
+      RepCredits: <RepCredits setCurrentComponent={handleComponentChange} />,
+      AddUser: <AddUser setCurrentComponent={handleComponentChange} />,
+      Login: <Login setCurrentComponent={handleComponentChange} />,
+      AllCourses: <AllCourses setCurrentComponent={handleComponentChange} />,
     }[currentComponent];
 
     return ComponentToRender || <div>Component not found</div>;
@@ -32,7 +39,15 @@ function App() {
 
   return (
     <div>
-      {!role ? <Login setCurrentComponent={setCurrentComponent} /> : <RoleRouter role={role} setCurrentComponent={setCurrentComponent} />}
+      {!role ? (
+        <Login setCurrentComponent={handleComponentChange} />
+      ) : (
+        <RoleRouter 
+          role={role} 
+          currentComponent={currentComponent} 
+          setCurrentComponent={handleComponentChange} 
+        />
+      )}
     </div>
   );
 }

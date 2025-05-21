@@ -135,4 +135,22 @@ body, .notifications-container, .notifications-title, .notifications-list, .noti
 
 .notifications-upload-btn:hover {
   background: #d6e4f0;
+}
+
+.notifications-student-message {
+  background: #f0f6ff;
+  border-radius: 6px;
+  padding: 10px 14px;
+  color: #22586A;
+  font-size: 1rem;
+  margin-bottom: 4px;
+  border: 1px solid #b3d1f7;
+}
+
+.notifications-final-grade-input {
+  width: 80px;
+  padding: 8px;
+  font-size: 1rem;
+  border: 2px solid #bbb;
+  border-radius: 6px;
 } 

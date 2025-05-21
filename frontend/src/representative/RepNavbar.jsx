@@ -33,7 +33,7 @@ function RepNavbar({ setCurrentComponent }) {
       <div className="rep-navbar-right">
         <div className="rep-navbar-profile-wrapper" ref={profileDropdownRef}>
           <button className="rep-navbar-link rep-navbar-profile-btn" onClick={() => setShowProfileDropdown(v => !v)}>
-            Profile
+            Representative's Name
           </button>
           {showProfileDropdown && (
             <div className="rep-navbar-profile-dropdown">

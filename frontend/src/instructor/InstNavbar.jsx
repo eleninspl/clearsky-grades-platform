@@ -52,7 +52,7 @@ function Navbar({ setCurrentComponent }) {
       <div className="navbar-right">
         <div className="navbar-profile-wrapper" ref={profileDropdownRef}>
           <button className="navbar-link navbar-profile-btn" onClick={() => setShowProfileDropdown(v => !v)}>
-            Profile
+            Instructor's Name
           </button>
           {showProfileDropdown && (
             <div className="navbar-profile-dropdown">
