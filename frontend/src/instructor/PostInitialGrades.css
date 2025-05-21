@@ -1,5 +1,11 @@
+body, .post-initial-grades-container, .post-initial-grades-title, .post-initial-grades-table, .post-initial-grades-header, .post-initial-grades-row, .post-initial-grades-cell {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
 .grades-container {
-  font-family: 'Segoe UI', 'Arial', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   background: #fafbfc;
   min-height: 100vh;
 }
@@ -26,7 +32,8 @@
 .instructor-name {
   font-size: 1.6rem;
   margin-bottom: 18px;
-  font-family: 'Caveat', 'Comic Sans MS', cursive;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 
 .grades-section {

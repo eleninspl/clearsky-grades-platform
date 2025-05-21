@@ -1,3 +1,8 @@
+body, .login-container, .login-logo-bar, .login-main, .login-form-section, .login-form-box, .login-form-title, .login-form, .login-input, .login-btn, .login-error, .login-message-area, .login-message-title, .login-message-box {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
 .login-logo-bar {
   width: 100%;
   display: flex;
