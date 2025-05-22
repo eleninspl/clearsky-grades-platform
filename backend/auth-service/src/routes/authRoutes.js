@@ -1,27 +1,41 @@
+// routes/authRoutes.js
 const express   = require('express');
 const passport  = require('../passport');
+const jwt       = require('jsonwebtoken');
 const ctrl      = require('../controllers/authController');
 const authorize = require('../middleware/authorize');
 
-module.exports = app => {
-  const r = express.Router();
+const router = express.Router();
 
-  // Local signup/login
-  r.post('/signup', ctrl.signup);
-  r.post('/login',  ctrl.login);
+// ───────────────────────────────────────────
+// Local signup / login
+router.post('/signup', ctrl.signup);
+router.post('/login',  ctrl.login);
 
-  // Google OAuth
-  r.get('/google', passport.authenticate('google',
-        { scope:['profile','email'], session:false }));
-  r.get('/google/callback',
-        passport.authenticate('google', { session:false }),
-        (req,res) => res.json({ token: jwt.sign(
-          { sub:req.user.id, role:req.user.role, inst:req.user.institution_id },
-          process.env.JWT_SECRET, { expiresIn:'7d' })})
-  );
+// ───────────────────────────────────────────
+// Google OAuth
+router.get('/google',
+  passport.authenticate('google', { scope: ['profile', 'email'], session: false })
+);
 
-  // User provisioning (teachers / reps)
-  r.post('/users', authorize(['ADMIN','INST_REP']), ctrl.createUserByRole);
+router.get('/google/callback',
+  passport.authenticate('google', { session: false }),
+  (req, res) => {
+    const token = jwt.sign(
+      { sub: req.user.id, role: req.user.role, inst: req.user.institution_id },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    res.json({ token });
+  }
+);
 
-  app.use('/auth', r);
-};
+// ───────────────────────────────────────────
+// User provisioning (admins / institutional reps)
+router.post('/users',
+  authorize(['ADMIN', 'INST_REP']), // Only admins and institutional reps can create users
+  ctrl.createUserByRole
+);
+
+// 👉 Εξάγουμε τον router
+module.exports = router;

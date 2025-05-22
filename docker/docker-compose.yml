@@ -19,8 +19,6 @@ services:
       - ../backend/db-service/.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ../backend/db-service/init.sql:/docker-entrypoint-initdb.d/01-init.sql
-      - ../backend/db-service/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
     restart: always
 
   auth-service:

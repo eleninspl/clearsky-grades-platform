@@ -3,11 +3,24 @@ INSERT INTO clearsky.institution (id, name, email, credits_balance) VALUES
 (1, 'National Technical University', 'contact@ntua.gr', 5);
 -- (2, 'University of Crete', 'info@uoc.gr', 10);
 
+
+-- ADMIN
+-- a. users row  (ο κωδικός ρόλος είναι 'ADMIN' & institution_id NULL)
+INSERT INTO clearsky.users
+      (username,  email, full_name, role,  institution_id)
+VALUES('admin',   'admin@clearsky','admin', 'ADMIN', NULL)
+RETURNING id;        
+-- b. auth_account row  (provider = LOCAL, αποθηκεύει το bcrypt hash)
+INSERT INTO clearsky.auth_account
+      (user_id, provider, provider_uid, password_hash)
+VALUES (1, 'LOCAL', 'admin@clearsky',
+        '$2a$12$PBZsfvU0JXpKmJfoKcgpGuoKNqPHbAVbLWTeZwsztDKOSTVsgVmli');
+
+
 --  📌 USERS
  INSERT INTO clearsky.users (id, username, email, full_name, role, institution_id)
  VALUES
  (1, 'jdoe', 'jdoe@ntua.gr', 'John Doe', 'INSTRUCTOR', 1);
-
 
 INSERT INTO clearsky.course (id, code, title, instructor_id, institution_id)
 VALUES (
@@ -17,6 +30,8 @@ VALUES (
   1,                         -- instructor_id (placeholder, must exist in users)
   1                          -- institution_id (placeholder, must exist in institution)
 );
+
+
 
 
 -- (2, 'maria', 'maria@uoc.gr', 'Maria Papadaki', 'STUDENT', 2),

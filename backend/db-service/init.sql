@@ -44,20 +44,16 @@ CREATE TABLE users (
     role           user_role     NOT NULL,
     external_id    INTEGER,
     am             INTEGER,
-    institution_id INTEGER       NOT NULL,
+    institution_id INTEGER,
     created_at     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uq_users_am UNIQUE (am),
     CONSTRAINT fk_user_institution FOREIGN KEY (institution_id)
         REFERENCES institution(id) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 CREATE UNIQUE INDEX uq_users_external_id ON users (external_id) WHERE external_id IS NOT NULL;
-
--- ➜ ✱✱ ΝΕΟΣ περιορισμός: max 1 INST_REP ανά ίδρυμα ✱✱
-ALTER TABLE users
-ADD CONSTRAINT uq_one_rep_per_inst
-    UNIQUE (institution_id)
-    DEFERRABLE INITIALLY DEFERRED
-    USING INDEX
+-- 1.partial-unique index
+CREATE UNIQUE INDEX uq_one_rep_per_inst_idx
+    ON clearsky.users (institution_id)
     WHERE role = 'INST_REP';
     
 -- 2b. Authentication & identities -----------------------------------------
