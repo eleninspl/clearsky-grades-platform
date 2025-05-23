@@ -1,15 +1,18 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './PostFinalGrades.css';
 import Navbar from './InstNavbar.jsx';
 
-function PostFinalGrades({ setCurrentComponent }) {
+function PostFinalGrades() {
+  const navigate = useNavigate();
+
   const handleConfirm = () => {
-    setCurrentComponent('CourseStatistics');
+    navigate('/instructor/statistics');
   };
 
   return (
     <div className="grades-container">
-      <Navbar setCurrentComponent={setCurrentComponent} />
+      <Navbar />
       <main className="grades-main">
         <h2 className="instructor-name">Instructor name</h2>
 

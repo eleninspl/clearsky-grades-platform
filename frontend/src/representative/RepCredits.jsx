@@ -2,10 +2,10 @@ import React from 'react';
 import './RepCredits.css';
 import RepNavbar from './RepNavbar.jsx';
 
-function RepCredits({ setCurrentComponent }) {
+function RepCredits() {
   return (
     <div className="rep-credits-container">
-      <RepNavbar setCurrentComponent={setCurrentComponent} />
+      <RepNavbar />
       <main className="rep-credits-main">
         <div className="rep-credits-section">
           <h2 className="rep-credits-title">Credits Management</h2>
@@ -36,4 +36,4 @@ function RepCredits({ setCurrentComponent }) {
   );
 }
 
-export default RepCredits; 
+export default RepCredits;

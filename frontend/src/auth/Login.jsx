@@ -1,27 +1,30 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 import './Login.css';
 import logo from '../assets/clearSKY-logo.png';
 
-function Login({ setCurrentComponent }) {
+function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  // Map of valid credentials to components and roles
   const credentialsMap = {
     instructor: {
       password: 'instructor',
-      component: 'CourseStatistics',
+      redirect: '/instructor/statistics',
       role: 'INSTRUCTOR'
     },
     represent: {
       password: 'represent',
-      component: 'RepStatistics',
+      redirect: '/representative/statistics',
       role: 'INST_REP'
     },
     student: {
       password: 'student',
-      component: 'StudentDashboard',
+      redirect: '/student/dashboard',
       role: 'STUDENT'
     }
   };
@@ -32,8 +35,8 @@ function Login({ setCurrentComponent }) {
 
     const user = credentialsMap[username];
     if (user && user.password === password) {
-      localStorage.setItem('role', user.role);
-      setCurrentComponent(user.component);
+      login(user.role);
+      navigate(user.redirect);
     } else {
       setError('Invalid username or password');
     }

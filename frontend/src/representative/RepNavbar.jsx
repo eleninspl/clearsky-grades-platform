@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './RepNavbar.css';
 import logo from '../assets/clearSKY-logo.png';
 
-function RepNavbar({ setCurrentComponent }) {
+function RepNavbar() {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const profileDropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -19,16 +21,16 @@ function RepNavbar({ setCurrentComponent }) {
   const handleLogout = () => {
     setShowProfileDropdown(false);
     localStorage.removeItem('role');
-    setCurrentComponent('Login');
+    navigate('/login');
   };
 
   return (
     <nav className="rep-navbar">
       <div className="rep-navbar-left">
         <img src={logo} alt="clearSKY logo" className="rep-navbar-img-logo" />
-        <button className="rep-navbar-link" onClick={() => setCurrentComponent('RepStatistics')}>Statistics</button>
-        <button className="rep-navbar-link" onClick={() => setCurrentComponent('RepCredits')}>Credits</button>
-        <button className="rep-navbar-link" onClick={() => setCurrentComponent('AddUser')}>Add User</button>
+        <button className="rep-navbar-link" onClick={() => navigate('/representative/statistics')}>Statistics</button>
+        <button className="rep-navbar-link" onClick={() => navigate('/representative/credits')}>Credits</button>
+        <button className="rep-navbar-link" onClick={() => navigate('/representative/add-user')}>Add User</button>
       </div>
       <div className="rep-navbar-right">
         <div className="rep-navbar-profile-wrapper" ref={profileDropdownRef}>
@@ -50,4 +52,4 @@ function RepNavbar({ setCurrentComponent }) {
   );
 }
 
-export default RepNavbar; 
+export default RepNavbar;

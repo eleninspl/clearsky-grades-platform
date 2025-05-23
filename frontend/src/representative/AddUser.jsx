@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import RepNavbar from './RepNavbar.jsx';
 import './AddUser.css';
 
@@ -7,26 +8,27 @@ const userTypes = [
   { value: 'student', label: 'Student' },
 ];
 
-function AddUser({ setCurrentComponent }) {
+function AddUser() {
   const [type, setType] = useState(userTypes[0].value);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [id, setId] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     // TODO: Add API call to create user
-    setCurrentComponent('RepStatistics'); // Return to representative dashboard
+    navigate('/representative/statistics');
   };
 
   const handleChangePassword = () => {
     // TODO: Add change password functionality
-    setCurrentComponent('RepStatistics'); // Return to representative dashboard
+    navigate('/representative/statistics');
   };
 
   return (
     <div className="adduser-container">
-      <RepNavbar setCurrentComponent={setCurrentComponent} />
+      <RepNavbar />
       <main className="adduser-main">
         <section className="adduser-section">
           <div className="adduser-title">Users</div>
@@ -66,4 +68,4 @@ function AddUser({ setCurrentComponent }) {
   );
 }
 
-export default AddUser; 
+export default AddUser;

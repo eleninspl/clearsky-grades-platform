@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './InstNavbar.css';
 import logo from '../assets/clearSKY-logo.png';
 
@@ -7,6 +8,7 @@ function Navbar({ setCurrentComponent }) {
   const [showGradesDropdown, setShowGradesDropdown] = useState(false);
   const profileDropdownRef = useRef(null);
   const gradesDropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   // Κλείσιμο dropdown όταν κάνεις click εκτός
   useEffect(() => {
@@ -24,25 +26,26 @@ function Navbar({ setCurrentComponent }) {
 
   const handleLogout = () => {
     setShowProfileDropdown(false);
-    setCurrentComponent('Login');
+    localStorage.removeItem('role');
+    navigate('/login');
   };
 
   return (
     <nav className="navbar">
       <div className="navbar-left">
         <img src={logo} alt="clearSKY logo" className="navbar-img-logo" />
-        <button className="navbar-link" onClick={() => setCurrentComponent('CourseStatistics')}>My Courses</button>
-        <button className="navbar-link" onClick={() => setCurrentComponent('Notifications')}>Notifications</button>
+        <button className="navbar-link" onClick={() => navigate('/instructor/statistics')}>My Courses</button>
+        <button className="navbar-link" onClick={() => navigate('/instructor/notifications')}>Notifications</button>
         <div className="navbar-grades-wrapper" ref={gradesDropdownRef}>
           <button className="navbar-link navbar-grades-btn" onClick={() => setShowGradesDropdown(v => !v)}>
             Post Grades
           </button>
           {showGradesDropdown && (
             <div className="navbar-grades-dropdown">
-              <button className="navbar-grades-dropdown-btn" onClick={() => setCurrentComponent('PostInitialGrades')}>
+              <button className="navbar-grades-dropdown-btn" onClick={() => navigate('/instructor/grades/initial')}>
                 Post initial grades
               </button>
-              <button className="navbar-grades-dropdown-btn" onClick={() => setCurrentComponent('PostFinalGrades')}>
+              <button className="navbar-grades-dropdown-btn" onClick={() => navigate('/instructor/grades/final')}>
                 Post final grades
               </button>
             </div>

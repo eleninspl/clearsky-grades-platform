@@ -8,7 +8,7 @@ const notifications = [
   { course: 'software I', period: 'fall 2024', student: 'george smith', studentMessage: 'I think there was a mistake in the calculation of my grade.' },
 ];
 
-function Notifications({ setCurrentComponent }) {
+function Notifications() {
   const [selectedReply, setSelectedReply] = useState(null);
   const [action, setAction] = useState('Total accept');
   const [message, setMessage] = useState('');
@@ -16,7 +16,7 @@ function Notifications({ setCurrentComponent }) {
 
   return (
     <div className="notifications-container">
-      <Navbar setCurrentComponent={setCurrentComponent} />
+      <Navbar />
       <main className="notifications-main">
         <h2 className="notifications-instructor">Instructor name</h2>
         <table className="notifications-table">

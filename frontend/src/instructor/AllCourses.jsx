@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import './CourseStatistics.css';
+import { useNavigate } from 'react-router-dom';
+import './AllCourses.css';
 import Navbar from './InstNavbar.jsx';
 
-// Extended list of courses for demonstration
 const allCourses = [
   {
     name: 'physics',
@@ -121,8 +121,9 @@ const dummyCharts = {
   ],
 };
 
-function AllCourses({ setCurrentComponent }) {
+function AllCourses() {
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const navigate = useNavigate();
 
   const handleCourseClick = (course) => {
     setSelectedCourse(course);
@@ -134,14 +135,14 @@ function AllCourses({ setCurrentComponent }) {
 
   return (
     <div className="stats-container">
-      <Navbar setCurrentComponent={setCurrentComponent} />
+      <Navbar />
       <main className="stats-main">
         <div className="stats-table-section">
           <div className="stats-header">
             <h2 className="stats-title">All My Courses</h2>
             <button 
               className="stats-back-btn"
-              onClick={() => setCurrentComponent('CourseStatistics')}
+              onClick={() => navigate('/instructor/statistics')}
             >
               Back to Overview
             </button>
@@ -212,4 +213,4 @@ function AllCourses({ setCurrentComponent }) {
   );
 }
 
-export default AllCourses; 
+export default AllCourses;

@@ -2,10 +2,10 @@ import React from 'react';
 import './RepStatistics.css';
 import RepNavbar from './RepNavbar.jsx';
 
-function RepStatistics({ setCurrentComponent }) {
+function RepStatistics() {
   return (
     <div className="rep-stats-container">
-      <RepNavbar setCurrentComponent={setCurrentComponent} />
+      <RepNavbar />
       <main className="rep-stats-main">
         <div className="rep-stats-section">
           <h2 className="rep-stats-title">Institution Statistics</h2>
@@ -43,4 +43,4 @@ function RepStatistics({ setCurrentComponent }) {
   );
 }
 
-export default RepStatistics; 
+export default RepStatistics;
