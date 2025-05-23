@@ -1,7 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
-import InstructorDashboard from '../instructor/Dashboard';
 import CourseStatistics from '../instructor/CourseStatistics';
 import AllCourses from '../instructor/AllCourses';
 import Notifications from '../instructor/Notifications';

@@ -26,7 +26,7 @@ function StudentNavbar({ setCurrentComponent }) {
     <nav className="student-navbar">
       <div className="student-navbar-left">
         <img src={logo} alt="clearSKY logo" className="student-navbar-img-logo" />
-        <button className="student-navbar-link" onClick={() => setCurrentComponent('StudentDashboard')}>My Courses</button>
+        <button className="student-navbar-link" onClick={() => setCurrentComponent('StudentCourses')}>My Courses</button>
         <button className="student-navbar-link" onClick={() => setCurrentComponent('StudentGrades')}>My Grades</button>
       </div>
       <div className="student-navbar-right">

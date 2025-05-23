@@ -24,7 +24,7 @@ function Login() {
     },
     student: {
       password: 'student',
-      redirect: '/student/dashboard',
+      redirect: '/student/courses',
       role: 'STUDENT'
     }
   };
