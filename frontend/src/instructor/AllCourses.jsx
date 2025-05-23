@@ -62,64 +62,18 @@ const allCourses = [
   }
 ];
 
-const dummyCharts = {
-  physics: [
-    { title: 'physics - spring 2025 - total' },
-    { title: 'physics - spring 2025 - Q1' },
-    { title: 'physics - spring 2025 - Q2' },
-    { title: 'physics - spring 2025 - Q3' },
-    { title: 'physics - spring 2025 - Q4' },
-  ],
-  software: [
-    { title: 'software - spring 2025 - total' },
-    { title: 'software - spring 2025 - Q1' },
-    { title: 'software - spring 2025 - Q2' },
-    { title: 'software - spring 2025 - Q3' },
-    { title: 'software - spring 2025 - Q4' },
-  ],
-  mathematics: [
-    { title: 'mathematics - spring 2025 - total' },
-    { title: 'mathematics - spring 2025 - Q1' },
-    { title: 'mathematics - spring 2025 - Q2' },
-    { title: 'mathematics - spring 2025 - Q3' },
-    { title: 'mathematics - spring 2025 - Q4' },
-  ],
-  'computer networks': [
-    { title: 'computer networks - spring 2025 - total' },
-    { title: 'computer networks - spring 2025 - Q1' },
-    { title: 'computer networks - spring 2025 - Q2' },
-    { title: 'computer networks - spring 2025 - Q3' },
-    { title: 'computer networks - spring 2025 - Q4' },
-  ],
-  databases: [
-    { title: 'databases - spring 2025 - total' },
-    { title: 'databases - spring 2025 - Q1' },
-    { title: 'databases - spring 2025 - Q2' },
-    { title: 'databases - spring 2025 - Q3' },
-    { title: 'databases - spring 2025 - Q4' },
-  ],
-  'operating systems': [
-    { title: 'operating systems - spring 2025 - total' },
-    { title: 'operating systems - spring 2025 - Q1' },
-    { title: 'operating systems - spring 2025 - Q2' },
-    { title: 'operating systems - spring 2025 - Q3' },
-    { title: 'operating systems - spring 2025 - Q4' },
-  ],
-  algorithms: [
-    { title: 'algorithms - spring 2025 - total' },
-    { title: 'algorithms - spring 2025 - Q1' },
-    { title: 'algorithms - spring 2025 - Q2' },
-    { title: 'algorithms - spring 2025 - Q3' },
-    { title: 'algorithms - spring 2025 - Q4' },
-  ],
-  'web development': [
-    { title: 'web development - spring 2025 - total' },
-    { title: 'web development - spring 2025 - Q1' },
-    { title: 'web development - spring 2025 - Q2' },
-    { title: 'web development - spring 2025 - Q3' },
-    { title: 'web development - spring 2025 - Q4' },
-  ],
-};
+const dummyCharts = Object.fromEntries(
+  allCourses.map(course => [
+    course.name,
+    [
+      { title: `${course.name} - spring 2025 - total` },
+      { title: `${course.name} - spring 2025 - Q1` },
+      { title: `${course.name} - spring 2025 - Q2` },
+      { title: `${course.name} - spring 2025 - Q3` },
+      { title: `${course.name} - spring 2025 - Q4` }
+    ]
+  ])
+);
 
 function AllCourses() {
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -134,20 +88,20 @@ function AllCourses() {
   };
 
   return (
-    <div className="stats-container">
+    <div className="courses-container">
       <Navbar />
-      <main className="stats-main">
-        <div className="stats-table-section">
-          <div className="stats-header">
-            <h2 className="stats-title">All My Courses</h2>
+      <main className="courses-main">
+        <div className="courses-table-section">
+          <div className="courses-header">
+            <h2 className="courses-title">All My Courses</h2>
             <button 
-              className="stats-back-btn"
+              className="courses-back-btn"
               onClick={() => navigate('/instructor/statistics')}
             >
               Back to Overview
             </button>
           </div>
-          <table className="stats-table">
+          <table className="courses-table">
             <thead>
               <tr>
                 <th>course name</th>
@@ -162,7 +116,7 @@ function AllCourses() {
                   key={course.name}
                   onClick={() => handleCourseClick(course)}
                   style={{ cursor: 'pointer' }}
-                  className="stats-table-row"
+                  className="courses-table-row"
                 >
                   <td>{course.name}</td>
                   <td>{course.period}</td>
@@ -175,31 +129,31 @@ function AllCourses() {
         </div>
 
         {selectedCourse && (
-          <div className="stats-popup-overlay" onClick={handleClosePopup}>
-            <div className="stats-popup" onClick={e => e.stopPropagation()}>
-              <div className="stats-popup-header">
+          <div className="courses-popup-overlay" onClick={handleClosePopup}>
+            <div className="courses-popup" onClick={e => e.stopPropagation()}>
+              <div className="courses-popup-header">
                 <h3>{selectedCourse.name}</h3>
-                <button className="stats-popup-close" onClick={handleClosePopup}>×</button>
+                <button className="courses-popup-close" onClick={handleClosePopup}>×</button>
               </div>
-              <div className="stats-popup-content">
-                <div className="stats-popup-description">
+              <div className="courses-popup-content">
+                <div className="courses-popup-description">
                   <h4>Course Description</h4>
                   <p>{selectedCourse.description}</p>
                 </div>
-                <div className="stats-popup-charts">
+                <div className="courses-popup-charts">
                   <h4>Course Statistics</h4>
-                  <div className="stats-charts-grid">
+                  <div className="courses-charts-grid">
                     {(dummyCharts[selectedCourse.name] || []).map((chart, idx) => (
                       <div
                         key={chart.title}
                         className={
                           idx === 0
-                            ? 'stats-chart-cell stats-chart-large'
-                            : 'stats-chart-cell'
+                            ? 'courses-chart-cell courses-chart-large'
+                            : 'courses-chart-cell'
                         }
                       >
-                        <div className="stats-chart-title">{chart.title}</div>
-                        <div className="stats-chart-placeholder">[Chart Placeholder]</div>
+                        <div className="courses-chart-title">{chart.title}</div>
+                        <div className="courses-chart-placeholder">[Chart Placeholder]</div>
                       </div>
                     ))}
                   </div>
