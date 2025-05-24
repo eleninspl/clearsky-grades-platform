@@ -20,6 +20,26 @@ exports.getGradeById = async (req, res) => {
   }
 };
 
+exports.getGradesByStudent = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(`
+      SELECT g.value AS grade, g.type, g.grade_batch_id,
+             c.code AS course_code, c.title AS course_title
+      FROM clearsky.grade g
+      JOIN clearsky.course c ON g.course_id = c.id
+      WHERE g.user_am = $1
+      ORDER BY c.code, g.type
+    `, [id]);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching grades for student:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+};
+
 exports.createGrade = async (req, res) => {
   const { type, value, user_id, course_id, grade_batch_id } = req.body;
 

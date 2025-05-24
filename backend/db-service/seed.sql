@@ -1,4 +1,4 @@
--- 📌 Institution (πρέπει να προηγείται)
+-- 📌 Institution
 INSERT INTO clearsky.institution (id, name, email, credits_balance)
 VALUES (1, 'Demo Institution', 'demo@demo.edu', 10);
 
@@ -11,7 +11,7 @@ VALUES (
   100,
   'LOCAL',
   'admin@demo.edu',
-  '$2b$10$uuizdtZtIXX1XpzfGIwOmeaswCEsmW1U9cXhVFcT/T7T3V9DFIYCK' -- adminpass
+  '$2b$10$uuizdtZtIXX1XpzfGIwOmeaswCEsmW1U9cXhVFcT/T7T3V9DFIYCK'
 );
 
 -- 📌 INST_REP
@@ -23,7 +23,7 @@ VALUES (
   101,
   'LOCAL',
   'rep@demo.edu',
-  '$2b$10$nwZ53d8vC4THi16VFILwpOl8gZD7cdK8mIWJg/oPF04EumPum1TxW' -- reppass
+  '$2b$10$nwZ53d8vC4THi16VFILwpOl8gZD7cdK8mIWJg/oPF04EumPum1TxW'
 );
 
 -- 📌 INSTRUCTOR
@@ -35,38 +35,52 @@ VALUES (
   102,
   'LOCAL',
   'instructor@demo.edu',
-  '$2b$10$NwuB3yy/LRn9ooLT/W4wGOB6o.NwxS0eYvqQLxWoF0tMZyke.aWz6' -- instructorpass
+  '$2b$10$NwuB3yy/LRn9ooLT/W4wGOB6o.NwxS0eYvqQLxWoF0tMZyke.aWz6'
 );
 
--- 📌 STUDENT
-INSERT INTO clearsky.users (id, username, email, full_name, role, institution_id)
-VALUES (103, 'student', 'student@demo.edu', 'Student User', 'STUDENT', 1);
+-- 📌 STUDENT (✅ με user_am = 103)
+INSERT INTO clearsky.users (id, username, email, full_name, role, institution_id, am)
+VALUES (103, 'student', 'student@demo.edu', 'Student User', 'STUDENT', 1, 103);
 
 INSERT INTO clearsky.auth_account (user_id, provider, provider_uid, password_hash)
 VALUES (
   103,
   'LOCAL',
   'student@demo.edu',
-  '$2b$10$XButviiFJj1ReOWa6E6mcOvAefg37Jza9ppQBuKH7IvtMN9SjrHMC' -- studentpass
+  '$2b$10$XButviiFJj1ReOWa6E6mcOvAefg37Jza9ppQBuKH7IvtMN9SjrHMC'
 );
 
--- 📌 CREDIT TRANSACTIONS DUMMY
--- Για το institution_id = 1
-
--- 💳 Αγορές
+-- 💳 CREDIT TRANSACTIONS DUMMY
 INSERT INTO clearsky.credit_transaction (institution_id, amount, tx_type, description, reference, created_by, created_at)
 VALUES 
 (1, 1000, 'PURCHASE', 'Initial funding', 'manual_batch_1', 101, NOW() - INTERVAL '30 days'),
 (1, 2000, 'PURCHASE', 'Top-up for semester', 'manual_batch_2', 101, NOW() - INTERVAL '20 days'),
-(1, 1500, 'PURCHASE', 'Additional credits', 'manual_batch_3', 101, NOW() - INTERVAL '10 days');
+(1, 1500, 'PURCHASE', 'Additional credits', 'manual_batch_3', 101, NOW() - INTERVAL '10 days'),
+(1, -1, 'CONSUME', 'Grade upload CS101', '101_2025_INITIAL', 102, NOW() - INTERVAL '18 days'),
+(1, -1, 'CONSUME', 'Grade upload CS102', '102_2025_INITIAL', 102, NOW() - INTERVAL '15 days');
 
--- 🧾 Καταναλώσεις
-INSERT INTO clearsky.credit_transaction (institution_id, amount, tx_type, description, reference, created_by, created_at)
+-- 🧹 Delete previous grades for this student
+DELETE FROM clearsky.grade WHERE user_am = 103;
+
+-- 📘 COURSES
+INSERT INTO clearsky.course (id, code, title, instructor_id, institution_id)
 VALUES 
-(1, -1, 'CONSUME', 'Grade upload CS101', '3205_2025_INITIAL', 102, NOW() - INTERVAL '18 days'),
-(1, -1, 'CONSUME', 'Grade upload CS102', '3206_2025_INITIAL', 102, NOW() - INTERVAL '15 days'),
-(1, -1, 'CONSUME', 'Grade upload CS103', '3207_2025_INITIAL', 102, NOW() - INTERVAL '12 days'),
-(1, -1, 'CONSUME', 'Grade upload CS104', '3208_2025_INITIAL', 102, NOW() - INTERVAL '5 days');
+(101, 'CS101', 'Intro to Computer Science', 102, 1),
+(102, 'CS102', 'Data Structures', 102, 1)
+ON CONFLICT DO NOTHING;
+
+-- 🧾 GRADE BATCHES
+INSERT INTO clearsky.grade_batch (id, course_id, uploader_id, type)
+VALUES
+(1, 101, 102, 'INITIAL'),
+(2, 102, 102, 'INITIAL')
+ON CONFLICT DO NOTHING;
+
+-- ✅ GRADES για student@demo.edu
+INSERT INTO clearsky.grade (type, value, user_am, course_id, grade_batch_id, status)
+VALUES
+('INITIAL', 86, 103, 101, 1, 'FINAL'),
+('INITIAL', 92, 103, 102, 2, 'FINAL');
 
 
 
