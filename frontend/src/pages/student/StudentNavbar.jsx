@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './StudentNavbar.css';
-import logo from '../assets/clearSKY-logo.png';
+import logo from '../../assets/clearSKY-logo.png';
+import { useNavigate } from 'react-router-dom';
 
-function StudentNavbar({ setCurrentComponent }) {
+function StudentNavbar() {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const profileDropdownRef = useRef(null);
+  const navigate = useNavigate();
 
-  // Κλείσιμο dropdown όταν κάνεις click εκτός
   useEffect(() => {
     function handleClickOutside(event) {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
@@ -18,26 +19,41 @@ function StudentNavbar({ setCurrentComponent }) {
   }, []);
 
   const handleLogout = () => {
-    setShowProfileDropdown(false);
-    setCurrentComponent('Login');
+    localStorage.removeItem('role');
+    navigate('/login');
   };
 
   return (
     <nav className="student-navbar">
       <div className="student-navbar-left">
-        <img src={logo} alt="clearSKY logo" className="student-navbar-img-logo" />
-        <button className="student-navbar-link" onClick={() => setCurrentComponent('StudentCourses')}>My Courses</button>
-        <button className="student-navbar-link" onClick={() => setCurrentComponent('StudentGrades')}>My Grades</button>
+        <img
+          src={logo}
+          alt="clearSKY logo"
+          className="student-navbar-img-logo"
+          onClick={() => navigate('/student/statistics')}
+        />
+        <button className="student-navbar-link" onClick={() => navigate('/student/statistics')}>
+          My Dashboard
+        </button>
+        <button className="student-navbar-link" onClick={() => navigate('/student/courses')}>
+          My Courses
+        </button>
       </div>
+
       <div className="student-navbar-right">
         <div className="student-navbar-profile-wrapper" ref={profileDropdownRef}>
-          <button className="student-navbar-link student-navbar-profile-btn" onClick={() => setShowProfileDropdown(v => !v)}>
+          <button
+            className="student-navbar-link student-navbar-profile-btn"
+            onClick={() => setShowProfileDropdown(v => !v)}
+          >
             Profile
           </button>
           {showProfileDropdown && (
             <div className="student-navbar-profile-dropdown">
               <button className="student-navbar-profile-dropdown-btn">Profile</button>
-              <button className="student-navbar-profile-dropdown-btn" onClick={handleLogout}>Logout</button>
+              <button className="student-navbar-profile-dropdown-btn" onClick={handleLogout}>
+                Logout
+              </button>
             </div>
           )}
         </div>

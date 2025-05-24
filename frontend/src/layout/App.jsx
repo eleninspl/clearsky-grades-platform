@@ -5,7 +5,7 @@ import { useAuth } from '../auth/AuthContext';
 import Login from '../auth/Login.jsx';
 import InstructorRoutes from '../routes/InstructorRoutes';
 import RepresentativeRoutes from '../routes/RepresentativeRoutes';
-// import StudentRoutes from '../routes/StudentRoutes.jsx';
+import StudentRoutes from '../routes/StudentRoutes.jsx';
 import RoleRedirect from '../routes/RoleRedirect';
 
 
@@ -39,14 +39,14 @@ function App() {
             </ProtectedRoute>
           }
         />
-        {/* <Route
+        <Route
           path="/student/*"
           element={
             <ProtectedRoute allowedRoles={['STUDENT']}>
               <StudentRoutes />
             </ProtectedRoute>
           }
-        /> */}
+        />
         <Route
           path="/representative/*"
           element={

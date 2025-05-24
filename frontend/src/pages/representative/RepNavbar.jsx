@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './RepNavbar.css';
-import logo from '../assets/clearSKY-logo.png';
+import logo from '../../assets/clearSKY-logo.png';
 
 function RepNavbar() {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);

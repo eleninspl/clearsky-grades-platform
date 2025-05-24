@@ -50,8 +50,7 @@ VALUES (
   '$2b$10$XButviiFJj1ReOWa6E6mcOvAefg37Jza9ppQBuKH7IvtMN9SjrHMC' -- studentpass
 );
 
--- ✅ Debug για επιβεβαίωση
-DO $$ BEGIN RAISE NOTICE '✅ Final seed.sql loaded'; END $$;
+
 
 
 -- --  📌 USERS

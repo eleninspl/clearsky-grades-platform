@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './InstNavbar.css';
-import logo from '../assets/clearSKY-logo.png';
+import logo from '../../assets/clearSKY-logo.png';
 
 function Navbar({ setCurrentComponent }) {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -34,8 +34,15 @@ function Navbar({ setCurrentComponent }) {
     <nav className="navbar">
       <div className="navbar-left">
         <img src={logo} alt="clearSKY logo" className="navbar-img-logo" />
-        <button className="navbar-link" onClick={() => navigate('/instructor/statistics')}>My Courses</button>
-        <button className="navbar-link" onClick={() => navigate('/instructor/notifications')}>Notifications</button>
+        <button className="navbar-link" onClick={() => navigate('/instructor/statistics')}>
+          My Dashboard
+          </button>
+        <button className="navbar-link" onClick={() => navigate('/instructor/courses')}>
+          My Courses
+        </button>
+        <button className="navbar-link" onClick={() => navigate('/instructor/notifications')}>
+          Notifications
+          </button>
         <div className="navbar-grades-wrapper" ref={gradesDropdownRef}>
           <button className="navbar-link navbar-grades-btn" onClick={() => setShowGradesDropdown(v => !v)}>
             Post Grades

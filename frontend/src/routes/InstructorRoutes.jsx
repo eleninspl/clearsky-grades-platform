@@ -1,11 +1,11 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
-import CourseStatistics from '../instructor/CourseStatistics';
-import AllCourses from '../instructor/AllCourses';
-import Notifications from '../instructor/Notifications';
-import PostInitialGrades from '../instructor/PostInitialGrades';
-import PostFinalGrades from '../instructor/PostFinalGrades';
+import CourseStatistics from '../pages/instructor/CourseStatistics';
+import AllCourses from '../pages/instructor/AllCourses';
+import Notifications from '../pages/instructor/Notifications';
+import PostInitialGrades from '../pages/instructor/PostInitialGrades';
+import PostFinalGrades from '../pages/instructor/PostFinalGrades';
 
 export default function InstructorRoutes() {
   return (

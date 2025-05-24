@@ -1,0 +1,128 @@
+body, .student-stats-container, .student-stats-title, .student-stats-table, .student-stats-header, .student-stats-row, .student-stats-cell {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  }
+  
+  .student-stats-container {
+    background: #fafbfc;
+    min-height: 100vh;
+  }
+  
+  .student-stats-main {
+    max-width: 1100px;
+    margin: 48px auto 0 auto;
+    padding: 0 16px;
+  }
+  
+  .student-stats-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    margin-top: 64px;
+  }
+  
+  .student-stats-title {
+    font-size: 1.4rem;
+    color: #22586A;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  
+  .student-stats-table-section {
+    margin-bottom: 32px;
+    position: relative;
+  }
+  
+  .student-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    font-size: 1.05rem;
+  }
+  
+  .student-stats-table th, .student-stats-table td {
+    border: 1px solid #888;
+    padding: 8px 14px;
+    text-align: left;
+  }
+  
+  .student-stats-table th {
+    background: #ededed;
+    color: #444;
+  }
+  
+  .student-stats-table tr:nth-child(even) {
+    background: #f7f7f7;
+  }
+  
+  .student-stats-table tr:hover {
+    background-color: #f0f0f0;
+    transition: background-color 0.2s;
+  }
+  
+  .student-stats-row-selected {
+    background-color: #d6e4f0 !important;
+    font-weight: bold;
+  }
+  
+  .student-stats-charts-section {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 18px;
+  }
+  
+  .student-stats-chart-cell {
+    background: #fff;
+    border: 1.5px solid #bbb;
+    border-radius: 10px;
+    padding: 12px 10px 18px 10px;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  
+  .student-stats-chart-large {
+    grid-row: 1 / span 2;
+    grid-column: 1 / 2;
+    min-height: 380px;
+  }
+  
+  .student-stats-chart-title {
+    font-size: 1.08rem;
+    color: #444;
+    margin-bottom: 8px;
+  }
+  
+  .student-stats-chart-placeholder {
+    width: 100%;
+    height: 120px;
+    background: #f5f5f5;
+    border: 1px dashed #bbb;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #bbb;
+    font-size: 1.1rem;
+  }
+
+  .student-stats-goto-btn {
+    background: #22586A;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .student-stats-goto-btn:hover {
+    background: #1a4352;
+  }
+  
+  

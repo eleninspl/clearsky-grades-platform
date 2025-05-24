@@ -1,0 +1,49 @@
+body, .student-status-container, .student-status-title, .student-status-table {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  }
+  
+  .student-status-container {
+    background: #fafbfc;
+    min-height: 100vh;
+  }
+  
+  .student-status-main {
+    max-width: 1000px;
+    margin: 64px auto 0 auto;
+    padding: 0 16px;
+  }
+  
+  .student-status-title {
+    font-size: 1.4rem;
+    color: #22586A;
+    margin-bottom: 24px;
+  }
+  
+  .student-status-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    font-size: 1.05rem;
+  }
+  
+  .student-status-table th, .student-status-table td {
+    border: 1px solid #888;
+    padding: 10px 14px;
+    text-align: left;
+  }
+  
+  .student-status-table th {
+    background: #ededed;
+    color: #444;
+  }
+  
+  .student-status-table tr:nth-child(even) {
+    background: #f7f7f7;
+  }
+  
+  .student-status-table tr:hover {
+    background-color: #f0f0f0;
+    transition: background-color 0.2s;
+  }
+  
