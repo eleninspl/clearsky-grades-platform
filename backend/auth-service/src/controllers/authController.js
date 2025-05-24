@@ -6,9 +6,13 @@ const passport= require('../passport');             // ώστε να έχουμ�
 // helper δημιουργίας JWT
 function issueToken(user) {
   return jwt.sign(
-    { sub: user.id, role: user.role, inst: user.institution_id },
+    { 
+      sub: user.id, 
+      role: user.role, 
+      inst: user.institution_id 
+    },
     process.env.JWT_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: '2h' }
   );
 }
 

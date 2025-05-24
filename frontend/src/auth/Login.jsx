@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from '../utils/axiosInstance';
 
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
@@ -20,14 +20,14 @@ function Login() {
         email,
         password,
       });
-
-      const payload = res.data.user;
-      console.log('payload from server:', payload);
-      login(payload);        // Save user role etc. in context
-      navigate('/');         // Redirect to RoleRedirect
+  
+      const { token, user } = res.data;
+  
+      localStorage.setItem('token', token);  
+      login(user);                           
+      navigate('/');
     } catch (error) {
-      console.error('Login failed', error);
-      alert('Invalid credentials');
+      setError('Invalid credentials');
     }
   };
 
