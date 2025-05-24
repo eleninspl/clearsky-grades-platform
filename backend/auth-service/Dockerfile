@@ -1,26 +1,23 @@
-#FROM node:18
-#WORKDIR /app
-#COPY package*.json ./
-#RUN npm install
-#COPY . .
-#CMD ["node", "src/index.js"]
+# ---- base image with build tools ----
+    FROM node:18-bullseye
 
-
-# ---- base image -----------------------------------------------------------
-    FROM node:18
+    # Add OS-level deps needed for native modules like bcrypt
+    RUN apt-get update && apt-get install -y python3 g++ make && rm -rf /var/lib/apt/lists/*
+    
     WORKDIR /app
     
-    # ---- deps layer -----------------------------------------------------------
+    # ---- deps layer ----
     COPY package*.json ./
     RUN npm ci --omit=dev
     
-    # ---- app layer ------------------------------------------------------------
+    # ---- app layer ----
     COPY . .
     
-    # ---- runtime env ----------------------------------------------------------
+    # ---- runtime env ----
     ENV NODE_ENV=production
     ENV PORT=5001
     EXPOSE 5001
     
     CMD ["node", "src/index.js"]
+    
     

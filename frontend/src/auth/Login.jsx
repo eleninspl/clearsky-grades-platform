@@ -1,46 +1,36 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import './Login.css';
 import logo from '../assets/clearSKY-logo.png';
 
 function Login() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const credentialsMap = {
-    instructor: {
-      password: 'instructor',
-      redirect: '/instructor/statistics',
-      role: 'INSTRUCTOR'
-    },
-    represent: {
-      password: 'represent',
-      redirect: '/representative/statistics',
-      role: 'INST_REP'
-    },
-    student: {
-      password: 'student',
-      redirect: '/student/courses',
-      role: 'STUDENT'
-    }
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    try {
+      const res = await axios.post('http://localhost:5001/auth/login', {
+        email,
+        password,
+      });
 
-    const user = credentialsMap[username];
-    if (user && user.password === password) {
-      login(user.role);
-      navigate(user.redirect);
-    } else {
-      setError('Invalid username or password');
+      const payload = res.data.user;
+      console.log('payload from server:', payload);
+      login(payload);        // Save user role etc. in context
+      navigate('/');         // Redirect to RoleRedirect
+    } catch (error) {
+      console.error('Login failed', error);
+      alert('Invalid credentials');
     }
   };
+
 
   return (
     <div className="login-container">
@@ -53,11 +43,11 @@ function Login() {
             <div className="login-form-title">Please enter your credentials</div>
             <form className="login-form" onSubmit={handleSubmit}>
               <input
-                type="text"
-                placeholder="user name"
+                type="email"
+                placeholder="email"
                 className="login-input"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
               <input
                 type="password"

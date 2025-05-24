@@ -41,8 +41,21 @@ exports.signup = async (req, res, next) => {
 /* POST /auth/login          (LOCAL) */
 exports.login = [
   passport.authenticate('local', { session:false }),
-  (req,res) => res.json({ token: issueToken(req.user) })
+  (req,res) => {
+    const user = req.user;
+    const token = issueToken(user);
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        institution_id: user.institution_id
+      }
+    });
+  }
 ];
+
 
 /* POST /auth/users          (δημιουργεί INSTRUCTOR ή INST_REP) */
 exports.createUserByRole = async (req, res, next) => {

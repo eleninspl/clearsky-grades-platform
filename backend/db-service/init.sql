@@ -261,3 +261,5 @@ CREATE INDEX idx_course_institution      ON course (institution_id);
 COMMIT;
 
 -- End of schema v4 --------------------------------------------------------
+DO $$ BEGIN RAISE NOTICE '📦 init.sql loaded'; END $$;
+

@@ -1,35 +1,72 @@
--- 📌 INSTITUTIONS
-INSERT INTO clearsky.institution (id, name, email, credits_balance) VALUES
-(1, 'National Technical University', 'contact@ntua.gr', 5);
--- (2, 'University of Crete', 'info@uoc.gr', 10);
+-- 📌 Institution (πρέπει να προηγείται)
+INSERT INTO clearsky.institution (id, name, email, credits_balance)
+VALUES (1, 'Demo Institution', 'demo@demo.edu', 10);
 
+-- 📌 ADMIN
+INSERT INTO clearsky.users (id, username, email, full_name, role)
+VALUES (100, 'admin', 'admin@demo.edu', 'Admin User', 'ADMIN');
 
--- ADMIN
--- a. users row  (ο κωδικός ρόλος είναι 'ADMIN' & institution_id NULL)
-INSERT INTO clearsky.users
-      (username,  email, full_name, role,  institution_id)
-VALUES('admin',   'admin@clearsky','admin', 'ADMIN', NULL)
-RETURNING id;        
--- b. auth_account row  (provider = LOCAL, αποθηκεύει το bcrypt hash)
-INSERT INTO clearsky.auth_account
-      (user_id, provider, provider_uid, password_hash)
-VALUES (1, 'LOCAL', 'admin@clearsky',
-        '$2a$12$PBZsfvU0JXpKmJfoKcgpGuoKNqPHbAVbLWTeZwsztDKOSTVsgVmli');
-
-
---  📌 USERS
- INSERT INTO clearsky.users (id, username, email, full_name, role, institution_id)
- VALUES
- (1, 'jdoe', 'jdoe@ntua.gr', 'John Doe', 'INSTRUCTOR', 1);
-
-INSERT INTO clearsky.course (id, code, title, instructor_id, institution_id)
+INSERT INTO clearsky.auth_account (user_id, provider, provider_uid, password_hash)
 VALUES (
-  3205,                      -- course_id from Excel
-  'CS3205',                  -- your internal course code
-  'Τεχνολογία Λογισμικού',   -- title from your spreadsheet
-  1,                         -- instructor_id (placeholder, must exist in users)
-  1                          -- institution_id (placeholder, must exist in institution)
+  100,
+  'LOCAL',
+  'admin@demo.edu',
+  '$2b$10$uuizdtZtIXX1XpzfGIwOmeaswCEsmW1U9cXhVFcT/T7T3V9DFIYCK' -- adminpass
 );
+
+-- 📌 INST_REP
+INSERT INTO clearsky.users (id, username, email, full_name, role, institution_id)
+VALUES (101, 'rep', 'rep@demo.edu', 'Institution Rep', 'INST_REP', 1);
+
+INSERT INTO clearsky.auth_account (user_id, provider, provider_uid, password_hash)
+VALUES (
+  101,
+  'LOCAL',
+  'rep@demo.edu',
+  '$2b$10$nwZ53d8vC4THi16VFILwpOl8gZD7cdK8mIWJg/oPF04EumPum1TxW' -- reppass
+);
+
+-- 📌 INSTRUCTOR
+INSERT INTO clearsky.users (id, username, email, full_name, role, institution_id)
+VALUES (102, 'instructor', 'instructor@demo.edu', 'Instructor User', 'INSTRUCTOR', 1);
+
+INSERT INTO clearsky.auth_account (user_id, provider, provider_uid, password_hash)
+VALUES (
+  102,
+  'LOCAL',
+  'instructor@demo.edu',
+  '$2b$10$NwuB3yy/LRn9ooLT/W4wGOB6o.NwxS0eYvqQLxWoF0tMZyke.aWz6' -- instructorpass
+);
+
+-- 📌 STUDENT
+INSERT INTO clearsky.users (id, username, email, full_name, role, institution_id)
+VALUES (103, 'student', 'student@demo.edu', 'Student User', 'STUDENT', 1);
+
+INSERT INTO clearsky.auth_account (user_id, provider, provider_uid, password_hash)
+VALUES (
+  103,
+  'LOCAL',
+  'student@demo.edu',
+  '$2b$10$XButviiFJj1ReOWa6E6mcOvAefg37Jza9ppQBuKH7IvtMN9SjrHMC' -- studentpass
+);
+
+-- ✅ Debug για επιβεβαίωση
+DO $$ BEGIN RAISE NOTICE '✅ Final seed.sql loaded'; END $$;
+
+
+-- --  📌 USERS
+--  INSERT INTO clearsky.users (id, username, email, full_name, role, institution_id)
+--  VALUES
+--  (1, 'jdoe', 'jdoe@ntua.gr', 'John Doe', 'INSTRUCTOR', 1);
+
+-- INSERT INTO clearsky.course (id, code, title, instructor_id, institution_id)
+-- VALUES (
+--   3205,                      -- course_id from Excel
+--   'CS3205',                  -- your internal course code
+--   'Τεχνολογία Λογισμικού',   -- title from your spreadsheet
+--   1,                         -- instructor_id (placeholder, must exist in users)
+--   1                          -- institution_id (placeholder, must exist in institution)
+-- );
 
 
 
@@ -80,5 +117,6 @@ VALUES (
 -- VALUES (1, 1, 'Reviewed and accepted.');
 
 -- Resync ID sequence to avoid conflict with SERIAL inserts
-SELECT setval('clearsky.users_id_seq', (SELECT MAX(id) FROM clearsky.users));
+-- SELECT setval('clearsky.users_id_seq', (SELECT MAX(id) FROM clearsky.users));
+
 

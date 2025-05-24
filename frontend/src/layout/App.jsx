@@ -6,20 +6,23 @@ import Login from '../auth/Login.jsx';
 import InstructorRoutes from '../routes/InstructorRoutes';
 import RepresentativeRoutes from '../routes/RepresentativeRoutes';
 // import StudentRoutes from '../routes/StudentRoutes.jsx';
+import RoleRedirect from '../routes/RoleRedirect';
 
-function ProtectedRoute({ roleRequired, children }) {
+
+function ProtectedRoute({ children, allowedRoles = [] }) {
   const { user } = useAuth();
 
-  if (!user) {
+  if (!user || !user.role) {
     return <Navigate to="/login" replace />;
   }
 
-  if (roleRequired && user.role !== roleRequired) {
-    return <div>Unauthorized</div>;
+  if (!allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
   }
 
   return children;
 }
+
 
 function App() {
 
@@ -31,7 +34,7 @@ function App() {
         <Route
           path="/instructor/*"
           element={
-            <ProtectedRoute roleRequired="INSTRUCTOR">
+            <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
               <InstructorRoutes />
             </ProtectedRoute>
           }
@@ -39,7 +42,7 @@ function App() {
         {/* <Route
           path="/student/*"
           element={
-            <ProtectedRoute roleRequired="STUDENT">
+            <ProtectedRoute allowedRoles={['STUDENT']}>
               <StudentRoutes />
             </ProtectedRoute>
           }
@@ -47,13 +50,15 @@ function App() {
         <Route
           path="/representative/*"
           element={
-            <ProtectedRoute roleRequired="INST_REP">
+            <ProtectedRoute allowedRoles={['INST_REP']}>
               <RepresentativeRoutes />
             </ProtectedRoute>
           }
         />
 
-        <Route path="*" element={<Navigate to="/instructor/statistics" replace />} />
+        <Route path="/" element={<RoleRedirect />} />
+        <Route path="*" element={<div>404 Not Found</div>} />
+
       </Routes>
     </Router>
   );
