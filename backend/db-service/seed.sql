@@ -50,6 +50,23 @@ VALUES (
   '$2b$10$XButviiFJj1ReOWa6E6mcOvAefg37Jza9ppQBuKH7IvtMN9SjrHMC' -- studentpass
 );
 
+-- 📌 CREDIT TRANSACTIONS DUMMY
+-- Για το institution_id = 1
+
+-- 💳 Αγορές
+INSERT INTO clearsky.credit_transaction (institution_id, amount, tx_type, description, reference, created_by, created_at)
+VALUES 
+(1, 1000, 'PURCHASE', 'Initial funding', 'manual_batch_1', 101, NOW() - INTERVAL '30 days'),
+(1, 2000, 'PURCHASE', 'Top-up for semester', 'manual_batch_2', 101, NOW() - INTERVAL '20 days'),
+(1, 1500, 'PURCHASE', 'Additional credits', 'manual_batch_3', 101, NOW() - INTERVAL '10 days');
+
+-- 🧾 Καταναλώσεις
+INSERT INTO clearsky.credit_transaction (institution_id, amount, tx_type, description, reference, created_by, created_at)
+VALUES 
+(1, -1, 'CONSUME', 'Grade upload CS101', '3205_2025_INITIAL', 102, NOW() - INTERVAL '18 days'),
+(1, -1, 'CONSUME', 'Grade upload CS102', '3206_2025_INITIAL', 102, NOW() - INTERVAL '15 days'),
+(1, -1, 'CONSUME', 'Grade upload CS103', '3207_2025_INITIAL', 102, NOW() - INTERVAL '12 days'),
+(1, -1, 'CONSUME', 'Grade upload CS104', '3208_2025_INITIAL', 102, NOW() - INTERVAL '5 days');
 
 
 

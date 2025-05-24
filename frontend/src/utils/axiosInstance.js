@@ -1,15 +1,30 @@
 import axios from 'axios';
 
-const axiosInstance = axios.create({
-  baseURL: 'http://localhost:5001', 
-});
+// Helper function για να δημιουργούμε axios instances με token
+const createAxiosInstance = (baseURL) => {
+  const instance = axios.create({
+    baseURL,
+    // withCredentials: true, // Αν χρειάζεσαι cookies (π.χ. session auth)
+  });
 
-axiosInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+  instance.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  });
 
-export default axiosInstance;
+  return instance;
+};
+
+// Δημιουργούμε instances για κάθε service
+export const authAPI = createAxiosInstance(import.meta.env.VITE_AUTH_API_URL);
+export const userAPI = createAxiosInstance(import.meta.env.VITE_USER_API_URL);
+export const institutionAPI = createAxiosInstance(import.meta.env.VITE_INSTITUTION_API_URL);
+export const gradesAPI = createAxiosInstance(import.meta.env.VITE_GRADES_API_URL);
+export const courseAPI = createAxiosInstance(import.meta.env.VITE_COURSE_API_URL);
+export const reviewAPI = createAxiosInstance(import.meta.env.VITE_REVIEW_API_URL);
+export const statisticsAPI = createAxiosInstance(import.meta.env.VITE_STATISTICS_API_URL);
+export const creditsAPI = createAxiosInstance(import.meta.env.VITE_CREDITS_API_URL);
+export const uploadAPI = createAxiosInstance(import.meta.env.VITE_UPLOAD_API_URL);
