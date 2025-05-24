@@ -94,12 +94,12 @@ function AllCourses() {
         <div className="courses-table-section">
           <div className="courses-header">
             <h2 className="courses-title">All My Courses</h2>
-            <button 
+            {/* <button 
               className="courses-back-btn"
               onClick={() => navigate('/instructor/dashboard')}
             >
               Back to Overview
-            </button>
+            </button> */}
           </div>
           <table className="courses-table">
             <thead>
