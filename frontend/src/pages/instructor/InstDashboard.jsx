@@ -59,12 +59,12 @@ function InstDashboard() {
         <div className="stats-table-section">
           <div className="stats-header">
             <h2 className="stats-title">Available course statistics</h2>
-            <button 
+            {/* <button 
               className="stats-goto-btn"
               onClick={() => navigate('/instructor/courses')}
             >
               Go to my courses
-            </button>
+            </button> */}
           </div>
           <table className="stats-table">
             <thead>
