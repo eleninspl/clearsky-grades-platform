@@ -11,9 +11,9 @@ export default function RoleRedirect() {
 
   switch (user.role) {
     case 'INST_REP':
-      return <Navigate to="/representative/statistics" replace />;
+      return <Navigate to="/representative/dashboard" replace />;
     case 'INSTRUCTOR':
-      return <Navigate to="/instructor/statistics" replace />;
+      return <Navigate to="/instructor/dashboard" replace />;
     case 'STUDENT':
       return <Navigate to="/student/statistics" replace />;
     default:

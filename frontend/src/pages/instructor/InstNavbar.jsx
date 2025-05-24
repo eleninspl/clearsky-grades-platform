@@ -34,7 +34,7 @@ function Navbar({ setCurrentComponent }) {
     <nav className="navbar">
       <div className="navbar-left">
         <img src={logo} alt="clearSKY logo" className="navbar-img-logo" />
-        <button className="navbar-link" onClick={() => navigate('/instructor/statistics')}>
+        <button className="navbar-link" onClick={() => navigate('/instructor/dashboard')}>
           My Dashboard
           </button>
         <button className="navbar-link" onClick={() => navigate('/instructor/courses')}>

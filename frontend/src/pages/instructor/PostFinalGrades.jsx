@@ -7,7 +7,7 @@ function PostFinalGrades() {
   const navigate = useNavigate();
 
   const handleConfirm = () => {
-    navigate('/instructor/statistics');
+    navigate('/instructor/dashboard');
   };
 
   return (

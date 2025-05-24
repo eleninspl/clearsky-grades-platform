@@ -18,12 +18,12 @@ function AddUser() {
   const handleSubmit = (e) => {
     e.preventDefault();
     // TODO: Add API call to create user
-    navigate('/representative/statistics');
+    navigate('/representative/dashboard');
   };
 
   const handleChangePassword = () => {
     // TODO: Add change password functionality
-    navigate('/representative/statistics');
+    navigate('/representative/dashboard');
   };
 
   return (

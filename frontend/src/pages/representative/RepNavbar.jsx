@@ -28,7 +28,7 @@ function RepNavbar() {
     <nav className="rep-navbar">
       <div className="rep-navbar-left">
         <img src={logo} alt="clearSKY logo" className="rep-navbar-img-logo" />
-        <button className="rep-navbar-link" onClick={() => navigate('/representative/statistics')}>Statistics</button>
+        <button className="rep-navbar-link" onClick={() => navigate('/representative/dashboard')}>My Dashboard</button>
         <button className="rep-navbar-link" onClick={() => navigate('/representative/credits')}>Credits</button>
         <button className="rep-navbar-link" onClick={() => navigate('/representative/add-user')}>Add User</button>
       </div>

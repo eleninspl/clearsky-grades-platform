@@ -8,7 +8,7 @@ function PostInitialGrades() {
 
   const handleConfirm = (e) => {
     e.preventDefault();
-    navigate('/instructor/statistics');
+    navigate('/instructor/dashboard');
   };
 
   return (

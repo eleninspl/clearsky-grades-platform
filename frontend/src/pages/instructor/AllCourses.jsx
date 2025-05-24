@@ -96,7 +96,7 @@ function AllCourses() {
             <h2 className="courses-title">All My Courses</h2>
             <button 
               className="courses-back-btn"
-              onClick={() => navigate('/instructor/statistics')}
+              onClick={() => navigate('/instructor/dashboard')}
             >
               Back to Overview
             </button>

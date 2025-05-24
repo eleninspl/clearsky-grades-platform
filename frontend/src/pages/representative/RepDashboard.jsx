@@ -1,8 +1,8 @@
 import React from 'react';
-import './RepStatistics.css';
+import './RepDashboard.css';
 import RepNavbar from './RepNavbar.jsx';
 
-function RepStatistics() {
+function RepDashboard() {
   return (
     <div className="rep-stats-container">
       <RepNavbar />
@@ -43,4 +43,4 @@ function RepStatistics() {
   );
 }
 
-export default RepStatistics;
+export default RepDashboard;

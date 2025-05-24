@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './CourseStatistics.css';
+import './InstDashboard.css';
 import Navbar from './InstNavbar.jsx';
 
 const courses = [
@@ -48,7 +48,7 @@ const dummyCharts = {
   ],
 };
 
-function CourseStatistics() {
+function InstDashboard() {
   const [selectedCourse, setSelectedCourse] = useState(courses[0].name);
   const navigate = useNavigate();
 
@@ -115,4 +115,4 @@ function CourseStatistics() {
   );
 }
 
-export default CourseStatistics;
+export default InstDashboard;
