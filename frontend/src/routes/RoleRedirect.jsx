@@ -15,7 +15,7 @@ export default function RoleRedirect() {
     case 'INSTRUCTOR':
       return <Navigate to="/instructor/dashboard" replace />;
     case 'STUDENT':
-      return <Navigate to="/student/statistics" replace />;
+      return <Navigate to="/student/dashboard" replace />;
     default:
       return <div>Unauthorized role: {user.role}</div>;
   }

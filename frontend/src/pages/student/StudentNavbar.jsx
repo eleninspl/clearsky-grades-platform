@@ -30,9 +30,9 @@ function StudentNavbar() {
           src={logo}
           alt="clearSKY logo"
           className="student-navbar-img-logo"
-          onClick={() => navigate('/student/statistics')}
+          onClick={() => navigate('/student/dashboard')}
         />
-        <button className="student-navbar-link" onClick={() => navigate('/student/statistics')}>
+        <button className="student-navbar-link" onClick={() => navigate('/student/dashboard')}>
           My Dashboard
         </button>
         <button className="student-navbar-link" onClick={() => navigate('/student/courses')}>
@@ -46,7 +46,7 @@ function StudentNavbar() {
             className="student-navbar-link student-navbar-profile-btn"
             onClick={() => setShowProfileDropdown(v => !v)}
           >
-            Profile
+            Student's Name
           </button>
           {showProfileDropdown && (
             <div className="student-navbar-profile-dropdown">

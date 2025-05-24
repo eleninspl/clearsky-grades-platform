@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './StudentCourseStatistics.css';
+import './StudentDashboard.css';
 import StudentNavbar from './StudentNavbar';
 
 
@@ -28,24 +28,24 @@ const dummyCharts = {
   mathematics: ['total', 'Q1', 'Q2', 'Q3', 'Q4'],
 };
 
-function StudentCourseStatistics() {
+function StudentDashboard() {
   const [selectedCourse, setSelectedCourse] = useState(myCourses[0].name);
   const navigate = useNavigate();
   return (
-    <div className="student-stats-container">
+    <div className="student-dashboard-container">
       <StudentNavbar />
-      <main className="student-stats-main">
-        <div className="student-stats-table-section">
-          <div className="student-stats-header">
-            <h2 className="student-stats-title">My Course Grades</h2>
-            <button
+      <main className="student-dashboard-main">
+        <div className="student-dashboard-table-section">
+          <div className="student-dashboard-header">
+            <h2 className="student-dashboard-title">My Course Grades</h2>
+            {/* <button
               className="student-stats-goto-btn"
               onClick={() => navigate('/student/courses')}
             >
               Go to my courses
-            </button>
+            </button> */}
           </div>
-          <table className="student-stats-table">
+          <table className="student-dashboard-table">
             <thead>
               <tr>
                 <th>Course</th>
@@ -57,7 +57,7 @@ function StudentCourseStatistics() {
               {myCourses.map((course) => (
                 <tr
                   key={course.name}
-                  className={selectedCourse === course.name ? 'student-stats-row-selected' : ''}
+                  className={selectedCourse === course.name ? 'student-dashboard-row-selected' : ''}
                   onClick={() => setSelectedCourse(course.name)}
                   style={{ cursor: 'pointer' }}
                 >
@@ -70,18 +70,18 @@ function StudentCourseStatistics() {
           </table>
         </div>
 
-        <div className="student-stats-charts-section">
+        <div className="student-dashboard-charts-section">
           {dummyCharts[selectedCourse].map((label, idx) => (
             <div
               key={label}
               className={
                 idx === 0
-                  ? 'student-stats-chart-cell student-stats-chart-large'
-                  : 'student-stats-chart-cell'
+                  ? 'student-dashboard-chart-cell student-dashboard-chart-large'
+                  : 'student-dashboard-chart-cell'
               }
             >
-              <div className="student-stats-chart-title">{selectedCourse} - {label}</div>
-              <div className="student-stats-chart-placeholder">[Chart Placeholder]</div>
+              <div className="student-dashboard-chart-title">{selectedCourse} - {label}</div>
+              <div className="student-dashboard-chart-placeholder">[Chart Placeholder]</div>
             </div>
           ))}
         </div>
@@ -90,4 +90,4 @@ function StudentCourseStatistics() {
   );
 }
 
-export default StudentCourseStatistics;
+export default StudentDashboard;
