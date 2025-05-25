@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './StudentDashboard.css';
 import StudentNavbar from './StudentNavbar';
 import { useNavigate } from 'react-router-dom';
-import { useStudentGrades } from '../../hooks/useStudentGrades';
+import useStudentGrades from '../../hooks/useStudentGrades';
 
 function StudentDashboard() {
   const navigate = useNavigate();
@@ -24,10 +24,19 @@ function StudentDashboard() {
             <h2 className="student-dashboard-title">My Course Grades</h2>
           </div>
 
-          {loading && <p>Loading grades...</p>}
-          {error && <p className="student-dashboard-error">{error}</p>}
+          {loading && (
+            <p className="student-dashboard-loading">Loading grades...</p>
+          )}
 
-          {!loading && !error && (
+          {error && (
+            <p className="student-dashboard-error">{error}</p>
+          )}
+
+          {!loading && !error && grades.length === 0 && (
+            <p className="student-dashboard-empty">No grades found for this student.</p>
+          )}
+
+          {!loading && !error && grades.length > 0 && (
             <table className="student-dashboard-table">
               <thead>
                 <tr>
@@ -37,16 +46,20 @@ function StudentDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {grades.map((course, index) => (
+                {grades.map((g, index) => (
                   <tr
                     key={index}
-                    onClick={() => setSelectedCourse(course.course_title)}
-                    className={selectedCourse === course.course_title ? 'student-dashboard-row-selected' : ''}
+                    onClick={() => setSelectedCourse(g.course_title)}
+                    className={
+                      selectedCourse === g.course_title
+                        ? 'student-dashboard-row-selected'
+                        : ''
+                    }
                     style={{ cursor: 'pointer' }}
                   >
-                    <td>{course.course_title}</td>
-                    <td>{course.type}</td>
-                    <td>{course.grade}</td>
+                    <td>{g.course_title}</td>
+                    <td>{g.type}</td>
+                    <td>{g.grade}</td>
                   </tr>
                 ))}
               </tbody>
@@ -65,8 +78,12 @@ function StudentDashboard() {
                     : 'student-dashboard-chart-cell'
                 }
               >
-                <div className="student-dashboard-chart-title">{selectedCourse} - {label}</div>
-                <div className="student-dashboard-chart-placeholder">[Chart Placeholder]</div>
+                <div className="student-dashboard-chart-title">
+                  {selectedCourse} - {label}
+                </div>
+                <div className="student-dashboard-chart-placeholder">
+                  [Chart Placeholder]
+                </div>
               </div>
             ))}
         </div>

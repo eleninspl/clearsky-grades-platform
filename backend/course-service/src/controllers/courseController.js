@@ -20,6 +20,24 @@ exports.getCourseById = async (req, res) => {
   }
 };
 
+exports.getCoursesForStudent = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(`
+      SELECT DISTINCT c.id, c.code, c.title, c.instructor_id
+      FROM clearsky.course c
+      JOIN clearsky.grade g ON g.course_id = c.id
+      WHERE g.user_id = $1
+    `, [id]);    
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('❌ Error fetching courses for student:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 exports.createCourse = async (req, res) => {
   const { code, title, instructor_id, institution_id } = req.body;
   try {

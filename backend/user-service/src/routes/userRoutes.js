@@ -3,6 +3,6 @@ const router = express.Router();
 const controller = require('../controllers/userController');
 const authenticateToken = require('../authMiddleware');
 
-router.get('/me', authenticateToken, controller.handleMe);
+router.get('/', authenticateToken, controller.handleMe);
 
 module.exports = router;

@@ -10,6 +10,11 @@ export const fetchCourseById = async (id) => {
   return res.data;
 };
 
+export const fetchCoursesByStudentId = async (id) => {
+  const res = await courseAPI.get(`/student/${id}`);
+  return res.data;
+};
+
 export const createCourse = async (courseData) => {
   const res = await courseAPI.post('/', courseData);
   return res.data;

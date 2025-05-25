@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
+import { fetchGradesByStudentId } from '../api/grades';
 import { useAuth } from '../auth/AuthContext';
-import { getStudentGrades } from '../api/grades';
 
-export const useStudentGrades = () => {
+const useStudentGrades = () => {
   const { user } = useAuth();
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,21 +11,21 @@ export const useStudentGrades = () => {
   useEffect(() => {
     if (!user?.id) return;
 
-    const fetchGrades = async () => {
-      setLoading(true);
+    const load = async () => {
       try {
-        const data = await getStudentGrades(user.id);
+        const data = await fetchGradesByStudentId(user.id);
         setGrades(data);
       } catch (err) {
-        console.error('Error loading student grades:', err);
-        setError('Failed to load student grades');
+        setError(err.message || 'Error fetching grades');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchGrades();
+    load();
   }, [user]);
 
   return { grades, loading, error };
 };
+
+export default useStudentGrades;

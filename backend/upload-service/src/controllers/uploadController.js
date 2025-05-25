@@ -4,6 +4,7 @@ const pool = require('../db.js');
 
 exports.handleUpload = async (req, res) => {
   const filePath = req.file.path;
+  const batch_type = req.params.type?.toUpperCase() || 'INITIAL';
 
   try {
     const workbook = XLSX.readFile(filePath);
@@ -12,7 +13,6 @@ exports.handleUpload = async (req, res) => {
 
     const client = await pool.connect();
     const courseRegex = /\((\d+)\)/;
-    const batch_type = 'INITIAL';
     const uploaded_at = new Date();
     const academic_year = uploaded_at.getFullYear();
 

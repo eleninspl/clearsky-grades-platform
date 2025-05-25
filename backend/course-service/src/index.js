@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const gradeRoutes = require('./routes/gradeRoutes');
+const courseRoutes = require('./routes/courseRoutes');
 
 const app = express();
 
@@ -12,10 +12,12 @@ app.use(cors({
 
 app.use(express.json());
 
-app.get('/', (req, res) => res.send('Grades service running 📝'));
-app.use('/grades', gradeRoutes);
+app.get('/', (req, res) => {
+  res.send('Course service running 📚');
+});
+app.use('/courses', courseRoutes);
 
-const PORT = process.env.PORT || 5004;
+const PORT = process.env.PORT || 5005;
 app.listen(PORT, () => {
-  console.log(`Grades service running on port ${PORT}`);
+  console.log(`✅ Course service running on port ${PORT}`);
 });
