@@ -173,3 +173,21 @@ BEGIN
   END LOOP;
 END $$;
 
+-- ➕ Προσθήκη βαθμού για τον demo φοιτητή (user_am = 103) στο μάθημα CS103 (course_id = 103)
+INSERT INTO clearsky.grade (type, value, user_am, course_id, grade_batch_id, status, detailed_grade_json)
+VALUES (
+  'INITIAL',
+  85,  -- Μπορείς να αλλάξεις την τιμή του βαθμού όπως θες
+  103,
+  103,
+  4,
+  'FINAL',
+  jsonb_build_object(
+    'Q1', 9,
+    'Q2', 8,
+    'Q3', 9,
+    'Q4', 9
+  )
+);
+
+

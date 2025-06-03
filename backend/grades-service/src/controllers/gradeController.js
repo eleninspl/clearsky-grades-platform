@@ -25,13 +25,19 @@ exports.getGradesByStudent = async (req, res) => {
 
   try {
     const result = await pool.query(`
-      SELECT g.value AS grade, g.type, g.grade_batch_id,
-             c.code AS course_code, c.title AS course_title
+      SELECT 
+        g.value AS grade, 
+        g.type, 
+        g.grade_batch_id,
+        g.course_id,                  
+        c.code AS course_code, 
+        c.title AS course_title
       FROM clearsky.grade g
       JOIN clearsky.course c ON g.course_id = c.id
       WHERE g.user_am = $1
       ORDER BY c.code, g.type
     `, [id]);
+    
 
     res.json(result.rows);
   } catch (err) {
