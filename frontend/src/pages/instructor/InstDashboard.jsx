@@ -1,27 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import './InstDashboard.css';
 import Navbar from './InstNavbar.jsx';
+import SimpleBarChart from '../../components/SimpleBarChart';
 import { useInstructorCourses } from '../../hooks/useInstructorCourses';
+import { useCourseStatistics } from '../../hooks/useCourseStatistics';
 
 function InstDashboard() {
   const { courses, loading, error } = useInstructorCourses();
-  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const [selectedCourseName, setSelectedCourseName] = useState('');
+  const { statistics, loading: statsLoading } = useCourseStatistics(selectedCourseId);
 
   useEffect(() => {
-    if (courses.length > 0 && !selectedCourse) {
-      setSelectedCourse(courses[0].course_name);
+    if (courses.length > 0 && !selectedCourseId) {
+      setSelectedCourseId(courses[0].id);
+      setSelectedCourseName(courses[0].course_name);
     }
   }, [courses]);
 
-  // Dummy charts generator based on course name
-  const dummyCharts = Object.fromEntries(
-    courses.map(course => [
-      course.course_name,
-      ['total', 'Q1', 'Q2', 'Q3', 'Q4'].map(label => ({
-        title: `${course.course_name} - ${course.exam_period || 'N/A'} - ${label}`,
-      }))
-    ])
-  );
+  const totalStats = statistics.find((s) => s.label === 'total');
+  const questionStats = statistics.filter((s) => s.label !== 'total');
 
   return (
     <div className="stats-container">
@@ -52,11 +50,12 @@ function InstDashboard() {
               <tbody>
                 {courses.map((course) => (
                   <tr
-                    key={course.course_name}
-                    className={
-                      selectedCourse === course.course_name ? 'stats-row-selected' : ''
-                    }
-                    onClick={() => setSelectedCourse(course.course_name)}
+                    key={course.id}
+                    className={selectedCourseId === course.id ? 'stats-row-selected' : ''}
+                    onClick={() => {
+                      setSelectedCourseId(course.id);
+                      setSelectedCourseName(course.course_name);
+                    }}
                     style={{ cursor: 'pointer' }}
                   >
                     <td>{course.course_name}</td>
@@ -70,23 +69,19 @@ function InstDashboard() {
           )}
         </div>
 
-        <div className="stats-charts-section">
-          {selectedCourse &&
-            (dummyCharts[selectedCourse] || []).map((chart, idx) => (
-              <div
-                key={chart.title}
-                className={
-                  idx === 0
-                    ? 'stats-chart-cell stats-chart-large'
-                    : 'stats-chart-cell'
-                }
-              >
-                <div className="stats-chart-title">{chart.title}</div>
-                <div className="stats-chart-placeholder">[Chart Placeholder]</div>
+        <div className="stats-charts-grid">
+          <div className="stats-chart-cell stats-chart-large">
+            <h3>{selectedCourseName} – Total Distribution</h3>
+            <SimpleBarChart data={totalStats.data} />
+          </div>
+
+          <div className="question-charts-group">
+            {questionStats.map((stat) => (
+              <div key={stat.label} className="stats-chart-cell">
+                <h4>{selectedCourseName} – {stat.label}</h4>
+                <SimpleBarChart data={stat.data} />
               </div>
             ))}
-          <div className="stats-chart-cell stats-chart-ellipsis">
-            <div className="stats-chart-placeholder">...</div>
           </div>
         </div>
       </main>

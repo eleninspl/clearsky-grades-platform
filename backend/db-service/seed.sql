@@ -53,10 +53,16 @@ VALUES (
 -- 📘 COURSES for instructor with id = 102
 INSERT INTO clearsky.course (id, code, title, exam_period, description, instructor_id, institution_id)
 VALUES 
+(101, 'CS101', 'Intro to Computer Science', 'Spring 2024', 'Introduction to computing, programming fundamentals, and problem-solving.', 102, 1),
+(102, 'CS102', 'Data Structures', 'Spring 2024', 'Covers arrays, linked lists, stacks, queues, trees, graphs, and algorithm analysis.', 102, 1),
+(103, 'CS103', 'Algorithms', 'Spring 2024', 'Covers sorting, searching, and algorithm design and analysis.', 102, 1),
 (201, 'PHY101', 'Physics I', 'Fall 2024', 'Covers classical mechanics, motion, energy, and basic thermodynamics.', 102, 1),
 (202, 'CS201', 'Software Engineering', 'Fall 2024', 'Focuses on software development lifecycle, agile methods, and system design.', 102, 1),
 (203, 'MATH101', 'Mathematics I', 'Fall 2024', 'Introduction to linear algebra, calculus, and mathematical reasoning.', 102, 1)
+
 ON CONFLICT DO NOTHING;
+
+
 
 -- 💳 CREDIT TRANSACTIONS DUMMY
 INSERT INTO clearsky.credit_transaction (institution_id, amount, tx_type, description, reference, created_by, created_at)
@@ -69,14 +75,6 @@ VALUES
 
 -- 🧹 Delete previous grades for this student
 DELETE FROM clearsky.grade WHERE user_am = 103;
-
--- 📘 COURSES
-INSERT INTO clearsky.course (id, code, title, exam_period, description, instructor_id, institution_id)
-VALUES 
-(101, 'CS101', 'Intro to Computer Science', 'Spring 2024', 'Introduction to computing, programming fundamentals, and problem-solving.', 102, 1),
-(102, 'CS102', 'Data Structures', 'Spring 2024', 'Covers arrays, linked lists, stacks, queues, trees, graphs, and algorithm analysis.', 102, 1),
-(103, 'CS103', 'Algorithms', 'Spring 2024', 'Covers sorting, searching, and algorithm design and analysis.', 102, 1)
-ON CONFLICT DO NOTHING;
 
 -- 🧾 GRADE BATCHES
 INSERT INTO clearsky.grade_batch (id, course_id, uploader_id, type)
@@ -93,71 +91,85 @@ VALUES
 ('INITIAL', 92, 103, 102, 2, 'FINAL'),
 ('INITIAL', 90, 103, 103, 3, 'FINAL');
 
+-- 📌 GRADE BATCH for CS103
+INSERT INTO clearsky.grade_batch (id, course_id, uploader_id, type)
+VALUES (4, 103, 102, 'INITIAL')
+ON CONFLICT DO NOTHING;
 
 
--- --  📌 USERS
---  INSERT INTO clearsky.users (id, username, email, full_name, role, institution_id)
---  VALUES
---  (1, 'jdoe', 'jdoe@ntua.gr', 'John Doe', 'INSTRUCTOR', 1);
+-- 🔁 Καθάρισε παλιά δεδομένα για CS103
+DELETE FROM clearsky.grade WHERE course_id = 103;
+DELETE FROM clearsky.grade_batch WHERE id = 4;
 
--- INSERT INTO clearsky.course (id, code, title, instructor_id, institution_id)
--- VALUES (
---   3205,                      -- course_id from Excel
---   'CS3205',                  -- your internal course code
---   'Τεχνολογία Λογισμικού',   -- title from your spreadsheet
---   1,                         -- instructor_id (placeholder, must exist in users)
---   1                          -- institution_id (placeholder, must exist in institution)
--- );
+-- 📦 Grade batch για CS103
+INSERT INTO clearsky.grade_batch (id, course_id, uploader_id, type)
+VALUES (4, 103, 102, 'INITIAL')
+ON CONFLICT DO NOTHING;
 
+-- 👤 Δημιουργία φοιτητών με user_am 401–410
+DO $$
+DECLARE
+  i INT;
+BEGIN
+  FOR i IN 1..10 LOOP
+    INSERT INTO clearsky.users (id, username, email, full_name, role, institution_id, am)
+    VALUES (
+      300 + i, -- id
+      'student' || i,
+      'student' || i || '@demo.edu',
+      'Student ' || i,
+      'STUDENT',
+      1,
+      400 + i  -- am
+    )
+    ON CONFLICT DO NOTHING;
 
+    INSERT INTO clearsky.auth_account (user_id, provider, provider_uid, password_hash)
+    VALUES (
+      300 + i,
+      'LOCAL',
+      'student' || i || '@demo.edu',
+      '$2b$10$XButviiFJj1ReOWa6E6mcOvAefg37Jza9ppQBuKH7IvtMN9SjrHMC'
+    )
+    ON CONFLICT DO NOTHING;
 
+    RAISE NOTICE '👤 Created user % with AM %', 300 + i, 400 + i;
+  END LOOP;
+END $$;
 
--- (2, 'maria', 'maria@uoc.gr', 'Maria Papadaki', 'STUDENT', 2),
--- (3, 'student1', 'student1@ntua.gr', 'Student One', 'STUDENT', 1);
+-- 🔁 Επανεισαγωγή ποικιλίας βαθμών για CS103 (course_id = 103)
+DELETE FROM clearsky.grade WHERE course_id = 103;
 
--- -- 📌 AUTH ACCOUNTS
--- INSERT INTO clearsky.auth_account (user_id, provider, provider_uid)
--- VALUES
--- (1, 'GOOGLE', 'google-uid-1'),
--- (2, 'GOOGLE', 'google-uid-2'),
--- (3, 'LOCAL', 'student1');
+DO $$
+DECLARE
+  student_ams INT[] := ARRAY[401,402,403,404,405,406,407,408,409,410];
+  values_list INT[] := ARRAY[91, 75, 68, 45, 80, 55, 88, 72, 60, 95];
+  q1 INT[] := ARRAY[9, 7, 6, 4, 8, 5, 9, 7, 6, 10];
+  q2 INT[] := ARRAY[10, 8, 7, 3, 9, 4, 9, 8, 5, 10];
+  q3 INT[] := ARRAY[9, 6, 7, 2, 8, 4, 10, 6, 5, 9];
+  q4 INT[] := ARRAY[10, 7, 6, 5, 8, 3, 9, 7, 6, 10];
+  i INT;
+BEGIN
+  FOR i IN 1..10 LOOP
+    INSERT INTO clearsky.grade (
+      type, value, user_am, course_id, grade_batch_id, status, detailed_grade_json
+    )
+    VALUES (
+      'INITIAL',
+      values_list[i],
+      student_ams[i],
+      103,
+      4,
+      'FINAL',
+      jsonb_build_object(
+        'Q1', q1[i],
+        'Q2', q2[i],
+        'Q3', q3[i],
+        'Q4', q4[i]
+      )
+    );
 
--- -- 📌 COURSES
--- INSERT INTO clearsky.course (id, code, title, instructor_id, institution_id)
--- VALUES
--- (1, 'CS101', 'Intro to CS', 1, 1),
--- (2, 'CS102', 'Algorithms', 1, 1);
-
--- -- 📌 TEACHES (extra link)
--- INSERT INTO clearsky.teaches (user_id, course_id)
--- VALUES
--- (1, 1), (1, 2);
-
--- -- 📌 GRADE BATCHES
--- INSERT INTO clearsky.grade_batch (id, course_id, uploader_id, type)
--- VALUES
--- (1, 1, 1, 'INITIAL');
-
--- -- 📌 GRADES
--- INSERT INTO clearsky.grade (type, value, user_id, course_id, grade_batch_id)
--- VALUES
--- ('INITIAL', 85, 2, 1, 1),
--- ('INITIAL', 90, 3, 1, 1);
-
--- -- 📌 CREDIT CONSUMPTION (manually simulate what trigger does)
--- INSERT INTO clearsky.credit_transaction (institution_id, amount, tx_type, description, reference, created_by)
--- VALUES
--- (1, -1, 'CONSUME', 'Initial grades upload', '1_2025_INITIAL', 1);
-
--- -- 📌 REVIEW REQUEST
--- INSERT INTO clearsky.review_request (grade_id, message, user_id)
--- VALUES (1, 'Please review my grade', 2);
-
--- -- 📌 REVIEW RESPONSE
--- INSERT INTO clearsky.review_response (review_request_id, responder_id, message)
--- VALUES (1, 1, 'Reviewed and accepted.');
-
--- Resync ID sequence to avoid conflict with SERIAL inserts
--- SELECT setval('clearsky.users_id_seq', (SELECT MAX(id) FROM clearsky.users));
-
+    RAISE NOTICE '✅ Inserted grade % for student %', values_list[i], student_ams[i];
+  END LOOP;
+END $$;
 

@@ -43,6 +43,7 @@ exports.getCoursesForInstructor = async (req, res) => {
 
   const query = `
     SELECT 
+      c.id,
       c.title AS course_name,
       c.exam_period,
       c.description,

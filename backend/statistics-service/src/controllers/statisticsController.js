@@ -90,6 +90,68 @@ exports.getWithCourseInfo = async (req, res) => {
   }
 };
 
+// 🔢 Ολική κατανομή βαθμών
+exports.getTotalDistribution = async (req, res) => {
+  const { courseId } = req.params;
+  console.log('[getTotalDistribution]', { courseId });
+
+  try {
+    const query = `
+      SELECT LEAST(GREATEST(FLOOR(value / 10.0) + 1, 1), 10) AS grade, COUNT(*) AS count
+      FROM clearsky.grade
+      WHERE course_id = $1 AND type = 'INITIAL'
+      GROUP BY grade
+      ORDER BY grade;
+    `;
+
+    const { rows } = await pool.query(query, [courseId]);
+
+    const result = Array.from({ length: 10 }, (_, i) => {
+      const found = rows.find(r => parseInt(r.grade) === i + 1);
+      return { grade: i + 1, count: found ? parseInt(found.count) : 0 };
+    });
+
+    res.json(result);
+  } catch (err) {
+    console.error('[getTotalDistribution] DB error:', err.stack);
+    res.status(500).json({ error: 'Failed to retrieve grade distribution.' });
+  }
+};
+
+
+// 🔍 Κατανομή για συγκεκριμένη ερώτηση
+exports.getQuestionDistribution = async (req, res) => {
+  const { courseId, question } = req.params;
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT
+        CAST(detailed_grade_json->>$1 AS INTEGER) AS grade,
+        COUNT(*) AS count
+      FROM clearsky.grade
+      WHERE course_id = $2 AND type = 'INITIAL'
+        AND detailed_grade_json->>$1 IS NOT NULL
+      GROUP BY grade
+      ORDER BY grade
+      `,
+      [question, courseId]
+    );
+
+    // Δεν συμπληρώνουμε εδώ με 0s γιατί οι ερωτήσεις δεν έχουν πάντα 0–10
+    const distribution = result.rows.map(r => ({
+      grade: parseInt(r.grade),
+      count: parseInt(r.count),
+    }));
+
+    res.json(distribution);
+  } catch (err) {
+    console.error('[getQuestionDistribution] DB error:', err.stack);
+    res.status(500).json({ error: 'Failed to fetch question distribution' });
+  }
+};
+
+
 // POST /statistics/recalculate/:courseId/:type
 exports.recalculateStatistics = async (req, res) => {
   const { courseId, type } = req.params;
