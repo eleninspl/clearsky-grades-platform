@@ -3,9 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import './AllCourses.css';
 import Navbar from './InstNavbar.jsx';
 import { useInstructorCourses } from '../../hooks/useInstructorCourses';
+import SimpleBarChart from '../../components/SimpleBarChart';
+import { useCourseStatistics } from '../../hooks/useCourseStatistics';
+
 
 function AllCourses() {
   const [selectedCourse, setSelectedCourse] = useState(null);
+  
+  const { statistics } = useCourseStatistics(selectedCourse?.id);
+  const totalStats = statistics?.find((s) => s.label === 'total');
+  const questionStats = statistics?.filter((s) => s.label !== 'total');
+
   const navigate = useNavigate();
 
   const { courses, loading, error } = useInstructorCourses();
@@ -77,22 +85,21 @@ function AllCourses() {
                 <div className="courses-popup-charts">
                   <h4>Course Statistics</h4>
                   <div className="courses-charts-grid">
-                    {['total', 'Q1', 'Q2', 'Q3', 'Q4'].map((label, idx) => (
-                      <div
-                        key={label}
-                        className={
-                          idx === 0
-                            ? 'courses-chart-cell courses-chart-large'
-                            : 'courses-chart-cell'
-                        }
-                      >
-                        <div className="courses-chart-title">
-                          {selectedCourse.course_name} - {label}
+                    <div className="courses-chart-cell courses-chart-large">
+                      <div className="courses-chart-title">{selectedCourse.course_name} – Total</div>
+                      <SimpleBarChart data={totalStats?.data || []} />
+                    </div>
+
+                    <div className="question-charts-group">
+                      {questionStats.map((stat) => (
+                        <div className="courses-chart-cell" key={stat.label}>
+                          <div className="courses-chart-title">{selectedCourse.course_name} – {stat.label}</div>
+                          <SimpleBarChart data={stat.data} />
                         </div>
-                        <div className="courses-chart-placeholder">[Chart Placeholder]</div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
+
                 </div>
               </div>
             </div>

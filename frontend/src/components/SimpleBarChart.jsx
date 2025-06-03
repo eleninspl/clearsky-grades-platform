@@ -10,9 +10,9 @@ import {
   LabelList
 } from 'recharts';
 
-const SimpleBarChart = ({ data }) => {
+const SimpleBarChart = ({ data, height = 200 }) => {
   return (
-    <ResponsiveContainer width="100%" height={200}>
+    <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="label" />

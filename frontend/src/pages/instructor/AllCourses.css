@@ -245,10 +245,41 @@ body, .course-statistics-container, .course-statistics-title, .course-statistics
 
 .courses-charts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: 2.5fr 3fr;
+  gap: 16px;
+  align-items: start;
+  margin-top: 24px;
 }
 
 .courses-table-row {
   transition: background-color 0.2s;
+}
+
+.courses-chart-cell {
+  min-width: 320px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.courses-chart-large {
+  grid-column: 1 / 2;
+  grid-row: 1 / span 2;
+}
+
+.courses-chart-title {
+  font-size: 1.08rem;
+  color: #444;
+  margin-bottom: 8px;
+}
+
+.question-charts-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 4px;
 }

@@ -70,19 +70,25 @@ function InstDashboard() {
         </div>
 
         <div className="stats-charts-grid">
-          <div className="stats-chart-cell stats-chart-large">
-            <h3>{selectedCourseName} – Total Distribution</h3>
-            <SimpleBarChart data={totalStats.data} />
+          {totalStats && totalStats.data && (
+            <div className="stats-chart-cell stats-chart-large">
+              <h3>{selectedCourseName} – Total Distribution</h3>
+              <SimpleBarChart data={totalStats.data} height={300} />
           </div>
-
+        )}
+        {questionStats.length > 0 && (
           <div className="question-charts-group">
             {questionStats.map((stat) => (
-              <div key={stat.label} className="stats-chart-cell">
-                <h4>{selectedCourseName} – {stat.label}</h4>
-                <SimpleBarChart data={stat.data} />
-              </div>
+              stat.data && (
+                <div key={stat.label} className="stats-chart-cell">
+                  <h4>{selectedCourseName} – {stat.label}</h4>
+                  <SimpleBarChart data={stat.data} />
+                </div>
+              )
             ))}
           </div>
+        )}
+
         </div>
       </main>
     </div>
