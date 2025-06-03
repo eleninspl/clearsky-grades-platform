@@ -38,6 +38,38 @@ exports.getCoursesForStudent = async (req, res) => {
   }
 };
 
+exports.getCoursesForInstructor = async (req, res) => {
+  const { id } = req.params;
+
+  const query = `
+    SELECT 
+      c.title AS course_name,
+      c.exam_period,
+      c.description,
+      COALESCE(
+        TO_CHAR(MAX(CASE WHEN gb.type = 'INITIAL' THEN gb.uploaded_at END), 'YYYY-MM-DD'),
+        '-' 
+      ) AS initial_submission,
+      COALESCE(
+        TO_CHAR(MAX(CASE WHEN gb.type = 'FINAL' THEN gb.uploaded_at END), 'YYYY-MM-DD'),
+        '-' 
+      ) AS final_submission
+    FROM clearsky.course c
+    LEFT JOIN clearsky.grade_batch gb ON gb.course_id = c.id
+    WHERE c.instructor_id = $1
+    GROUP BY c.id, c.title, c.exam_period, c.description
+    ORDER BY c.title;
+  `;
+
+  try {
+    const result = await pool.query(query, [id]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('❌ Error fetching instructor course data:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 exports.createCourse = async (req, res) => {
   const { code, title, instructor_id, institution_id } = req.body;
   try {

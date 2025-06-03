@@ -1,56 +1,27 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import './InstDashboard.css';
 import Navbar from './InstNavbar.jsx';
-
-const courses = [
-  {
-    name: 'physics',
-    period: 'fall 2024',
-    initial: '2025-02-22',
-    final: '2025-02-28',
-  },
-  {
-    name: 'software',
-    period: 'fall 2024',
-    initial: '2025-02-01',
-    final: '',
-  },
-  {
-    name: 'mathematics',
-    period: 'fall 2024',
-    initial: '2025-02-02',
-    final: '2025-02-14',
-  },
-];
-
-const dummyCharts = {
-  physics: [
-    { title: 'physics - spring 2025 - total' },
-    { title: 'physics - spring 2025 - Q1' },
-    { title: 'physics - spring 2025 - Q2' },
-    { title: 'physics - spring 2025 - Q3' },
-    { title: 'physics - spring 2025 - Q4' },
-  ],
-  software: [
-    { title: 'software - spring 2025 - total' },
-    { title: 'software - spring 2025 - Q1' },
-    { title: 'software - spring 2025 - Q2' },
-    { title: 'software - spring 2025 - Q3' },
-    { title: 'software - spring 2025 - Q4' },
-  ],
-  mathematics: [
-    { title: 'mathematics - spring 2025 - total' },
-    { title: 'mathematics - spring 2025 - Q1' },
-    { title: 'mathematics - spring 2025 - Q2' },
-    { title: 'mathematics - spring 2025 - Q3' },
-    { title: 'mathematics - spring 2025 - Q4' },
-  ],
-};
+import { useInstructorCourses } from '../../hooks/useInstructorCourses';
 
 function InstDashboard() {
-  const [selectedCourse, setSelectedCourse] = useState(courses[0].name);
-  const navigate = useNavigate();
+  const { courses, loading, error } = useInstructorCourses();
+  const [selectedCourse, setSelectedCourse] = useState(null);
+
+  useEffect(() => {
+    if (courses.length > 0 && !selectedCourse) {
+      setSelectedCourse(courses[0].course_name);
+    }
+  }, [courses]);
+
+  // Dummy charts generator based on course name
+  const dummyCharts = Object.fromEntries(
+    courses.map(course => [
+      course.course_name,
+      ['total', 'Q1', 'Q2', 'Q3', 'Q4'].map(label => ({
+        title: `${course.course_name} - ${course.exam_period || 'N/A'} - ${label}`,
+      }))
+    ])
+  );
 
   return (
     <div className="stats-container">
@@ -58,54 +29,62 @@ function InstDashboard() {
       <main className="stats-main">
         <div className="stats-table-section">
           <div className="stats-header">
-            <h2 className="stats-title">Available course statistics</h2>
-            {/* <button 
-              className="stats-goto-btn"
-              onClick={() => navigate('/instructor/courses')}
-            >
-              Go to my courses
-            </button> */}
+            <h2 className="stats-title">Available Course Statistics</h2>
           </div>
-          <table className="stats-table">
-            <thead>
-              <tr>
-                <th>course name</th>
-                <th>exam period</th>
-                <th>initial grades submission</th>
-                <th>final grades submission</th>
-              </tr>
-            </thead>
-            <tbody>
-              {courses.map((course) => (
-                <tr
-                  key={course.name}
-                  className={selectedCourse === course.name ? 'stats-row-selected' : ''}
-                  onClick={() => setSelectedCourse(course.name)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <td>{course.name}</td>
-                  <td>{course.period}</td>
-                  <td>{course.initial}</td>
-                  <td>{course.final}</td>
+
+          {loading && <p className="stats-loading">Loading courses...</p>}
+          {error && <p className="stats-error">{error}</p>}
+
+          {!loading && !error && courses.length === 0 && (
+            <p className="stats-empty">No courses found for this instructor.</p>
+          )}
+
+          {!loading && !error && courses.length > 0 && (
+            <table className="stats-table">
+              <thead>
+                <tr>
+                  <th>Course Name</th>
+                  <th>Exam Period</th>
+                  <th>Initial Grades Submission</th>
+                  <th>Final Grades Submission</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {courses.map((course) => (
+                  <tr
+                    key={course.course_name}
+                    className={
+                      selectedCourse === course.course_name ? 'stats-row-selected' : ''
+                    }
+                    onClick={() => setSelectedCourse(course.course_name)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <td>{course.course_name}</td>
+                    <td>{course.exam_period || '-'}</td>
+                    <td>{course.initial_submission || '-'}</td>
+                    <td>{course.final_submission || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
+
         <div className="stats-charts-section">
-          {dummyCharts[selectedCourse].map((chart, idx) => (
-            <div
-              key={chart.title}
-              className={
-                idx === 0
-                  ? 'stats-chart-cell stats-chart-large'
-                  : 'stats-chart-cell'
-              }
-            >
-              <div className="stats-chart-title">{chart.title}</div>
-              <div className="stats-chart-placeholder">[Chart Placeholder]</div>
-            </div>
-          ))}
+          {selectedCourse &&
+            (dummyCharts[selectedCourse] || []).map((chart, idx) => (
+              <div
+                key={chart.title}
+                className={
+                  idx === 0
+                    ? 'stats-chart-cell stats-chart-large'
+                    : 'stats-chart-cell'
+                }
+              >
+                <div className="stats-chart-title">{chart.title}</div>
+                <div className="stats-chart-placeholder">[Chart Placeholder]</div>
+              </div>
+            ))}
           <div className="stats-chart-cell stats-chart-ellipsis">
             <div className="stats-chart-placeholder">...</div>
           </div>

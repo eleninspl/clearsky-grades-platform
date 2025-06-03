@@ -15,6 +15,11 @@ export const fetchCoursesByStudentId = async (id) => {
   return res.data;
 };
 
+export const fetchCoursesByInstructorId = async (instructorId) => {
+  const res = await courseAPI.get(`/instructor/${instructorId}`);
+  return res.data;
+};
+
 export const createCourse = async (courseData) => {
   const res = await courseAPI.post('/', courseData);
   return res.data;

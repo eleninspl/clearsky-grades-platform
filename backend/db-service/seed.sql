@@ -50,6 +50,14 @@ VALUES (
   '$2b$10$XButviiFJj1ReOWa6E6mcOvAefg37Jza9ppQBuKH7IvtMN9SjrHMC'
 );
 
+-- 📘 COURSES for instructor with id = 102
+INSERT INTO clearsky.course (id, code, title, exam_period, description, instructor_id, institution_id)
+VALUES 
+(201, 'PHY101', 'Physics I', 'Fall 2024', 'Covers classical mechanics, motion, energy, and basic thermodynamics.', 102, 1),
+(202, 'CS201', 'Software Engineering', 'Fall 2024', 'Focuses on software development lifecycle, agile methods, and system design.', 102, 1),
+(203, 'MATH101', 'Mathematics I', 'Fall 2024', 'Introduction to linear algebra, calculus, and mathematical reasoning.', 102, 1)
+ON CONFLICT DO NOTHING;
+
 -- 💳 CREDIT TRANSACTIONS DUMMY
 INSERT INTO clearsky.credit_transaction (institution_id, amount, tx_type, description, reference, created_by, created_at)
 VALUES 
@@ -63,10 +71,10 @@ VALUES
 DELETE FROM clearsky.grade WHERE user_am = 103;
 
 -- 📘 COURSES
-INSERT INTO clearsky.course (id, code, title, instructor_id, institution_id)
+INSERT INTO clearsky.course (id, code, title, exam_period, description, instructor_id, institution_id)
 VALUES 
-(101, 'CS101', 'Intro to Computer Science', 102, 1),
-(102, 'CS102', 'Data Structures', 102, 1)
+(101, 'CS101', 'Intro to Computer Science', 'Spring 2024', 'Introduction to computing, programming fundamentals, and problem-solving.', 102, 1),
+(102, 'CS102', 'Data Structures', 'Spring 2024', 'Covers arrays, linked lists, stacks, queues, trees, graphs, and algorithm analysis.', 102, 1)
 ON CONFLICT DO NOTHING;
 
 -- 🧾 GRADE BATCHES

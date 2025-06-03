@@ -78,6 +78,8 @@ CREATE TABLE course (
     id             SERIAL PRIMARY KEY,
     code           VARCHAR(10)  NOT NULL UNIQUE,
     title          VARCHAR(50)  NOT NULL,
+    exam_period    VARCHAR(20),
+    description    TEXT,
     instructor_id  INTEGER      NOT NULL,
     institution_id INTEGER      NOT NULL,
     created_at     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
