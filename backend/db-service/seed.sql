@@ -74,21 +74,24 @@ DELETE FROM clearsky.grade WHERE user_am = 103;
 INSERT INTO clearsky.course (id, code, title, exam_period, description, instructor_id, institution_id)
 VALUES 
 (101, 'CS101', 'Intro to Computer Science', 'Spring 2024', 'Introduction to computing, programming fundamentals, and problem-solving.', 102, 1),
-(102, 'CS102', 'Data Structures', 'Spring 2024', 'Covers arrays, linked lists, stacks, queues, trees, graphs, and algorithm analysis.', 102, 1)
+(102, 'CS102', 'Data Structures', 'Spring 2024', 'Covers arrays, linked lists, stacks, queues, trees, graphs, and algorithm analysis.', 102, 1),
+(103, 'CS103', 'Algorithms', 'Spring 2024', 'Covers sorting, searching, and algorithm design and analysis.', 102, 1)
 ON CONFLICT DO NOTHING;
 
 -- 🧾 GRADE BATCHES
 INSERT INTO clearsky.grade_batch (id, course_id, uploader_id, type)
 VALUES
 (1, 101, 102, 'INITIAL'),
-(2, 102, 102, 'INITIAL')
+(2, 102, 102, 'INITIAL'),
+(3, 103, 102, 'INITIAL')
 ON CONFLICT DO NOTHING;
 
 -- ✅ GRADES για student@demo.edu
 INSERT INTO clearsky.grade (type, value, user_am, course_id, grade_batch_id, status)
 VALUES
 ('INITIAL', 86, 103, 101, 1, 'FINAL'),
-('INITIAL', 92, 103, 102, 2, 'FINAL');
+('INITIAL', 92, 103, 102, 2, 'FINAL'),
+('INITIAL', 90, 103, 103, 3, 'FINAL');
 
 
 
