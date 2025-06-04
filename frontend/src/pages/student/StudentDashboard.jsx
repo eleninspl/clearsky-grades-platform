@@ -1,15 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import './StudentDashboard.css';
 import StudentNavbar from './StudentNavbar';
-import SimpleBarChart from '../../components/SimpleBarChart';
 import CourseCharts from '../../components/CourseCharts';
-import { useNavigate } from 'react-router-dom';
-import useStudentGrades from '../../hooks/useStudentGrades';
+import { fetchGradesByStudentId } from '../../api/grades';
+import { useAuth } from '../../auth/AuthContext';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
 
 function StudentDashboard() {
-  const navigate = useNavigate();
-  const { grades, loading, error } = useStudentGrades();
+  const { user } = useAuth();
+  const [grades, setGrades] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const loadGrades = async () => {
+      try {
+        const data = await fetchGradesByStudentId(user.id);
+        setGrades(data);
+      } catch (err) {
+        console.error('❌ Failed to fetch grades:', err);
+        setError(err.message || 'Error fetching grades');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadGrades();
+  }, [user]);
 
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
@@ -26,9 +45,6 @@ function StudentDashboard() {
     loading: statsLoading,
     error: statsError,
   } = useCourseStatistics(selectedCourseId);
-
-  const totalStats = statistics.find((s) => s.label === 'total');
-  const questionStats = statistics.filter((s) => s.label !== 'total');
 
   return (
     <div className="student-dashboard-container">

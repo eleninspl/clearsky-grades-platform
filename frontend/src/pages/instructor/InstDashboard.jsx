@@ -1,13 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import './InstDashboard.css';
 import Navbar from './InstNavbar.jsx';
-import SimpleBarChart from '../../components/SimpleBarChart';
 import CourseCharts from '../../components/CourseCharts.jsx';
-import { useInstructorCourses } from '../../hooks/useInstructorCourses';
+import { fetchCoursesByInstructorId } from '../../api/course';
+import { useAuth } from '../../auth/AuthContext';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
 
 function InstDashboard() {
-  const { courses, loading, error } = useInstructorCourses();
+
+  const { user } = useAuth();
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const loadCourses = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchCoursesByInstructorId(user.id);
+        setCourses(data);
+      } catch (err) {
+        console.error('❌ Failed to load instructor courses:', err);
+        setError('Could not load instructor courses.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCourses();
+  }, [user?.id]);
+ 
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [selectedCourseName, setSelectedCourseName] = useState('');
   const { statistics, loading: statsLoading } = useCourseStatistics(selectedCourseId);
@@ -18,9 +42,6 @@ function InstDashboard() {
       setSelectedCourseName(courses[0].course_name);
     }
   }, [courses]);
-
-  const totalStats = statistics.find((s) => s.label === 'total');
-  const questionStats = statistics.filter((s) => s.label !== 'total');
 
   return (
     <div className="stats-container">

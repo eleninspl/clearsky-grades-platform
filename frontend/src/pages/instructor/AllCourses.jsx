@@ -1,23 +1,40 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import './AllCourses.css';
 import Navbar from './InstNavbar.jsx';
-import { useInstructorCourses } from '../../hooks/useInstructorCourses';
-import SimpleBarChart from '../../components/SimpleBarChart';
+import { fetchCoursesByInstructorId } from '../../api/course';
+import { useAuth } from '../../auth/AuthContext';
 import CourseCharts from '../../components/CourseCharts';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
 
 
 function AllCourses() {
   const [selectedCourse, setSelectedCourse] = useState(null);
-  
   const { statistics } = useCourseStatistics(selectedCourse?.id);
-  const totalStats = statistics?.find((s) => s.label === 'total');
-  const questionStats = statistics?.filter((s) => s.label !== 'total');
 
-  const navigate = useNavigate();
-
-  const { courses, loading, error } = useInstructorCourses();
+  const { user } = useAuth();
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  useEffect(() => {
+    if (!user?.id) return;
+  
+    const loadCourses = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchCoursesByInstructorId(user.id);
+        setCourses(data);
+      } catch (err) {
+        console.error('❌ Failed to load instructor courses:', err);
+        setError('Could not load instructor courses.');
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    loadCourses();
+  }, [user?.id]);
+  
 
   const handleCourseClick = (course) => {
     setSelectedCourse(course);

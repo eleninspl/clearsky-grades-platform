@@ -1,12 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './StudentMyCourses.css';
 import StudentNavbar from './StudentNavbar';
-import useStudentGrades from '../../hooks/useStudentGrades';
+import { fetchGradesByStudentId } from '../../api/grades';
+import { useAuth } from '../../auth/AuthContext';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
 import SimpleBarChart from '../../components/SimpleBarChart';
 
 function StudentMyCourses() {
-  const { grades, loading, error } = useStudentGrades();
+  const { user } = useAuth();
+  const [grades, setGrades] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const loadGrades = async () => {
+      try {
+        const data = await fetchGradesByStudentId(user.id);
+        setGrades(data);
+      } catch (err) {
+        console.error('❌ Failed to fetch grades:', err);
+        setError(err.message || 'Error fetching grades');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadGrades();
+  }, [user]);
+
   const [activeReviewCourse, setActiveReviewCourse] = useState(null);
   const [activeGradeCourse, setActiveGradeCourse] = useState(null);
   const [activeStatusCourse, setActiveStatusCourse] = useState(null);
