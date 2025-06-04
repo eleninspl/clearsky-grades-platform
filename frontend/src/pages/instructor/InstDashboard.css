@@ -236,32 +236,9 @@ body, .course-statistics-container, .course-statistics-title, .course-statistics
   font-size: 1.2rem;
 }
 
-.stats-charts-grid {
-  display: grid;
-  grid-template-columns: 2.5fr 3fr;
-  gap: 16px;
-  align-items: start;
-}
-
-
 .stats-table tr:hover {
   background-color: #f0f0f0;
   transition: background-color 0.2s;
 } 
 
-.stats-chart-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 ανά σειρά */
-  gap: 16px;
-  margin-top: 12px;
-}
-
-.question-charts-group {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* δύο ανά σειρά */
-  gap: 16px;
-  max-height: 600px;
-  overflow-y: auto;
-  padding-right: 4px; /* για να μην ακουμπάει στο scrollbar */
-}
 

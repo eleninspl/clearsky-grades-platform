@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './InstDashboard.css';
 import Navbar from './InstNavbar.jsx';
 import SimpleBarChart from '../../components/SimpleBarChart';
+import CourseCharts from '../../components/CourseCharts.jsx';
 import { useInstructorCourses } from '../../hooks/useInstructorCourses';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
 
@@ -68,28 +69,9 @@ function InstDashboard() {
             </table>
           )}
         </div>
-
-        <div className="stats-charts-grid">
-          {totalStats && totalStats.data && (
-            <div className="stats-chart-cell stats-chart-large">
-              <h3>{selectedCourseName} – Total Distribution</h3>
-              <SimpleBarChart data={totalStats.data} height={300} />
-          </div>
+        {selectedCourseId && statistics.length > 0 && (
+          <CourseCharts courseName={selectedCourseName} statistics={statistics} />
         )}
-        {questionStats.length > 0 && (
-          <div className="question-charts-group">
-            {questionStats.map((stat) => (
-              stat.data && (
-                <div key={stat.label} className="stats-chart-cell">
-                  <h4>{selectedCourseName} – {stat.label}</h4>
-                  <SimpleBarChart data={stat.data} />
-                </div>
-              )
-            ))}
-          </div>
-        )}
-
-        </div>
       </main>
     </div>
   );

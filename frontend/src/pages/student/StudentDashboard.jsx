@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './StudentDashboard.css';
 import StudentNavbar from './StudentNavbar';
 import SimpleBarChart from '../../components/SimpleBarChart';
+import CourseCharts from '../../components/CourseCharts';
 import { useNavigate } from 'react-router-dom';
 import useStudentGrades from '../../hooks/useStudentGrades';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
@@ -77,41 +78,9 @@ function StudentDashboard() {
             </table>
           )}
         </div>
-
-        {/* 📊 Charts Section */}
-        <div className="stats-charts-grid">
-          {selectedCourseId && statsLoading && (
-            <p className="student-dashboard-chart-loading">Loading statistics...</p>
-          )}
-          {selectedCourseId && statsError && (
-            <p className="student-dashboard-chart-error">{statsError}</p>
-          )}
-          {selectedCourseId && !statsLoading && statistics.length > 0 && (
-            <>
-              {/* Total Chart */}
-              {totalStats && (
-                <div className="stats-chart-cell stats-chart-large">
-                  <h3 className="stats-chart-title">{selectedCourse} – Total Distribution</h3>
-                  <SimpleBarChart data={totalStats.data} height={300} />
-                </div>
-              )}
-
-              {/* Per Question Charts */}
-              {questionStats.length > 0 && (
-                <div className="question-charts-group">
-                  {questionStats.map((stat) => (
-                    <div key={stat.label} className="stats-chart-cell">
-                      <h4 className="stats-chart-title">
-                        {selectedCourse} – {stat.label}
-                      </h4>
-                      <SimpleBarChart data={stat.data} height={160} />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </div>
+        {selectedCourseId && !statsLoading && statistics.length > 0 && (
+          <CourseCharts courseName={selectedCourse} statistics={statistics} />
+        )}
       </main>
     </div>
   );

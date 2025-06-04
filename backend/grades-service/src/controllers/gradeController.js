@@ -31,13 +31,13 @@ exports.getGradesByStudent = async (req, res) => {
         g.grade_batch_id,
         g.course_id,                  
         c.code AS course_code, 
-        c.title AS course_title
+        c.title AS course_title,
+        g.detailed_grade_json
       FROM clearsky.grade g
       JOIN clearsky.course c ON g.course_id = c.id
       WHERE g.user_am = $1
       ORDER BY c.code, g.type
     `, [id]);
-    
 
     res.json(result.rows);
   } catch (err) {
@@ -45,6 +45,7 @@ exports.getGradesByStudent = async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 };
+
 
 exports.createGrade = async (req, res) => {
   const { type, value, user_id, course_id, grade_batch_id } = req.body;

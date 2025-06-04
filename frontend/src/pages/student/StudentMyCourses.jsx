@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import './StudentMyCourses.css';
 import StudentNavbar from './StudentNavbar';
 import useStudentGrades from '../../hooks/useStudentGrades';
+import { useCourseStatistics } from '../../hooks/useCourseStatistics';
+import SimpleBarChart from '../../components/SimpleBarChart';
 
 function StudentMyCourses() {
   const { grades, loading, error } = useStudentGrades();
@@ -9,6 +11,13 @@ function StudentMyCourses() {
   const [activeGradeCourse, setActiveGradeCourse] = useState(null);
   const [activeStatusCourse, setActiveStatusCourse] = useState(null);
   const [reviewComments, setReviewComments] = useState({});
+
+  const courseId = grades.find(c => c.course_title === activeGradeCourse)?.course_id || null;
+  const {
+    statistics,
+    loading: statsLoading,
+    error: statsError,
+  } = useCourseStatistics(courseId);
 
   const handleSubmit = (courseName) => {
     alert(`Review submitted for ${courseName}:\n${reviewComments[courseName] || ''}`);
@@ -103,27 +112,50 @@ function StudentMyCourses() {
 
             {activeGradeCourse && (
               <div className="student-courses-grade-wrapper">
-                <h3 className="student-courses-grade-title">
-                  My Grades – {activeGradeCourse}
-                </h3>
                 <div className="student-courses-grade-grid">
                   <div className="student-courses-grade-box">
-                    <h4>My Grades</h4>
+                    <h4>My Grades – {activeGradeCourse}</h4>
                     <div className="student-courses-grade-labels">
                       <label>Total</label>
                       <input type="text" readOnly value={grades.find(c => c.course_title === activeGradeCourse)?.grade || ''} />
-                      <label>Q1</label>
-                      <input type="text" readOnly value="–" />
-                      <label>Q2</label>
-                      <input type="text" readOnly value="–" />
-                      <label>Q3</label>
-                      <input type="text" readOnly value="–" />
+                      {Object.entries(grades.find(c => c.course_title === activeGradeCourse)?.detailed_grade_json || {}).map(([key, val]) => (
+                        <React.Fragment key={key}>
+                          <label>{key.toUpperCase()}</label>
+                          <input type="text" readOnly value={val} />
+                        </React.Fragment>
+                      ))}
                     </div>
                   </div>
                   <div className="student-courses-grade-chartbox">
-                    <h4>{activeGradeCourse} – Total</h4>
-                    <div className="student-courses-grade-chart-placeholder">[Chart Placeholder]</div>
+                    <h4>{activeGradeCourse} – Statistics</h4>
+
+                    {statsLoading && <p>Loading charts...</p>}
+                    {statsError && <p>{statsError}</p>}
+
+                    {!statsLoading && statistics?.length > 0 && (
+                      <div className="student-courses-charts-scroll">
+                        {/* Total Chart */}
+                        <div className="chart-card">
+                          <h5>Total</h5>
+                          <SimpleBarChart
+                            data={statistics.find((s) => s.label === 'total')?.data || []}
+                            height={280}
+                          />
+                        </div>
+
+                        {/* Per-Question Charts */}
+                        {statistics
+                          .filter((s) => s.label !== 'total')
+                          .map((stat) => (
+                            <div key={stat.label} className="chart-card">
+                              <h5>{stat.label}</h5>
+                              <SimpleBarChart data={stat.data} height={280} />
+                            </div>
+                          ))}
+                      </div>
+                    )}
                   </div>
+
                 </div>
               </div>
             )}

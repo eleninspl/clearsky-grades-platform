@@ -4,6 +4,7 @@ import './AllCourses.css';
 import Navbar from './InstNavbar.jsx';
 import { useInstructorCourses } from '../../hooks/useInstructorCourses';
 import SimpleBarChart from '../../components/SimpleBarChart';
+import CourseCharts from '../../components/CourseCharts';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
 
 
@@ -84,22 +85,7 @@ function AllCourses() {
                 </div>
                 <div className="courses-popup-charts">
                   <h4>Course Statistics</h4>
-                  <div className="courses-charts-grid">
-                    <div className="courses-chart-cell courses-chart-large">
-                      <div className="courses-chart-title">{selectedCourse.course_name} – Total</div>
-                      <SimpleBarChart data={totalStats?.data || []} />
-                    </div>
-
-                    <div className="question-charts-group">
-                      {questionStats.map((stat) => (
-                        <div className="courses-chart-cell" key={stat.label}>
-                          <div className="courses-chart-title">{selectedCourse.course_name} – {stat.label}</div>
-                          <SimpleBarChart data={stat.data} />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
+                  <CourseCharts courseName={selectedCourse?.course_name} statistics={statistics} />
                 </div>
               </div>
             </div>

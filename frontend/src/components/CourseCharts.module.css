@@ -1,0 +1,35 @@
+.chartsGrid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 12px;
+    margin-top: 24px;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+  
+  .chartCard {
+    min-width: 320px;
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .largeChart {
+    grid-column: 1 / 2;
+    grid-row: 1 / span 2;
+    height: 100%;
+  }
+  
+  .chartTitle {
+    font-size: 1.08rem;
+    color: #444;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  
