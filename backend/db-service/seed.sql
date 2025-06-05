@@ -87,9 +87,9 @@ ON CONFLICT DO NOTHING;
 -- ✅ GRADES για student@demo.edu
 INSERT INTO clearsky.grade (type, value, user_am, course_id, grade_batch_id, status)
 VALUES
-('INITIAL', 86, 103, 101, 1, 'FINAL'),
-('INITIAL', 92, 103, 102, 2, 'FINAL'),
-('INITIAL', 90, 103, 103, 3, 'FINAL');
+('INITIAL', 86, 103, 101, 1, 'OPEN'),
+('INITIAL', 92, 103, 102, 2, 'VOID'),
+('INITIAL', 90, 103, 103, 3, 'OPEN');
 
 -- 📌 GRADE BATCH for CS103
 INSERT INTO clearsky.grade_batch (id, course_id, uploader_id, type)
@@ -160,7 +160,7 @@ BEGIN
       student_ams[i],
       103,
       4,
-      'FINAL',
+      'OPEN',
       jsonb_build_object(
         'Q1', q1[i],
         'Q2', q2[i],
@@ -181,7 +181,7 @@ VALUES (
   103,
   103,
   4,
-  'FINAL',
+  'OPEN',
   jsonb_build_object(
     'Q1', 9,
     'Q2', 8,

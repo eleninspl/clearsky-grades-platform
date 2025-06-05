@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import './StudentMyCourses.css';
 import StudentNavbar from './StudentNavbar';
 import { fetchGradesByStudentId } from '../../api/grades';
+import { submitReviewRequest } from '../../api/reviews';
 import { useAuth } from '../../auth/AuthContext';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
 import SimpleBarChart from '../../components/SimpleBarChart';
+
 
 function StudentMyCourses() {
   const { user } = useAuth();
@@ -42,11 +44,40 @@ function StudentMyCourses() {
     error: statsError,
   } = useCourseStatistics(courseId);
 
-  const handleSubmit = (courseName) => {
-    alert(`Review submitted for ${courseName}:\n${reviewComments[courseName] || ''}`);
-    setActiveReviewCourse(null);
+  const handleSubmit = async (courseName) => {
+    const gradeObj = grades.find(
+      (g) => g.course_title === courseName && g.type === 'INITIAL'
+    );
+  
+    if (!gradeObj) {
+      alert('No INITIAL grade found for this course.');
+      return;
+    }
+  
+    try {
+      await submitReviewRequest({
+        grade_id: gradeObj.grade_id, // ✅ από το backend
+        user_id: user.id,            // ✅ από context
+        message: reviewComments[courseName] || ''
+      });
+  
+      alert('✅ Review request submitted successfully!');
+      setActiveReviewCourse(null);
+    } catch (err) {
+      console.error('❌ Failed to submit review:', err);
+      alert(`Σφάλμα: ${err.response?.data?.error || err.message}`);
+    }
   };
-
+  
+    // Ομαδοποίηση βαθμών ανά μάθημα
+    const groupedByCourse = grades.reduce((acc, grade) => {
+      const key = grade.course_id;
+      if (!acc[key]) acc[key] = { course: grade, initial: null, final: null };
+      if (grade.type === 'INITIAL') acc[key].initial = grade;
+      if (grade.type === 'FINAL') acc[key].final = grade;
+      return acc;
+    }, {});
+    
   return (
     <div className="student-courses-container">
       <StudentNavbar />
@@ -62,41 +93,51 @@ function StudentMyCourses() {
               <thead>
                 <tr>
                   <th>Course</th>
-                  <th>Grade Type</th>
-                  <th>Final Grade</th>
+                  <th>Exam Period</th>
+                  <th>Grading Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {grades.map((course, index) => (
-                  <tr key={index}>
-                    <td>{course.course_title}</td>
-                    <td>{course.type}</td>
-                    <td>{course.grade}</td>
+              {Object.values(groupedByCourse).map(({ course, initial, final }) => {
+                const courseTitle = course.course_title;
+                const examPeriod = course.exam_period;
+                const gradingStatus = initial?.status || final?.status || 'VOID';
+
+                const hasInitialOpen = initial && initial.status === 'OPEN';
+                const hasReview = false; // TODO: Θα γίνει true αν υπάρχει review (θα το φτιάξουμε)
+                
+                return (
+                  <tr key={course.course_id}>
+                    <td>{courseTitle}</td>
+                    <td>{examPeriod}</td>
+                    <td>{gradingStatus.toLowerCase()}</td>
                     <td className="student-courses-actions">
                       <button
                         onClick={() => {
-                          setActiveGradeCourse(activeGradeCourse === course.course_title ? null : course.course_title);
+                          setActiveGradeCourse(activeGradeCourse === courseTitle ? null : courseTitle);
                           setActiveReviewCourse(null);
                           setActiveStatusCourse(null);
                         }}
                       >
-                        View my grade
+                        View my grades
                       </button>
+
                       <button
-                        disabled={course.type !== 'open'}
+                        disabled={!hasInitialOpen || hasReview}
                         onClick={() => {
-                          setActiveReviewCourse(activeReviewCourse === course.course_title ? null : course.course_title);
+                          setActiveReviewCourse(activeReviewCourse === courseTitle ? null : courseTitle);
                           setActiveGradeCourse(null);
                           setActiveStatusCourse(null);
                         }}
                       >
                         Ask for review
                       </button>
+
                       <button
-                        disabled={course.type !== 'closed'}
+                        disabled={!hasReview}
                         onClick={() => {
-                          setActiveStatusCourse(activeStatusCourse === course.course_title ? null : course.course_title);
+                          setActiveStatusCourse(activeStatusCourse === courseTitle ? null : courseTitle);
                           setActiveReviewCourse(null);
                           setActiveGradeCourse(null);
                         }}
@@ -105,7 +146,10 @@ function StudentMyCourses() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                );
+              })}
+
+
               </tbody>
             </table>
 
