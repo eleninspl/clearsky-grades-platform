@@ -57,11 +57,9 @@ VALUES
 (102, 'CS102', 'Data Structures', 'Spring 2024', 'Covers arrays, linked lists, stacks, queues, trees, graphs, and algorithm analysis.', 102, 1),
 (103, 'CS103', 'Algorithms', 'Spring 2024', 'Covers sorting, searching, and algorithm design and analysis.', 102, 1),
 (201, 'PHY101', 'Physics I', 'Fall 2024', 'Covers classical mechanics, motion, energy, and basic thermodynamics.', 102, 1),
-(202, 'CS201', 'Software Engineering', 'Fall 2024', 'Focuses on software development lifecycle, agile methods, and system design.', 102, 1),
+(202, 'CS201', 'Software as a Service', 'Fall 2024', 'Focuses on software development lifecycle, agile methods, and system design.', 102, 1),
 (203, 'MATH101', 'Mathematics I', 'Fall 2024', 'Introduction to linear algebra, calculus, and mathematical reasoning.', 102, 1),
-(3205, 'CS3205', 'Placeholder Course', 'Fall 2024', 'Auto-inserted course for upload test with ID 3205.', 102, 1);
-
-
+(3205, 'CS3205', 'Software Engineering', 'Fall 2024', 'Auto-inserted course for upload test with ID 3205.', 102, 1)
 ON CONFLICT DO NOTHING;
 
 
@@ -191,5 +189,27 @@ VALUES (
     'Q4', 9
   )
 );
+
+DO $$
+BEGIN
+  PERFORM setval(
+    pg_get_serial_sequence('clearsky.users', 'id'),
+    (SELECT MAX(id) FROM clearsky.users)
+  );
+END
+$$;
+
+-- 🛠️ Sync the grade_batch ID sequence to prevent conflicts
+DO $$
+BEGIN
+  PERFORM setval(
+    pg_get_serial_sequence('clearsky.grade_batch', 'id'),
+    (SELECT MAX(id) FROM clearsky.grade_batch)
+  );
+END
+$$;
+
+
+
 
 
