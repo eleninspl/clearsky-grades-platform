@@ -44,7 +44,7 @@ exports.handleUpload = async (req, res) => {
           `INSERT INTO clearsky.grade_batch (
             course_id, uploader_id, type, original_file, uploaded_at
           ) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-          [course_id, 1, batch_type, req.file.originalname, uploaded_at] // uploader_id = 1 placeholder
+          [course_id, 102, batch_type, req.file.originalname, uploaded_at] // uploader_id = 1 placeholder
         );
         grade_batch_id = newBatch.rows[0].id;
       }
@@ -72,12 +72,12 @@ exports.handleUpload = async (req, res) => {
       }
 
       // 4. Insert grade using user_am
-      await client.query(
-        `INSERT INTO clearsky.grade (
-          value, user_am, course_id, grade_batch_id, detailed_grade_json
-        ) VALUES ($1, $2, $3, $4, $5)`,
-        [grade, am, course_id, grade_batch_id, detailed]
-      );
+      await client.query(`
+        INSERT INTO clearsky.grade (
+        value, user_am, course_id, grade_batch_id, detailed_grade_json, type
+        ) VALUES ($1, $2, $3, $4, $5, $6)
+      `, [grade, am, course_id, grade_batch_id, detailed, batch_type]);
+
     }
 
     client.release();

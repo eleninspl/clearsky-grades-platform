@@ -1,10 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './PostInitialGrades.css';
 import Navbar from './InstNavbar.jsx';
+import { uploadInitialGrades } from '../../api/upload'; // ✅ added
 
 function PostInitialGrades() {
   const navigate = useNavigate();
+  const [file, setFile] = useState(null); // ✅ added
+  const [message, setMessage] = useState(''); // ✅ added
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const handleUpload = async () => {
+    if (!file) {
+      setMessage('Please select a file.');
+      return;
+    }
+
+    try {
+      setMessage('Uploading...');
+      const res = await uploadInitialGrades(file); // ✅ call backend
+      setMessage('✅ Upload successful: ' + res.message);
+    } catch (err) {
+      setMessage('❌ Upload failed: ' + (err.response?.data?.error || err.message));
+    }
+  };
 
   const handleConfirm = (e) => {
     e.preventDefault();
@@ -16,13 +38,15 @@ function PostInitialGrades() {
       <Navbar />
       <main className="grades-main">
         <h2 className="instructor-name">Instructor name</h2>
+
         <section className="grades-section">
           <div className="grades-section-title">INITIAL GRADES POSTING</div>
           <div className="grades-upload-row">
-            <input type="file" className="grades-file-input" />
-            <button className="grades-btn">submit initial grades</button>
+            <input type="file" className="grades-file-input" onChange={handleFileChange} /> {/* ✅ added onChange */}
+            <button className="grades-btn" onClick={handleUpload}>submit initial grades</button> {/* ✅ added onClick */}
           </div>
         </section>
+
         <section className="grades-section">
           <div className="grades-section-title">XLSX file parsing</div>
           <form className="grades-parsing-form">
@@ -44,9 +68,10 @@ function PostInitialGrades() {
             </div>
           </form>
         </section>
+
         <section className="grades-message-area">
           <div className="grades-message-title">Message area</div>
-          <div className="grades-message-box"></div>
+          <div className="grades-message-box">{message}</div> {/* ✅ shows success/error */}
         </section>
       </main>
     </div>
