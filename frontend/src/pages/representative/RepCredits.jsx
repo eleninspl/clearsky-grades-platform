@@ -2,11 +2,13 @@ import React from 'react';
 import './RepCredits.css';
 import RepNavbar from './RepNavbar.jsx';
 import { useCredits } from '../../hooks/useCredits';
+import { useNavigate } from 'react-router-dom'; // ✅ added
 
 function RepCredits() {
+  const navigate = useNavigate(); // ✅ added
+
   const { balance, history, loading, error } = useCredits();
 
-  // Ασφαλής υπολογισμός
   const used = history
     .filter(tx => tx.tx_type === 'CONSUME')
     .reduce((acc, tx) => acc + Math.abs(tx.amount), 0);
@@ -22,11 +24,9 @@ function RepCredits() {
         <div className="rep-credits-section">
           <h2 className="rep-credits-title">Credits Management</h2>
 
-          {/* Έλεγχος κατάστασης */}
           {loading && <p>Loading credits...</p>}
           {error && <p className="rep-credits-error">{error}</p>}
 
-          {/* Εμφάνιση μόνο όταν υπάρχουν δεδομένα */}
           {!loading && !error && (
             <div className="rep-credits-grid">
               <div className="rep-credits-card">
@@ -48,7 +48,12 @@ function RepCredits() {
           )}
 
           <div className="rep-credits-actions">
-            <button className="rep-credits-btn">Purchase Credits</button>
+            <button
+              className="rep-credits-btn"
+              onClick={() => navigate('/representative/purchase-credits')} // ✅ correct route
+            >
+              Purchase Credits
+            </button>
             <button className="rep-credits-btn">View Usage History</button>
           </div>
         </div>
