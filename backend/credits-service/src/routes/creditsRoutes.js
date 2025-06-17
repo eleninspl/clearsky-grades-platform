@@ -1,14 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/creditsController');
-const authenticateToken = require('../authMiddleware');
+const authorize = require('../middleware/authorize');
 
 // Μπορείς να βάλεις έλεγχο role εδώ αν θέλεις
 
-router.get('/:institutionId', controller.getBalance);
-router.post('/:institutionId/buy', authenticateToken, controller.buyCredits);
-router.post('/:institutionId/use', authenticateToken, controller.consumeCredit);
+router.get('/:institutionId', authorize(['ADMIN', 'INST_REP']), controller.getBalance);
+router.post('/:institutionId/buy', authorize(['ADMIN', 'INST_REP']), controller.buyCredits);
+router.post('/:institutionId/use', authorize(['ADMIN', 'INST_REP']), controller.consumeCredit);
 
-router.get('/:institutionId/history', authenticateToken, controller.getHistory);
-
+router.get('/:institutionId/history', authorize(['ADMIN', 'INST_REP']), controller.getHistory);
 module.exports = router;

@@ -1,3 +1,4 @@
+-- SQLBook: Code
 -- clearSKY – PostgreSQL schema (v4)
 -- Authentication‑ready version
 -- Updated: 2025‑05‑04 — adds full login/register support for:
@@ -178,6 +179,11 @@ CREATE TABLE review_response (
     response_date   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_resp_rr   FOREIGN KEY (review_request_id) REFERENCES review_request(id) ON DELETE CASCADE,
     CONSTRAINT fk_resp_user FOREIGN KEY (responder_id)     REFERENCES users(id)         ON DELETE CASCADE
+);
+
+CREATE TABLE blacklisted_tokens (
+  token TEXT PRIMARY KEY,
+  expiration TIMESTAMP NOT NULL
 );
 
 -- 9. Functions & triggers -------------------------------------------------

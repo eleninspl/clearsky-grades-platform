@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ctrl = require('../controllers/reviewController');
-const authenticateToken = require('../authMiddleware');
+const authorize = require('../middleware/authorize');
 
 router.get('/requests', ctrl.getAllReviewRequests);
 router.get('/requests/:id', ctrl.getReviewRequestById);

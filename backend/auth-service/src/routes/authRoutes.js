@@ -11,6 +11,10 @@ const router = express.Router();
 // Local signup / login
 router.post('/signup', ctrl.signup);
 router.post('/login',  ctrl.login);
+router.post('/logout',
+  authorize(), // Οποιοσδήποτε αυθεντικοποιημένος χρήστης
+  ctrl.logout
+);
 
 // ───────────────────────────────────────────
 // Google OAuth

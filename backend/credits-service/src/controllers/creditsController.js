@@ -17,29 +17,42 @@ exports.getBalance = async (req, res) => {
 exports.buyCredits = async (req, res) => {
   const { institutionId } = req.params;
   const { amount } = req.body;
-  if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid credit amount' });
+
+  if (!amount || amount <= 0) {
+    return res.status(400).json({ error: 'Invalid credit amount' });
+  }
 
   try {
-    const result = await pool.query(`
-      UPDATE clearsky.institution
-      SET credits_balance = credits_balance + $1
-      WHERE id = $2
-      RETURNING credits_balance
-    `, [amount, institutionId]);
+    const institutionExists = await pool.query(
+      `SELECT id FROM clearsky.institution WHERE id = $1`,
+      [institutionId]
+    );
 
-    if (result.rows.length === 0) return res.status(404).json({ error: 'Institution not found' });
+    if (institutionExists.rowCount === 0) {
+      return res.status(404).json({ error: 'Institution not found' });
+    }
 
-    // Καταγραφή συναλλαγής
-    await pool.query(`
-      INSERT INTO clearsky.credit_transaction (institution_id, amount, tx_type, description)
-      VALUES ($1, $2, 'PURCHASE', 'Buy credits')
-    `, [institutionId, amount]);
+    await pool.query(
+      `INSERT INTO clearsky.credit_transaction (institution_id, amount, tx_type, description)
+       VALUES ($1, $2, 'PURCHASE', 'Buy credits')`,
+      [institutionId, amount]
+    );
 
-    res.json({ message: 'Credits added', new_balance: result.rows[0].credits_balance });
+    const updated = await pool.query(
+      `SELECT credits_balance FROM clearsky.institution WHERE id = $1`,
+      [institutionId]
+    );
+
+    res.json({
+      message: 'Credits added',
+      new_balance: updated.rows[0].credits_balance
+    });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Database error' });
   }
 };
+
 
 exports.consumeCredit = async (req, res) => {
   const { institutionId } = req.params;

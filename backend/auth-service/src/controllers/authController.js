@@ -61,32 +61,37 @@ exports.login = [
   }
 ];
 
+exports.logout = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
 
-// /* POST /auth/users          (δημιουργεί INSTRUCTOR ή INST_REP) */
-// exports.createUserByRole = async (req, res, next) => {
-//   const creator = req.user;                         // από authorize
-//   const { email, password, role, institutionId } = req.body;
+    if (!authHeader?.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Unauthorized: Missing token" });
+    }
 
-//   // business rules
-//   if (role === 'INSTRUCTOR' && creator.role !== 'INST_REP') return res.sendStatus(403);
-//   if (!['INSTRUCTOR','INST_REP'].includes(role))            return res.sendStatus(400);
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.decode(token);
 
-//   try {
-//     const hash = await bcrypt.hash(password, 10);
-//     const inst = role === 'INSTRUCTOR' ? creator.inst : institutionId;
-//     const uRes = await db.query(
-//       `INSERT INTO clearsky.users (username,email,full_name,role,institution_id)
-//        VALUES ($1,$2,$3,$4,$5) RETURNING *`,
-//       [email, email, email, role, inst]
-//     );
-//     await db.query(
-//       `INSERT INTO clearsky.auth_account (user_id,provider,provider_uid,password_hash)
-//        VALUES ($1,'LOCAL',$2,$3)`,
-//       [uRes.rows[0].id, email, hash]
-//     );
-//     res.sendStatus(201);
-//   } catch (err) { next(err); }
-// };
+    if (!decoded?.exp) {
+      return res.status(400).json({ error: "Invalid token structure" });
+    }
+
+    const expirationTime = new Date(decoded.exp * 1000).toISOString();
+
+    await db.query(
+      `INSERT INTO clearsky.blacklisted_tokens (token, expiration)
+       VALUES ($1, $2)
+       ON CONFLICT (token) DO NOTHING`,
+      [token, expirationTime]
+    );
+
+    res.status(200).json({ message: "Logged out successfully." });
+  } catch (error) {
+    console.error("Logout error:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 
 exports.createUserByRole = async (req, res, next) => {
   const creator = req.user;

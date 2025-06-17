@@ -7,26 +7,39 @@
 //                       id-αριθμοί από τον πίνακα institution
 //
 // Αν δεν περάσεις δεύτερο argument, ελέγχεται μόνο ο ρόλος.
-
 const jwt = require('jsonwebtoken');
+const db = require('../utils/db'); // 👉 πρόσθεσες αυτό
 
-module.exports = (roles = [], instIds = null) => (req, res, next) => {
+module.exports = (roles = [], instIds = null) => async (req, res, next) => {
   const hdr = req.headers.authorization;
-  if (!hdr?.startsWith('Bearer ')) return res.sendStatus(401, 'Missing or invalid token');
+  if (!hdr?.startsWith('Bearer '))
+    return res.status(401).json({ error: 'Missing or invalid token' });
+
+  const token = hdr.slice(7); // αφαιρεί το "Bearer "
 
   try {
-    const payload = jwt.verify(hdr.slice(7), process.env.JWT_SECRET);
-    // 1. Ρόλος
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+
+    // 👉 ΕΛΕΓΧΟΣ: Είναι blacklisted;
+    const result = await db.query(
+      `SELECT 1 FROM clearsky.blacklisted_tokens WHERE token = $1`,
+      [token]
+    );
+    if (result.rowCount > 0)
+      return res.status(401).json({ error: 'Token has been revoked' });
+
+    // 👉 Έλεγχος ρόλου
     if (roles.length && !roles.includes(payload.role))
       return res.sendStatus(403);
 
-    // 2. Institution filter
+    // 👉 Έλεγχος institution
     if (instIds && !instIds.includes(payload.inst))
       return res.sendStatus(403);
 
-    req.user = payload;            // { sub, role, inst }
+    req.user = payload; // { sub, role, inst }
     next();
-  } catch {
-    res.sendStatus(401, 'Invalid token');
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid token' });
   }
 };
+

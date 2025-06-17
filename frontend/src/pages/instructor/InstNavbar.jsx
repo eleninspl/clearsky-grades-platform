@@ -24,11 +24,29 @@ function Navbar({ setCurrentComponent }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setShowProfileDropdown(false);
+
+    const token = localStorage.getItem('token');
+    try {
+      await fetch('http://localhost:5001/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+
+    // Καθάρισε localStorage
+    localStorage.removeItem('token');
     localStorage.removeItem('role');
+
+    // Πήγαινε login
     navigate('/login');
   };
+
 
   return (
     <nav className="navbar">

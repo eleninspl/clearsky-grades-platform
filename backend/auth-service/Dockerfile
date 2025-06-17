@@ -5,7 +5,7 @@
     RUN apt-get update && apt-get install -y python3 g++ make && rm -rf /var/lib/apt/lists/*
     
     WORKDIR /app
-    
+    RUN npm install axios
     # ---- deps layer ----
     COPY package*.json ./
     RUN npm ci --omit=dev
