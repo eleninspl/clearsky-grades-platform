@@ -9,3 +9,16 @@ export const signupUser = async ({ email, password, fullName }) => {
   const res = await authAPI.post('/signup', { email, password, fullName });
   return res.data; // { token }
 };
+
+export const createUserByRole = async ({ username, email, password, role, id }) => {
+  const res = await authAPI.post('/users', {
+    username,
+    email,
+    password,
+    role,
+    id: role === 'STUDENT' ? id : undefined // ✅ only for students
+  });
+  return res.status;
+};
+
+

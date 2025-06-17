@@ -50,19 +50,40 @@ exports.handleUpload = async (req, res) => {
       }
 
       // 2. Ensure user exists by am
-      const findUser = await client.query(
-        'SELECT am FROM clearsky.users WHERE am = $1',
-        [am]
-      );
+      let user_id;
+      
+      const findUser = await client.query('SELECT id FROM clearsky.users WHERE am = $1', [am]);
 
       if (findUser.rowCount === 0) {
-        await client.query(
-          `INSERT INTO clearsky.users (
-            username, email, full_name, role, external_id, am, institution_id
-          ) VALUES ($1, $2, $3, 'STUDENT', NULL, $4, 1)`,
-          [`user_${am}`, email, full_name, am]
-        );
+        try {
+          const insertUser = await client.query(
+            `INSERT INTO clearsky.users (
+              username, email, full_name, role, external_id, am, institution_id
+            ) VALUES ($1, $2, $3, 'STUDENT', NULL, $4, 1) RETURNING id`,
+            [`user_${am}`, email, full_name, am]
+          );
+
+          user_id = insertUser.rows[0].id;
+
+          const provider_uid = email;
+          const password_hash = '$2b$10$XButviiFJj1ReOWa6E6mcOvAefg37Jza9ppQBuKH7IvtMN9SjrHMC';
+
+          await client.query(
+            `INSERT INTO clearsky.auth_account (
+              user_id, provider, provider_uid, password_hash
+            ) VALUES ($1, 'LOCAL', $2, $3)`,
+            [user_id, provider_uid, password_hash]
+          );
+
+          console.log(`✅ Created user ${am} and auth_account: ${provider_uid}`);
+        } catch (insertError) {
+          console.error(`❌ Failed to insert auth_account for AM ${am}:`, insertError);
+        }
+      } else {
+        user_id = findUser.rows[0].id;
       }
+
+
 
       // 3. Build detailed grade JSON (Q01–Q10)
       const detailed = {};

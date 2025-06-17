@@ -12,7 +12,7 @@ const jwt = require('jsonwebtoken');
 
 module.exports = (roles = [], instIds = null) => (req, res, next) => {
   const hdr = req.headers.authorization;
-  if (!hdr?.startsWith('Bearer ')) return res.sendStatus(401);
+  if (!hdr?.startsWith('Bearer ')) return res.sendStatus(401, 'Missing or invalid token');
 
   try {
     const payload = jwt.verify(hdr.slice(7), process.env.JWT_SECRET);
@@ -27,6 +27,6 @@ module.exports = (roles = [], instIds = null) => (req, res, next) => {
     req.user = payload;            // { sub, role, inst }
     next();
   } catch {
-    res.sendStatus(401);
+    res.sendStatus(401, 'Invalid token');
   }
 };

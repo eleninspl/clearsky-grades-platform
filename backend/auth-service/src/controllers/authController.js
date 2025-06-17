@@ -62,29 +62,74 @@ exports.login = [
 ];
 
 
-/* POST /auth/users          (δημιουργεί INSTRUCTOR ή INST_REP) */
-exports.createUserByRole = async (req, res, next) => {
-  const creator = req.user;                         // από authorize
-  const { email, password, role, institutionId } = req.body;
+// /* POST /auth/users          (δημιουργεί INSTRUCTOR ή INST_REP) */
+// exports.createUserByRole = async (req, res, next) => {
+//   const creator = req.user;                         // από authorize
+//   const { email, password, role, institutionId } = req.body;
 
-  // business rules
-  if (role === 'INST_REP' && creator.role !== 'ADMIN')      return res.sendStatus(403);
-  if (role === 'INSTRUCTOR' && creator.role !== 'INST_REP') return res.sendStatus(403);
-  if (!['INSTRUCTOR','INST_REP'].includes(role))            return res.sendStatus(400);
+//   // business rules
+//   if (role === 'INSTRUCTOR' && creator.role !== 'INST_REP') return res.sendStatus(403);
+//   if (!['INSTRUCTOR','INST_REP'].includes(role))            return res.sendStatus(400);
+
+//   try {
+//     const hash = await bcrypt.hash(password, 10);
+//     const inst = role === 'INSTRUCTOR' ? creator.inst : institutionId;
+//     const uRes = await db.query(
+//       `INSERT INTO clearsky.users (username,email,full_name,role,institution_id)
+//        VALUES ($1,$2,$3,$4,$5) RETURNING *`,
+//       [email, email, email, role, inst]
+//     );
+//     await db.query(
+//       `INSERT INTO clearsky.auth_account (user_id,provider,provider_uid,password_hash)
+//        VALUES ($1,'LOCAL',$2,$3)`,
+//       [uRes.rows[0].id, email, hash]
+//     );
+//     res.sendStatus(201);
+//   } catch (err) { next(err); }
+// };
+
+exports.createUserByRole = async (req, res, next) => {
+  const creator = req.user;
+  const { email, username, password, role, id } = req.body;
+
+  if (!['INSTRUCTOR', 'INST_REP', 'STUDENT'].includes(role)) {
+    return res.sendStatus(400);
+  }
 
   try {
     const hash = await bcrypt.hash(password, 10);
-    const inst = role === 'INSTRUCTOR' ? creator.inst : institutionId;
-    const uRes = await db.query(
-      `INSERT INTO clearsky.users (username,email,full_name,role,institution_id)
-       VALUES ($1,$2,$3,$4,$5) RETURNING *`,
-      [email, email, email, role, inst]
-    );
+    const inst = creator.institution_id;
+
+    let uRes;
+    
+    if (role === 'STUDENT' && id) {
+      // ✅ Insert with custom id for STUDENT
+      uRes = await db.query(
+        `INSERT INTO clearsky.users (id, username, email, full_name, role, institution_id)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING *`,
+        [id, username, email, username, role, inst]
+      );
+    } else {
+      // ✅ Default insert (auto ID)
+      uRes = await db.query(
+        `INSERT INTO clearsky.users (username, email, full_name, role, institution_id)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING *`,
+        [username, email, username, role, inst]
+      );
+    }
+
     await db.query(
-      `INSERT INTO clearsky.auth_account (user_id,provider,provider_uid,password_hash)
-       VALUES ($1,'LOCAL',$2,$3)`,
+      `INSERT INTO clearsky.auth_account (user_id, provider, provider_uid, password_hash)
+       VALUES ($1, 'LOCAL', $2, $3)`,
       [uRes.rows[0].id, email, hash]
     );
+
     res.sendStatus(201);
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 };
+
+
