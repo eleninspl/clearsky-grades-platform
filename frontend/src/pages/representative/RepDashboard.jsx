@@ -1,8 +1,28 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './RepDashboard.css';
 import RepNavbar from './RepNavbar.jsx';
+import { getInstitutionStats } from '../../api/institution';
 
 function RepDashboard() {
+  const [stats, setStats] = useState({
+    students: 0,
+    instructors: 0,
+    active_courses: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getInstitutionStats()
+      .then(data => {
+        setStats(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to load stats:', err);
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <div className="rep-stats-container">
       <RepNavbar />
@@ -12,15 +32,21 @@ function RepDashboard() {
           <div className="rep-stats-grid">
             <div className="rep-stats-card">
               <h3>Total Students</h3>
-              <div className="rep-stats-value">1,234</div>
+              <div className="rep-stats-value">
+                {loading ? '...' : stats.students}
+              </div>
             </div>
             <div className="rep-stats-card">
               <h3>Total Instructors</h3>
-              <div className="rep-stats-value">45</div>
+              <div className="rep-stats-value">
+                {loading ? '...' : stats.instructors}
+              </div>
             </div>
             <div className="rep-stats-card">
               <h3>Active Courses</h3>
-              <div className="rep-stats-value">67</div>
+              <div className="rep-stats-value">
+                {loading ? '...' : stats.active_courses}
+              </div>
             </div>
             <div className="rep-stats-card">
               <h3>Average Grade</h3>

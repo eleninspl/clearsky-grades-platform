@@ -61,3 +61,124 @@ exports.deleteInstitution = async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 };
+
+
+exports.getInstitutionStats = async (req, res) => {
+  const creator = req.user;
+  const inst = creator.inst;
+  
+  if (!creator.inst) return res.status(403).json({ error: 'Missing institution ID in JWT' });
+
+  try {
+    const client = await pool.connect();
+    
+    
+    const [studentsRes, instructorsRes, coursesRes] = await Promise.all([
+      client.query(`SELECT COUNT(*) FROM clearsky.users WHERE institution_id = $1 AND role = 'STUDENT'`, [inst]),
+      client.query(`SELECT COUNT(*) FROM clearsky.users WHERE institution_id = $1 AND role = 'INSTRUCTOR'`, [inst]),
+      client.query(`SELECT COUNT(*) FROM clearsky.course WHERE institution_id = $1`, [inst])
+    ]);
+
+    client.release();
+
+    res.json({
+      students: parseInt(studentsRes.rows[0].count),
+      instructors: parseInt(instructorsRes.rows[0].count),
+      active_courses: parseInt(coursesRes.rows[0].count)
+    });
+  } catch (err) {
+    console.error('[getInstitutionStats]', err);
+    res.status(500).json({ error: 'Database error while fetching stats' });
+  }
+};
+
+exports.getInstitutionAverageGrade = async (req, res) => {
+  const creator = req.user;
+  const inst = creator.inst ?? creator.institution_id;
+  if (!inst) return res.status(403).json({ error: 'Missing institution ID in JWT' });
+
+  try {
+    const client = await pool.connect();
+    const { rows } = await client.query(
+      `SELECT COALESCE(AVG(g.value),0)::NUMERIC(5,2) AS average_grade
+       FROM clearsky.grade g
+       JOIN clearsky.course c ON g.course_id = c.id
+       WHERE c.institution_id = $1
+         AND g.status = 'FINAL'`,
+      [inst]
+    );
+    client.release();
+
+    res.json({ average_grade: rows[0].average_grade });
+  } catch (err) {
+    console.error('[getInstitutionAverageGrade]', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+};
+
+exports.getInstitutionGradeDistribution = async (req, res) => {
+  const creator = req.user;
+  const inst = creator.inst ?? creator.institution_id;
+  if (!inst) return res.status(403).json({ error: 'Missing institution ID in JWT' });
+
+  try {
+    const client = await pool.connect();
+    const { rows } = await client.query(
+      `SELECT width_bucket(g.value, 0, 100, 10) AS bucket,
+              COUNT(*) AS count
+       FROM clearsky.grade g
+       JOIN clearsky.course c ON g.course_id = c.id
+       WHERE c.institution_id = $1
+         AND g.status = 'FINAL'
+       GROUP BY bucket
+       ORDER BY bucket`,
+      [inst]
+    );
+    client.release();
+
+    res.json({
+      distribution: rows.map(r => ({
+        bucket: r.bucket,
+        count: parseInt(r.count, 10)
+      }))
+    });
+  } catch (err) {
+    console.error('[getInstitutionGradeDistribution]', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+};
+
+exports.getInstitutionCourseEnrollment = async (req, res) => {
+  const creator = req.user;
+  const inst = creator.inst ?? creator.institution_id;
+  if (!inst) return res.status(403).json({ error: 'Missing institution ID in JWT' });
+
+  try {
+    const client = await pool.connect();
+    const { rows } = await client.query(
+      `SELECT c.id, c.title,
+              COUNT(DISTINCT g.user_am) AS enrolled_students
+       FROM clearsky.course c
+       LEFT JOIN clearsky.grade g
+         ON g.course_id = c.id AND g.status = 'FINAL'
+       WHERE c.institution_id = $1
+       GROUP BY c.id, c.title
+       ORDER BY enrolled_students DESC`,
+      [inst]
+    );
+    client.release();
+
+    res.json({
+      enrollment: rows.map(r => ({
+        courseId: r.id,
+        title: r.title,
+        enrolled: parseInt(r.enrolled_students, 10)
+      }))
+    });
+  } catch (err) {
+    console.error('[getInstitutionCourseEnrollment]', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+};
+
+

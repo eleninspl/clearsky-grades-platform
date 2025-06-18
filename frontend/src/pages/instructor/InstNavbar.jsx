@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './InstNavbar.css';
+import axios from 'axios';
 import logo from '../../assets/clearSKY-logo.png';
 
 function Navbar({ setCurrentComponent }) {
@@ -25,27 +26,28 @@ function Navbar({ setCurrentComponent }) {
   }, []);
 
   const handleLogout = async () => {
-    setShowProfileDropdown(false);
+  setShowProfileDropdown(false);
 
-    const token = localStorage.getItem('token');
-    try {
-      await fetch('http://localhost:5001/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      });
-    } catch (err) {
-      console.error('Logout failed:', err);
-    }
+  const token = localStorage.getItem('token');
+  try {
+    await fetch('http://localhost:5001/auth/logout', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  } catch (err) {
+    console.error('Logout failed:', err);
+  }
 
-    // Καθάρισε localStorage
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
+  // Καθάρισμα
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
 
-    // Πήγαινε login
-    navigate('/login');
-  };
+  delete axios.defaults.headers.common['Authorization'];  // ⬅️ σημαντικό
+
+  // Προσθήκη replace για να μη δουλεύει το Back
+  navigate('/login', { replace: true });
+};
+
 
 
   return (

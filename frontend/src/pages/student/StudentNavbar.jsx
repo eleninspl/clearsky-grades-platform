@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './StudentNavbar.css';
 import logo from '../../assets/clearSKY-logo.png';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 function StudentNavbar() {
@@ -25,21 +26,22 @@ function StudentNavbar() {
   try {
     await fetch('http://localhost:5001/auth/logout', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      }
+      headers: { Authorization: `Bearer ${token}` }
     });
   } catch (err) {
     console.error('Logout failed:', err);
   }
 
-  // Καθάρισε localStorage
+  // Καθάρισμα
   localStorage.removeItem('token');
-  localStorage.removeItem('role');
+  localStorage.removeItem('user');
 
-  // Πήγαινε login
-  navigate('/login');
+  delete axios.defaults.headers.common['Authorization'];  // ⬅️ σημαντικό
+
+  // Προσθήκη replace για να μη δουλεύει το Back
+  navigate('/login', { replace: true });
 };
+
 
 
   return (

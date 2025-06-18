@@ -1,3 +1,4 @@
+-- SQLBook: Code
 -- 📌 Institution
 INSERT INTO clearsky.institution (id, name, email, credits_balance)
 VALUES (1, 'Demo Institution', 'demo@demo.edu', 10);

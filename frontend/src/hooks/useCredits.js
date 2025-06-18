@@ -9,36 +9,27 @@ export const useCredits = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (!user?.institution_id) {
-      console.warn('❗ No institution_id in user:', user);
-      setError('Missing institution ID');
+  const load = async () => {
+    if (!user?.institution_id) return;
+
+    setLoading(true);
+    try {
+      const [b, h] = await Promise.all([
+        getCreditBalance(user.institution_id),
+        getCreditHistory(user.institution_id),
+      ]);
+      setBalance(b.credits_balance);
+      setHistory(h);
+    } catch (err) {
+      setError(err?.message || 'Failed to fetch credits');
+    } finally {
       setLoading(false);
-      return;
     }
+  };
 
-    const load = async () => {
-      setLoading(true);
-      try {
-        console.log('➡️ Fetching credits for institution:', user.institution_id);
-        const [b, h] = await Promise.all([
-          getCreditBalance(user.institution_id),
-          getCreditHistory(user.institution_id),
-        ]);
-        console.log('✅ Balance result:', b);
-        console.log('📜 History result:', h);
-        setBalance(b.credits_balance);
-        setHistory(h);
-      } catch (err) {
-        console.error('❌ Error fetching credits:', err);
-        setError(err?.message || 'Failed to load credits');
-      } finally {
-        setLoading(false);
-      }
-    };
-
+  useEffect(() => {
     load();
   }, [user]);
 
-  return { balance, history, loading, error };
+  return { balance, history, loading, error, reload: load }; // ✅ added reload
 };

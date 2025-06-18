@@ -5,7 +5,7 @@ import { useCredits } from '../../hooks/useCredits';
 import { buyCredits } from '../../api/credits';
 
 function RepCredits() {
-  const { balance, history, loading, error , reload } = useCredits();
+  const { balance, history, loading, error, reload } = useCredits();
 
   const [showModal, setShowModal] = useState(false); // ✅ Popup control
   const [creditsToBuy, setCreditsToBuy] = useState(''); // ✅ Credit input
@@ -20,23 +20,26 @@ function RepCredits() {
 
   const handlePurchase = async () => {
   try {
-      const user = JSON.parse(localStorage.getItem('user'));
-      const institutionId = user?.institution_id;
+    const user = JSON.parse(localStorage.getItem('user'));
+    const institutionId = user?.institution_id;
 
-      if (!institutionId || !creditsToBuy || Number(creditsToBuy) <= 0) {
-        alert('Enter a valid amount');
-        return;
-      }
-
-      await buyCredits(institutionId, Number(creditsToBuy));
-      await reload(); // refresh balance + history
-      setShowModal(false);
-      setCreditsToBuy('');
-    } catch (err) {
-      console.error(err);
-      alert('Failed to buy credits');
+    if (!institutionId || !creditsToBuy || Number(creditsToBuy) <= 0) {
+      alert('Enter a valid amount');
+      return;
     }
-  };
+
+    const result = await buyCredits(institutionId, Number(creditsToBuy));
+    console.log('✅ Buy result:', result);
+
+    await reload();
+    setShowModal(false);
+    setCreditsToBuy('');
+  } catch (err) {
+    console.error('❌ Buy credits failed:', err?.response?.data || err.message || err);
+    alert('Failed to buy credits');
+  }
+};
+
 
 
   return (
