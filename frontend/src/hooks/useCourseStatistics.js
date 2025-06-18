@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getDistribution, getQuestionDistribution } from '../api/statistics';
+import { getDistribution, getQuestionDistribution, getQuestionKeys } from '../api/statistics';
 
 export const useCourseStatistics = (courseId) => {
   const [statistics, setStatistics] = useState([]);
@@ -13,11 +13,14 @@ export const useCourseStatistics = (courseId) => {
       setLoading(true);
       try {
         const total = await getDistribution(courseId);
+        const keys = await getQuestionKeys(courseId);
+
         const questions = await Promise.all(
-          ['Q1', 'Q2', 'Q3', 'Q4'].map(q =>
+          keys.map(q =>
             getQuestionDistribution(courseId, q).then(data => ({ label: q, data }))
           )
         );
+
 
         const full = [
           {

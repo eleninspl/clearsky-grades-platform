@@ -97,7 +97,7 @@ exports.getTotalDistribution = async (req, res) => {
 
   try {
     const query = `
-      SELECT LEAST(GREATEST(FLOOR(value / 10.0) + 1, 1), 10) AS grade, COUNT(*) AS count
+      SELECT value AS grade, COUNT(*) AS count
       FROM clearsky.grade
       WHERE course_id = $1 AND type = 'INITIAL'
       GROUP BY grade
@@ -150,6 +150,29 @@ exports.getQuestionDistribution = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch question distribution' });
   }
 };
+
+// 🔑 GET /statistics/questions/:courseId
+exports.getQuestionKeys = async (req, res) => {
+  const { courseId } = req.params;
+
+  try {
+    const query = `
+      SELECT jsonb_object_keys(detailed_grade_json) AS key
+      FROM clearsky.grade
+      WHERE course_id = $1 AND type = 'INITIAL'
+        AND detailed_grade_json IS NOT NULL
+    `;
+
+    const { rows } = await pool.query(query, [courseId]);
+    const uniqueKeys = [...new Set(rows.map(r => r.key))].sort();
+
+    res.json(uniqueKeys);
+  } catch (err) {
+    console.error('[getQuestionKeys] DB error:', err.stack);
+    res.status(500).json({ error: 'Failed to retrieve question keys.' });
+  }
+};
+
 
 
 // POST /statistics/recalculate/:courseId/:type

@@ -143,7 +143,7 @@ DELETE FROM clearsky.grade WHERE course_id = 103;
 DO $$
 DECLARE
   student_ams INT[] := ARRAY[401,402,403,404,405,406,407,408,409,410];
-  values_list INT[] := ARRAY[91, 75, 68, 45, 80, 55, 88, 72, 60, 95];
+  values_list INT[] := ARRAY[9, 7, 8, 4, 5, 5, 8, 10, 6, 9];
   q1 INT[] := ARRAY[9, 7, 6, 4, 8, 5, 9, 7, 6, 10];
   q2 INT[] := ARRAY[10, 8, 7, 3, 9, 4, 9, 8, 5, 10];
   q3 INT[] := ARRAY[9, 6, 7, 2, 8, 4, 10, 6, 5, 9];
@@ -162,10 +162,10 @@ BEGIN
       4,
       'OPEN',
       jsonb_build_object(
-        'Q1', q1[i],
-        'Q2', q2[i],
-        'Q3', q3[i],
-        'Q4', q4[i]
+        'Q01', q1[i],
+        'Q02', q2[i],
+        'Q03', q3[i],
+        'Q04', q4[i]
       )
     );
 
@@ -177,16 +177,16 @@ END $$;
 INSERT INTO clearsky.grade (type, value, user_am, course_id, grade_batch_id, status, detailed_grade_json)
 VALUES (
   'INITIAL',
-  85,  -- Μπορείς να αλλάξεις την τιμή του βαθμού όπως θες
+  8,  -- Μπορείς να αλλάξεις την τιμή του βαθμού όπως θες
   103,
   103,
   4,
   'OPEN',
   jsonb_build_object(
-    'Q1', 9,
-    'Q2', 8,
-    'Q3', 9,
-    'Q4', 9
+    'Q01', 9,
+    'Q02', 8,
+    'Q03', 9,
+    'Q04', 9
   )
 );
 
