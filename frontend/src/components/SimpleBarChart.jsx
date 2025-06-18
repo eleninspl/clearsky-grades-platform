@@ -11,16 +11,24 @@ import {
 } from 'recharts';
 
 const SimpleBarChart = ({ data, height = 200 }) => {
-  const isTotalChart = data?.[0]?.label && ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'].includes(data[0].label);
+  // 🔢 Δημιουργία πλήρους label set [0, 1, ..., 10]
+  const completeLabels = Array.from({ length: 11 }, (_, i) => i);
+
+  // 🎯 Αντιστοίχιση δεδομένων στα labels (με 0 για όσα λείπουν)
+  const completeData = completeLabels.map(label => {
+    const found = data.find(d => Number(d.label) === label);
+    return { label, value: found ? found.value : 0 };
+  });
 
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart
-        data={data}
-        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+        data={completeData}
+        margin={{ top: 20, right: 10, left: 10, bottom: 5 }}
+        barCategoryGap={4}
       >
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="label" />
+        <XAxis dataKey="label" interval="preserveStartEnd" />
         <YAxis
           domain={[0, (dataMax) => Math.ceil(dataMax * 1.2)]}
           allowDecimals={false}
@@ -33,6 +41,5 @@ const SimpleBarChart = ({ data, height = 200 }) => {
     </ResponsiveContainer>
   );
 };
-
 
 export default SimpleBarChart;
