@@ -6,12 +6,12 @@ import { fetchStudentGrades } from '../../api/orchestrator';
 import { useAuth } from '../../auth/AuthContext';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
 
-
 function StudentDashboard() {
   const { user } = useAuth();
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -31,16 +31,13 @@ function StudentDashboard() {
     loadDashboard();
   }, [user]);
 
-
-  const [selectedCourse, setSelectedCourse] = useState(null);
-  const [selectedCourseId, setSelectedCourseId] = useState(null);
-
   useEffect(() => {
     if (grades.length > 0 && !selectedCourseId) {
-      setSelectedCourse(grades[0].course_title);
       setSelectedCourseId(grades[0].course_id);
     }
   }, [grades]);
+
+  const selectedCourse = grades.find(g => g.course_id === selectedCourseId)?.course_title || '';
 
   const {
     statistics,
@@ -76,12 +73,9 @@ function StudentDashboard() {
                 {grades.map((g, index) => (
                   <tr
                     key={index}
-                    onClick={() => {
-                      setSelectedCourse(g.course_title);
-                      setSelectedCourseId(g.course_id);
-                    }}
+                    onClick={() => setSelectedCourseId(g.course_id)}
                     className={
-                      selectedCourse === g.course_title
+                      selectedCourseId === g.course_id
                         ? 'student-dashboard-row-selected'
                         : ''
                     }
@@ -96,6 +90,7 @@ function StudentDashboard() {
             </table>
           )}
         </div>
+
         {selectedCourseId && !statsLoading && statistics.length > 0 && (
           <CourseCharts courseName={selectedCourse} statistics={statistics} />
         )}

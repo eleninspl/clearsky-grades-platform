@@ -30,16 +30,18 @@ exports.getGradesByStudent = async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT 
-        id AS grade_id,
-        value AS grade,
-        type,
-        status,
-        grade_batch_id,
-        course_id,
-        detailed_grade_json
-      FROM grade
-      WHERE user_am = $1
-      ORDER BY course_id, type
+        g.id AS grade_id,
+        g.value AS grade,
+        g.type,
+        g.status,
+        g.grade_batch_id,
+        g.course_id,
+        c.title AS course_title,
+        g.detailed_grade_json
+      FROM grade g
+      JOIN course c ON g.course_id = c.id
+      WHERE g.user_am = $1
+      ORDER BY g.course_id, g.type
     `, [id]);
 
     res.json(result.rows);
@@ -48,6 +50,7 @@ exports.getGradesByStudent = async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 };
+
 
 
 exports.createGrade = async (req, res) => {
