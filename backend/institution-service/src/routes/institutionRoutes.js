@@ -14,6 +14,4 @@ router.post('/', controller.createInstitution);
 router.put('/:id', controller.updateInstitution);
 router.delete('/:id', controller.deleteInstitution);
 
-
-
 module.exports = router;

@@ -74,7 +74,21 @@ services:
     env_file:
       - ../backend/institution-service/.env
     depends_on:
-      - db-service
+      - institution-db
+
+  institution-db:
+    image: postgres:16
+    ports:
+      - "5438:5432"
+    environment:
+      POSTGRES_DB: institutiondb
+      POSTGRES_USER: institutionuser
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - ../backend/institution-service/init/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ../backend/institution-service/init/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    restart: always
+
   
   grades-service:
     build: ../backend/grades-service
@@ -106,7 +120,7 @@ services:
       - ../backend/course-service/.env
     depends_on:
       - course-db
-      
+
   course-db:
     image: postgres:16
     ports:
@@ -119,7 +133,6 @@ services:
       - ../backend/course-service/init/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ../backend/course-service/init/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
 
-        
   review-service:
     build: ../backend/review-service
     ports:
@@ -127,7 +140,22 @@ services:
     env_file:
       - ../backend/review-service/.env
     depends_on:
-      - db-service
+      - review-db
+
+
+  review-db:
+    image: postgres:16
+    ports:
+      - "5441:5432"
+    environment:
+      POSTGRES_DB: reviewdb
+      POSTGRES_USER: reviewuser
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - ../backend/review-service/init/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ../backend/review-service/init/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    restart: always
+
 
   statistics-service:
     build: ../backend/statistics-service
@@ -145,7 +173,21 @@ services:
     env_file:
       - ../backend/credits-service/.env
     depends_on:
-      - db-service
+      - credits-db
+
+  credits-db:
+    image: postgres:16
+    ports:
+      - "5440:5432"
+    environment:
+      POSTGRES_DB: creditsdb
+      POSTGRES_USER: creditsuser
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - ../backend/credits-service/init/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ../backend/credits-service/init/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    restart: always
+
 
   upload-service:
     build: ../backend/upload-service
