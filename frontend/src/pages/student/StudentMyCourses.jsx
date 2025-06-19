@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './StudentMyCourses.css';
 import StudentNavbar from './StudentNavbar';
-import { fetchGradesByStudentId } from '../../api/grades';
+//import { fetchGradesByStudentId } from '../../api/grades';
+import { fetchStudentGrades } from '../../api/orchestrator';
 import { submitReviewRequest } from '../../api/reviews';
 import { useAuth } from '../../auth/AuthContext';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
@@ -19,7 +20,7 @@ function StudentMyCourses() {
 
     const loadGrades = async () => {
       try {
-        const data = await fetchGradesByStudentId(user.id);
+        const data = await fetchStudentGrades(user.id);
         setGrades(data);
       } catch (err) {
         console.error('❌ Failed to fetch grades:', err);

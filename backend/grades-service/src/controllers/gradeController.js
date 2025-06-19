@@ -37,6 +37,7 @@ exports.getGradesByStudent = async (req, res) => {
         g.grade_batch_id,
         g.course_id,
         c.title AS course_title,
+        c.exam_period AS exam_period,  -- ✅ ΝΕΟ ΠΕΔΙΟ
         g.detailed_grade_json
       FROM grade g
       JOIN course c ON g.course_id = c.id
@@ -50,6 +51,7 @@ exports.getGradesByStudent = async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 };
+
 
 exports.getCoursesForInstructor = async (req, res) => {
   const { id } = req.params;
