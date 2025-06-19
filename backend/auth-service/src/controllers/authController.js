@@ -24,7 +24,7 @@ exports.signup = async (req, res, next) => {
   try {
     // check if already exists
     const exists = await db.query(
-      `SELECT 1 FROM auth.auth_account WHERE provider='LOCAL' AND provider_uid=$1`,
+      `SELECT 1 FROM auth_account WHERE provider='LOCAL' AND provider_uid=$1`,
       [email]
     );
     if (exists.rowCount) return res.status(409).json({ message: 'Exists' });
@@ -41,7 +41,7 @@ exports.signup = async (req, res, next) => {
 
     const hash = await bcrypt.hash(password, 10);
     await db.query(
-      `INSERT INTO auth.auth_account (user_id, provider, provider_uid, password_hash)
+      `INSERT INTO auth_account (user_id, provider, provider_uid, password_hash)
        VALUES ($1, 'LOCAL', $2, $3)`,
       [user.id, email, hash]
     );
@@ -77,7 +77,7 @@ exports.logout = async (req, res) => {
     const expirationTime = new Date(decoded.exp * 1000).toISOString();
 
     await db.query(
-      `INSERT INTO auth.blacklisted_tokens (token, expiration)
+      `INSERT INTO blacklisted_tokens (token, expiration)
        VALUES ($1, $2)
        ON CONFLICT (token) DO NOTHING`,
       [token, expirationTime]
@@ -114,7 +114,7 @@ exports.createUserByRole = async (req, res, next) => {
     const user = createRes.data;
 
     await db.query(
-      `INSERT INTO auth.auth_account (user_id, provider, provider_uid, password_hash)
+      `INSERT INTO auth_account (user_id, provider, provider_uid, password_hash)
        VALUES ($1, 'LOCAL', $2, $3)`,
       [user.id, email, hash]
     );

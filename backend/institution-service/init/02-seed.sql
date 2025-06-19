@@ -1,3 +1,4 @@
+-- 📌 Institution
 INSERT INTO institution (id, name, email, credits_balance)
 VALUES (1, 'Demo Institution', 'demo@demo.edu', 10);
 
@@ -37,7 +38,7 @@ VALUES (
   '$2b$10$NwuB3yy/LRn9ooLT/W4wGOB6o.NwxS0eYvqQLxWoF0tMZyke.aWz6'
 );
 
--- 📌 STUDENT (✅ με user_am = 103)
+-- 📌 STUDENT
 INSERT INTO users (id, username, email, full_name, role, institution_id, am)
 VALUES (103, 'student', 'student@demo.edu', 'Student User', 'STUDENT', 1, 103);
 
@@ -48,42 +49,3 @@ VALUES (
   'student@demo.edu',
   '$2b$10$XButviiFJj1ReOWa6E6mcOvAefg37Jza9ppQBuKH7IvtMN9SjrHMC'
 );
-
-DO $$
-DECLARE
-  i INT;
-BEGIN
-  FOR i IN 1..10 LOOP
-    INSERT INTO users (id, username, email, full_name, role, institution_id, am)
-    VALUES (
-      300 + i, -- id
-      'student' || i,
-      'student' || i || '@demo.edu',
-      'Student ' || i,
-      'STUDENT',
-      1,
-      400 + i  -- am
-    )
-    ON CONFLICT DO NOTHING;
-
-    INSERT INTO auth_account (user_id, provider, provider_uid, password_hash)
-    VALUES (
-      300 + i,
-      'LOCAL',
-      'student' || i || '@demo.edu',
-      '$2b$10$XButviiFJj1ReOWa6E6mcOvAefg37Jza9ppQBuKH7IvtMN9SjrHMC'
-    )
-    ON CONFLICT DO NOTHING;
-
-    RAISE NOTICE '👤 Created user % with AM %', 300 + i, 400 + i;
-  END LOOP;
-END $$;
-
-DO $$
-BEGIN
-  PERFORM setval(
-    pg_get_serial_sequence('users', 'id'),
-    (SELECT MAX(id) FROM users)
-  );
-END
-$$;

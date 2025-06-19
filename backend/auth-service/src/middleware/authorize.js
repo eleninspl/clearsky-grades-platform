@@ -8,7 +8,7 @@
 //
 // Αν δεν περάσεις δεύτερο argument, ελέγχεται μόνο ο ρόλος.
 const jwt = require('jsonwebtoken');
-const db = require('../utils/db'); // 👉 πρόσθεσες αυτό
+const db = require('../utils/db');
 
 module.exports = (roles = [], instIds = null) => async (req, res, next) => {
   const hdr = req.headers.authorization;
@@ -22,7 +22,7 @@ module.exports = (roles = [], instIds = null) => async (req, res, next) => {
 
     // 👉 ΕΛΕΓΧΟΣ: Είναι blacklisted;
     const result = await db.query(
-      `SELECT 1 FROM clearsky.blacklisted_tokens WHERE token = $1`,
+      `SELECT 1 FROM blacklisted_tokens WHERE token = $1`,
       [token]
     );
     if (result.rowCount > 0)

@@ -1,9 +1,8 @@
--- 1. ENUM types
+-- ENUM types
 CREATE TYPE user_role AS ENUM ('STUDENT', 'INSTRUCTOR', 'INST_REP', 'ADMIN');
 CREATE TYPE auth_provider AS ENUM ('LOCAL', 'GOOGLE', 'INSTITUTION');
 
 -- Institution table
-
 CREATE TABLE institution (
     id              SERIAL PRIMARY KEY,
     name            VARCHAR(50)  NOT NULL,
@@ -12,7 +11,7 @@ CREATE TABLE institution (
     created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
---  Users table
+-- Users table
 CREATE TABLE users (
     id             SERIAL PRIMARY KEY,
     username       VARCHAR(30)   NOT NULL UNIQUE,
@@ -23,19 +22,16 @@ CREATE TABLE users (
     am             INTEGER,
     institution_id INTEGER,
     created_at     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT uq_users_am UNIQUE (am)
+    CONSTRAINT uq_users_am UNIQUE (am),
+    CONSTRAINT fk_user_institution FOREIGN KEY (institution_id)
+        REFERENCES institution(id) ON UPDATE CASCADE ON DELETE RESTRICT
 );
-
--- Partial unique index (μόνο ένας INST_REP ανά institution)
+CREATE UNIQUE INDEX uq_users_external_id ON users (external_id) WHERE external_id IS NOT NULL;
 CREATE UNIQUE INDEX uq_one_rep_per_inst_idx
     ON users (institution_id)
     WHERE role = 'INST_REP';
 
--- Optional: index για external_id όταν δεν είναι null
-CREATE UNIQUE INDEX uq_users_external_id ON users (external_id) WHERE external_id IS NOT NULL;
-
---  Auth accounts table
+-- Auth account table
 CREATE TABLE auth_account (
     id              SERIAL PRIMARY KEY,
     user_id         INTEGER       NOT NULL,
@@ -45,21 +41,8 @@ CREATE TABLE auth_account (
     password_salt   VARCHAR(255),
     created_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_login      TIMESTAMP,
-
     CONSTRAINT fk_auth_user FOREIGN KEY (user_id)
         REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT uq_provider_uid UNIQUE (provider, provider_uid)
 );
-
 CREATE INDEX idx_auth_user ON auth_account (user_id);
-
--- 4. JWT blacklist table
-CREATE TABLE blacklisted_tokens (
-    token TEXT PRIMARY KEY,
-    expiration TIMESTAMP NOT NULL
-);
-
-COMMIT;
-
--- ✅ init.sql loaded for auth-service
-DO $$ BEGIN RAISE NOTICE '✅ auth-service schema loaded'; END $$;

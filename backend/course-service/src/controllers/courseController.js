@@ -2,7 +2,7 @@ const pool = require('../db');
 
 exports.getAllCourses = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM clearsky.course ORDER BY id');
+    const result = await pool.query('SELECT * FROM courses.course ORDER BY id');
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: 'Database error' });
@@ -12,7 +12,7 @@ exports.getAllCourses = async (req, res) => {
 exports.getCourseById = async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await pool.query('SELECT * FROM clearsky.course WHERE id = $1', [id]);
+    const result = await pool.query('SELECT * FROM courses.course WHERE id = $1', [id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Course not found' });
     res.json(result.rows[0]);
   } catch (err) {
@@ -22,15 +22,13 @@ exports.getCourseById = async (req, res) => {
 
 exports.getCoursesForStudent = async (req, res) => {
   const { id } = req.params;
-
   try {
     const result = await pool.query(`
       SELECT DISTINCT c.id, c.code, c.title, c.instructor_id
-      FROM clearsky.course c
-      JOIN clearsky.grade g ON g.course_id = c.id
-      WHERE g.user_id = $1
-    `, [id]);    
-
+      FROM courses.course c
+      JOIN courses.grade_batch g ON g.course_id = c.id
+      WHERE g.uploader_id = $1
+    `, [id]);
     res.json(result.rows);
   } catch (err) {
     console.error('❌ Error fetching courses for student:', err);
@@ -40,7 +38,6 @@ exports.getCoursesForStudent = async (req, res) => {
 
 exports.getCoursesForInstructor = async (req, res) => {
   const { id } = req.params;
-
   const query = `
     SELECT 
       c.id,
@@ -55,13 +52,12 @@ exports.getCoursesForInstructor = async (req, res) => {
         TO_CHAR(MAX(CASE WHEN gb.type = 'FINAL' THEN gb.uploaded_at END), 'YYYY-MM-DD'),
         '-' 
       ) AS final_submission
-    FROM clearsky.course c
-    LEFT JOIN clearsky.grade_batch gb ON gb.course_id = c.id
+    FROM courses.course c
+    LEFT JOIN courses.grade_batch gb ON gb.course_id = c.id
     WHERE c.instructor_id = $1
     GROUP BY c.id, c.title, c.exam_period, c.description
     ORDER BY c.title;
   `;
-
   try {
     const result = await pool.query(query, [id]);
     res.json(result.rows);
@@ -72,12 +68,12 @@ exports.getCoursesForInstructor = async (req, res) => {
 };
 
 exports.createCourse = async (req, res) => {
-  const { code, title, instructor_id, institution_id } = req.body;
+  const { code, title, instructor_id, institution_id, description, exam_period } = req.body;
   try {
     const result = await pool.query(
-      `INSERT INTO clearsky.course (code, title, instructor_id, institution_id)
-       VALUES ($1, $2, $3, $4) RETURNING *`,
-      [code, title, instructor_id, institution_id]
+      `INSERT INTO courses.course (code, title, instructor_id, institution_id, description, exam_period)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [code, title, instructor_id, institution_id, description, exam_period]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -90,7 +86,7 @@ exports.updateCourse = async (req, res) => {
   const { title } = req.body;
   try {
     const result = await pool.query(
-      `UPDATE clearsky.course SET title = $1 WHERE id = $2 RETURNING *`,
+      `UPDATE courses.course SET title = $1 WHERE id = $2 RETURNING *`,
       [title, id]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Course not found' });
@@ -104,7 +100,7 @@ exports.deleteCourse = async (req, res) => {
   const { id } = req.params;
   try {
     const result = await pool.query(
-      'DELETE FROM clearsky.course WHERE id = $1 RETURNING *',
+      'DELETE FROM courses.course WHERE id = $1 RETURNING *',
       [id]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Course not found' });

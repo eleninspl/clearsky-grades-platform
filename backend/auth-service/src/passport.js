@@ -12,7 +12,7 @@ passport.use(
   new LocalStrategy({ usernameField: 'email' }, async (email, password, done) => {
     try {
       const { rows } = await db.query(
-        `SELECT * FROM auth.auth_account WHERE provider = 'LOCAL' AND provider_uid = $1`,
+        `SELECT * FROM auth_account WHERE provider = 'LOCAL' AND provider_uid = $1`,
         [email]
       );
       if (!rows.length) return done(null, false, { message: 'Unknown user' });
@@ -43,7 +43,7 @@ passport.use(
         const email = profile.emails[0].value;
 
         const { rows } = await db.query(
-          `SELECT * FROM auth.auth_account WHERE provider = 'GOOGLE' AND provider_uid = $1`,
+          `SELECT * FROM auth_account WHERE provider = 'GOOGLE' AND provider_uid = $1`,
           [providerUid]
         );
 
@@ -60,7 +60,7 @@ passport.use(
           user = createRes.data;
 
           await db.query(
-            `INSERT INTO auth.auth_account (user_id, provider, provider_uid)
+            `INSERT INTO auth_account (user_id, provider, provider_uid)
              VALUES ($1, 'GOOGLE', $2)`,
             [user.id, providerUid]
           );
