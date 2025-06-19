@@ -7,5 +7,6 @@ router.post('/requests', ctrl.createReviewRequest);
 router.get('/requests', ctrl.getAllReviewRequests);
 router.get('/', ctrl.getReviewRequestsByInstructor);
 router.post('/responses', ctrl.createReviewResponse);
+router.get('/status', ctrl.getReviewStatusForStudent);
 
 module.exports = router;

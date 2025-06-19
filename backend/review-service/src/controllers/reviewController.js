@@ -88,6 +88,18 @@ exports.createReviewResponse = async (req, res) => {
   try {
     await client.query('BEGIN');
 
+    // ΠΡΟΣΘΗΚΗ ΕΛΕΓΧΟΥ: έχει ήδη απαντηθεί;
+    const existing = await client.query(
+      `SELECT id FROM review_response WHERE review_request_id = $1`,
+      [review_request_id]
+    );
+
+    if (existing.rowCount > 0) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ error: 'Response already exists for this request' });
+    }
+
+    // ΠΡΟΧΩΡΑ μόνο αν δεν υπάρχει
     await client.query(`
       INSERT INTO review_response (
         review_request_id, responder_id, message, final_grade
@@ -107,5 +119,48 @@ exports.createReviewResponse = async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   } finally {
     client.release();
+  }
+};
+
+
+// Επιστροφή review requests για συγκεκριμένο student
+exports.getReviewStatusForStudent = async (req, res) => {
+  const { user_id, course_id } = req.query;
+
+  if (!user_id || !course_id) {
+    return res.status(400).json({ error: 'Missing user_id or course_id' });
+  }
+
+  try {
+    const requestResult = await pool.query(`
+      SELECT * FROM review_request
+      WHERE user_id = $1 AND course_id = $2
+    `, [user_id, course_id]);
+
+    if (requestResult.rowCount === 0) {
+      return res.status(404).json({ error: 'No review request found' });
+    }
+
+    const request = requestResult.rows[0];
+
+    const responseResult = await pool.query(`
+      SELECT message, final_grade, response_date, responder_id
+      FROM review_response
+      WHERE review_request_id = $1
+    `, [request.id]);
+
+    const response = responseResult.rows[0] || null;
+
+    return res.json({
+      status: request.status,
+      submitted_at: request.submitted_at,
+      course_title: request.course_title,
+      exam_period: request.exam_period,
+      instructor_id: request.instructor_id,
+      instructor_response: response
+    });
+  } catch (err) {
+    console.error('❌ Error fetching review status:', err);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
