@@ -129,8 +129,10 @@ exports.deleteGrade = async (req, res) => {
 };
 
 exports.handleUpload = async (req, res) => {
+  const uploader_id = req.user.sub;
   const filePath = req.file.path;
   const batch_type = req.params.type?.toUpperCase() || 'INITIAL';
+  
 
   try {
     const workbook = XLSX.readFile(filePath);
@@ -162,15 +164,16 @@ exports.handleUpload = async (req, res) => {
         `SELECT id FROM grade_batch WHERE course_id = $1 AND academic_year = $2 AND type = $3`,
         [course_id, academic_year, batch_type]
       );
-
+      
+      
       if (batchResult.rowCount > 0) {
         grade_batch_id = batchResult.rows[0].id;
-      } else {
+      } else { 
         const newBatch = await client.query(
           `INSERT INTO grade_batch (
             course_id, uploader_id, type, original_file, uploaded_at
           ) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-          [course_id, 102, batch_type, req.file.originalname, uploaded_at] // uploader_id = 1 placeholder
+          [course_id, uploader_id, batch_type, req.file.originalname, uploaded_at] 
         );
         grade_batch_id = newBatch.rows[0].id;
       }
