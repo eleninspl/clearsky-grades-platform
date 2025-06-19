@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './PostInitialGrades.css';
 import Navbar from './InstNavbar.jsx';
-import { uploadInitialGrades } from '../../api/upload'; // ✅ added
+import { uploadGradesFile } from '../../api/orchestrator.js'; // ✅ added
 
 function PostInitialGrades() {
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ function PostInitialGrades() {
 
     try {
       setMessage('Uploading...');
-      const res = await uploadInitialGrades(file); // ✅ call backend
+      const res = await uploadGradesFile(file, 'initial'); // ✅ call backend
       setMessage('✅ Upload successful: ' + res.message);
     } catch (err) {
       setMessage('❌ Upload failed: ' + (err.response?.data?.error || err.message));

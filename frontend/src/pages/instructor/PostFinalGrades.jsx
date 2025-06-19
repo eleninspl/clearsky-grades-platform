@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './PostFinalGrades.css';
 import Navbar from './InstNavbar.jsx';
-import { uploadFinalGrades } from '../../api/upload'; // ✅ import
+import { uploadGradesFile } from '../../api/orchestrator'; // ✅ import
 
 function PostFinalGrades() {
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ function PostFinalGrades() {
 
     try {
       setMessage('Uploading...');
-      const res = await uploadFinalGrades(file); // ✅ use final upload API
+      const res = await uploadGradesFile(file, 'final');
       setMessage('✅ Upload successful: ' + res.message);
     } catch (err) {
       setMessage('❌ Upload failed: ' + (err.response?.data?.error || err.message));

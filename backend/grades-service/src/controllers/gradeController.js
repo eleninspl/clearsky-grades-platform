@@ -209,8 +209,6 @@ exports.handleUpload = async (req, res) => {
         user_id = findUser.rows[0].id;
       }
 
-
-
       // 3. Build detailed grade JSON (Q01–Q10)
       const detailed = {};
       for (let i = 1; i <= 10; i++) {

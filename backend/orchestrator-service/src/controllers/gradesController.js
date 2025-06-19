@@ -36,8 +36,45 @@ const getInstructorCourses = async (req, res) => {
   }
 };
 
+const FormData = require('form-data');
+const fs = require('fs');
+const path = require('path');
+
+const handleUpload = async (req, res) => {
+  const batchType = req.params.type;
+  const file = req.file;
+
+  if (!file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  const form = new FormData();
+  form.append('file', fs.createReadStream(file.path));
+
+  try {
+    const response = await axios.post(
+      `${GRADES_SERVICE_URL}/grades/${batchType}`,
+      form,
+      {
+        headers: {
+          ...form.getHeaders(),
+          Authorization: req.headers.authorization,
+        },
+      }
+    );
+
+    fs.unlinkSync(file.path); // καθάρισε το tmp αρχείο
+    res.status(200).json(response.data);
+  } catch (err) {
+    console.error('❌ Upload failed via orchestrator:', err.message);
+    res.status(500).json({ error: 'Upload failed via orchestrator' });
+  }
+};
+
+
 module.exports = {
   getStudentGrades,
-  getInstructorCourses
+  getInstructorCourses,
+  handleUpload
 };
 
