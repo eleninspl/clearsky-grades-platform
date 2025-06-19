@@ -13,5 +13,6 @@ router.get('/:id', controller.getInstitutionById);
 router.post('/', controller.createInstitution);
 router.put('/:id', controller.updateInstitution);
 router.delete('/:id', controller.deleteInstitution);
+router.patch('/:id/credits', authorize(['INST_REP', 'ADMIN']), controller.updateCreditsBalance);
 
 module.exports = router;

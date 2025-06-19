@@ -1,4 +1,5 @@
 const pool = require('../db');
+const axios = require('axios');
 
 exports.getBalance = async (req, res) => {
   const { institutionId } = req.params;
@@ -32,20 +33,24 @@ exports.buyCredits = async (req, res) => {
       return res.status(404).json({ error: 'Institution not found' });
     }
 
+    // Καταγραφή συναλλαγής
     await pool.query(
       `INSERT INTO clearsky.credit_transaction (institution_id, amount, tx_type, description)
        VALUES ($1, $2, 'PURCHASE', 'Buy credits')`,
       [institutionId, amount]
     );
 
-    const updated = await pool.query(
-      `SELECT credits_balance FROM clearsky.institution WHERE id = $1`,
-      [institutionId]
+    // Ενημέρωση balance μέσω institution-service
+    const token = req.headers.authorization;
+    const instRes = await axios.patch(
+      `http://institution-service:5003/institutions/${institutionId}/credits`,
+      { delta: amount },
+      { headers: { Authorization: token } }
     );
 
     res.json({
       message: 'Credits added',
-      new_balance: updated.rows[0].credits_balance
+      new_balance: instRes.data.credits_balance
     });
   } catch (err) {
     console.error(err);
@@ -53,29 +58,30 @@ exports.buyCredits = async (req, res) => {
   }
 };
 
-
 exports.consumeCredit = async (req, res) => {
   const { institutionId } = req.params;
 
   try {
-    const result = await pool.query(`
-      UPDATE clearsky.institution
-      SET credits_balance = credits_balance - 1
-      WHERE id = $1 AND credits_balance > 0
-      RETURNING credits_balance
-    `, [institutionId]);
+    // Ενημέρωση balance μέσω institution-service (αφαίρεση 1 credit)
+    const token = req.headers.authorization;
+    const instRes = await axios.patch(
+      `http://institution-service:5003/institutions/${institutionId}/credits`,
+      { delta: -1 },
+      { headers: { Authorization: token } }
+    );
 
-    if (result.rows.length === 0) {
+    if (instRes.data.credits_balance < 0) {
       return res.status(400).json({ error: 'Insufficient credits' });
     }
 
     // Καταγραφή συναλλαγής
-    await pool.query(`
-      INSERT INTO clearsky.credit_transaction (institution_id, amount, tx_type, description)
-      VALUES ($1, -1, 'CONSUME', 'Consumed 1 credit')
-    `, [institutionId]);
+    await pool.query(
+      `INSERT INTO clearsky.credit_transaction (institution_id, amount, tx_type, description)
+      VALUES ($1, -1, 'CONSUME', 'Consumed 1 credit')`,
+      [institutionId]
+    );
 
-    res.json({ message: 'Credit consumed', remaining: result.rows[0].credits_balance });
+    res.json({ message: 'Credit consumed', remaining: instRes.data.credits_balance });
   } catch (err) {
     res.status(500).json({ error: 'Database error' });
   }

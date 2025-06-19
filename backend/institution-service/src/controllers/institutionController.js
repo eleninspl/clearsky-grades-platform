@@ -63,7 +63,6 @@ exports.deleteInstitution = async (req, res) => {
   }
 };
 
-
 exports.getInstitutionStats = async (req, res) => {
   const creator = req.user;
   const inst = creator.inst;
@@ -178,6 +177,24 @@ exports.getInstitutionCourseEnrollment = async (req, res) => {
     });
   } catch (err) {
     console.error('[getInstitutionCourseEnrollment]', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+};
+
+exports.updateCreditsBalance = async (req, res) => {
+  const { id } = req.params;
+  const { delta } = req.body;
+  if (typeof delta !== 'number') {
+    return res.status(400).json({ error: 'Missing or invalid delta' });
+  }
+  try {
+    const result = await pool.query(
+      'UPDATE institution SET credits_balance = credits_balance + $1 WHERE id = $2 RETURNING *',
+      [delta, id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Institution not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
     res.status(500).json({ error: 'Database error' });
   }
 };
