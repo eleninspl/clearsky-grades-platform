@@ -10,11 +10,13 @@ app.use(cors({
   // credentials: true
 }));
 
+app.use(express.json());
+
 app.get('/', (req, res) => {
   res.send('User service running 👤');
 });
 
-app.use('/me', userRoutes);
+app.use('/', userRoutes);
 
 const PORT = process.env.PORT || 5002;
 app.listen(PORT, () => {

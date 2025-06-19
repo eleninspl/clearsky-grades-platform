@@ -1,15 +1,17 @@
-const jwt     = require('jsonwebtoken');
-const bcrypt  = require('bcrypt');
-const db      = require('../utils/db');
-const passport= require('../passport');             // ώστε να έχουμε init
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const db = require('../utils/db');
+const passport = require('../passport');
+const axios = require('axios');
 
-// helper δημιουργίας JWT
+const USER_SERVICE = process.env.USER_SERVICE_URL;
+
 function issueToken(user) {
   return jwt.sign(
-    { 
-      sub: user.id, 
-      role: user.role, 
-      inst: user.institution_id 
+    {
+      sub: user.id,
+      role: user.role,
+      inst: user.institution_id,
     },
     process.env.JWT_SECRET,
     { expiresIn: '2h' }
@@ -20,78 +22,73 @@ function issueToken(user) {
 exports.signup = async (req, res, next) => {
   const { email, password, fullName } = req.body;
   try {
+    // check if already exists
     const exists = await db.query(
-      `SELECT 1 FROM clearsky.auth_account WHERE provider='LOCAL' AND provider_uid=$1`,
+      `SELECT 1 FROM auth.auth_account WHERE provider='LOCAL' AND provider_uid=$1`,
       [email]
     );
     if (exists.rowCount) return res.status(409).json({ message: 'Exists' });
 
+    // create user remotely
+    const userRes = await axios.post(`${USER_SERVICE}/users`, {
+      username: email,
+      email,
+      full_name: fullName,
+      role: 'STUDENT',
+    });
+
+    const user = userRes.data;
+
     const hash = await bcrypt.hash(password, 10);
-    const uRes = await db.query(
-      `INSERT INTO clearsky.users (username,email,full_name,role,institution_id)
-       VALUES ($1,$2,$3,'STUDENT',1) RETURNING *`,
-      [email, email, fullName]
-    );
-    const user = uRes.rows[0];
     await db.query(
-      `INSERT INTO clearsky.auth_account (user_id,provider,provider_uid,password_hash,password_salt)
-       VALUES ($1,'LOCAL',$2,$3,'')`,
+      `INSERT INTO auth.auth_account (user_id, provider, provider_uid, password_hash)
+       VALUES ($1, 'LOCAL', $2, $3)`,
       [user.id, email, hash]
     );
+
     res.json({ token: issueToken(user) });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 };
 
-/* POST /auth/login          (LOCAL) */
+/* POST /auth/login */
 exports.login = [
-  passport.authenticate('local', { session:false }),
-  (req,res) => {
+  passport.authenticate('local', { session: false }),
+  (req, res) => {
     const user = req.user;
     const token = issueToken(user);
-    res.json({
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        full_name: user.full_name,
-        role: user.role,
-        institution_id: user.institution_id
-      }
-    });
-  }
+    res.json({ token, user });
+  },
 ];
 
 exports.logout = async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer '))
+      return res.status(401).json({ error: 'Unauthorized: Missing token' });
 
-    if (!authHeader?.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Unauthorized: Missing token" });
-    }
-
-    const token = authHeader.split(" ")[1];
+    const token = authHeader.split(' ')[1];
     const decoded = jwt.decode(token);
 
-    if (!decoded?.exp) {
-      return res.status(400).json({ error: "Invalid token structure" });
-    }
+    if (!decoded?.exp)
+      return res.status(400).json({ error: 'Invalid token structure' });
 
     const expirationTime = new Date(decoded.exp * 1000).toISOString();
 
     await db.query(
-      `INSERT INTO clearsky.blacklisted_tokens (token, expiration)
+      `INSERT INTO auth.blacklisted_tokens (token, expiration)
        VALUES ($1, $2)
        ON CONFLICT (token) DO NOTHING`,
       [token, expirationTime]
     );
 
-    res.status(200).json({ message: "Logged out successfully." });
+    res.status(200).json({ message: 'Logged out successfully.' });
   } catch (error) {
-    console.error("Logout error:", error.message);
-    res.status(500).json({ error: "Internal server error" });
+    console.error('Logout error:', error.message);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 
 exports.createUserByRole = async (req, res, next) => {
   const creator = req.user;
@@ -105,30 +102,21 @@ exports.createUserByRole = async (req, res, next) => {
     const hash = await bcrypt.hash(password, 10);
     const inst = creator.institution_id;
 
-    let uRes;
-    
-    if (role === 'STUDENT' && id) {
-      // ✅ Insert with custom id for STUDENT
-      uRes = await db.query(
-        `INSERT INTO clearsky.users (id, username, email, full_name, role, institution_id)
-         VALUES ($1, $2, $3, $4, $5, $6)
-         RETURNING *`,
-        [id, username, email, username, role, inst]
-      );
-    } else {
-      // ✅ Default insert (auto ID)
-      uRes = await db.query(
-        `INSERT INTO clearsky.users (username, email, full_name, role, institution_id)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING *`,
-        [username, email, username, role, inst]
-      );
-    }
+    const createRes = await axios.post(`${USER_SERVICE}/users`, {
+      id,
+      username,
+      email,
+      full_name: username,
+      role,
+      institution_id: inst,
+    });
+
+    const user = createRes.data;
 
     await db.query(
-      `INSERT INTO clearsky.auth_account (user_id, provider, provider_uid, password_hash)
+      `INSERT INTO auth.auth_account (user_id, provider, provider_uid, password_hash)
        VALUES ($1, 'LOCAL', $2, $3)`,
-      [uRes.rows[0].id, email, hash]
+      [user.id, email, hash]
     );
 
     res.sendStatus(201);
@@ -136,5 +124,3 @@ exports.createUserByRole = async (req, res, next) => {
     next(err);
   }
 };
-
-

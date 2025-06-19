@@ -2,7 +2,7 @@ const pool = require('../db');
 
 exports.getAllGrades = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM clearsky.grade ORDER BY id');
+    const result = await pool.query('SELECT * FROM grade ORDER BY id');
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: 'Database error' });
@@ -12,7 +12,7 @@ exports.getAllGrades = async (req, res) => {
 exports.getGradeById = async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await pool.query('SELECT * FROM clearsky.grade WHERE id = $1', [id]);
+    const result = await pool.query('SELECT * FROM grade WHERE id = $1', [id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Grade not found' });
     res.json(result.rows[0]);
   } catch (err) {
@@ -26,20 +26,16 @@ exports.getGradesByStudent = async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT 
-        g.id AS grade_id,  
-        g.value AS grade, 
-        g.type, 
-        g.status,
-        g.grade_batch_id,
-        g.course_id,                  
-        c.code AS course_code, 
-        c.title AS course_title,
-        c.exam_period,        
-        g.detailed_grade_json
-      FROM clearsky.grade g
-      JOIN clearsky.course c ON g.course_id = c.id
-      WHERE g.user_am = $1
-      ORDER BY c.code, g.type
+        id AS grade_id,
+        value AS grade,
+        type,
+        status,
+        grade_batch_id,
+        course_id,
+        detailed_grade_json
+      FROM grade
+      WHERE user_am = $1
+      ORDER BY course_id, type
     `, [id]);
 
     res.json(result.rows);
@@ -59,7 +55,7 @@ exports.createGrade = async (req, res) => {
 
   try {
     const result = await pool.query(`
-      INSERT INTO clearsky.grade (type, value, user_id, course_id, grade_batch_id)
+      INSERT INTO grade (type, value, user_id, course_id, grade_batch_id)
       VALUES ($1, $2, $3, $4, $5) RETURNING *
     `, [type, value, user_id, course_id, grade_batch_id]);
     res.status(201).json(result.rows[0]);
@@ -73,7 +69,7 @@ exports.updateGrade = async (req, res) => {
   const { value, status } = req.body;
   try {
     const result = await pool.query(`
-      UPDATE clearsky.grade SET value = $1, status = $2 WHERE id = $3 RETURNING *
+      UPDATE grade SET value = $1, status = $2 WHERE id = $3 RETURNING *
     `, [value, status, id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Grade not found' });
     res.json(result.rows[0]);
@@ -85,7 +81,7 @@ exports.updateGrade = async (req, res) => {
 exports.deleteGrade = async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await pool.query('DELETE FROM clearsky.grade WHERE id = $1 RETURNING *', [id]);
+    const result = await pool.query('DELETE FROM grade WHERE id = $1 RETURNING *', [id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Grade not found' });
     res.json({ message: 'Grade deleted', grade: result.rows[0] });
   } catch (err) {
