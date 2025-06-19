@@ -42,7 +42,7 @@ router.get('/student-dashboard', extractUserIdFromToken, async (req, res) => {
         },
       });
       
-      const grades = gradeRes.data;
+      const grades = gradesRes.data;
       console.log('📦 Grades fetched:', grades.length);
   
       // 2. Extract course IDs
@@ -55,7 +55,9 @@ router.get('/student-dashboard', extractUserIdFromToken, async (req, res) => {
         courseIds.map(async (cid) => {
           try {
             const courseRes = await axios.get(`${COURSE_SERVICE_URL}/courses/${cid}`, {
-              headers: { Authorization: req.headers.authorization },
+              headers: {
+                Authorization: req.headers.authorization, // προώθησε το αρχικό token
+              },
             });
             courseTitleMap[cid] = courseRes.data.title;
           } catch (err) {
@@ -64,7 +66,7 @@ router.get('/student-dashboard', extractUserIdFromToken, async (req, res) => {
           }
         })
       );
-  
+      
       // 4. Compose response
       const enrichedGrades = grades.map(g => ({
         course_id: g.course_id,

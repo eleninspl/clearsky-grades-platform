@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './StudentDashboard.css';
 import StudentNavbar from './StudentNavbar';
 import CourseCharts from '../../components/CourseCharts';
-import { fetchStudentDashboard } from '../../api/orchestrator';
+import { fetchStudentGrades } from '../../api/orchestrator';
 import { useAuth } from '../../auth/AuthContext';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
 
@@ -15,11 +15,11 @@ function StudentDashboard() {
 
   useEffect(() => {
     if (!user?.id) return;
-  
+
     const loadDashboard = async () => {
       try {
-        const { grades } = await fetchStudentDashboard();
-        setGrades(grades);
+        const gradesData = await fetchStudentGrades(user.id);
+        setGrades(gradesData);
       } catch (err) {
         console.error('❌ Failed to fetch dashboard:', err);
         setError(err.message || 'Error fetching dashboard');
@@ -27,10 +27,10 @@ function StudentDashboard() {
         setLoading(false);
       }
     };
-  
+
     loadDashboard();
   }, [user]);
-  
+
 
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
