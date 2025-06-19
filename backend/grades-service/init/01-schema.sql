@@ -1,20 +1,65 @@
+-- SQLBook: Code
 -- Only schema for grades-service
 
 -- ENUMs
+
+CREATE TYPE user_role AS ENUM ('STUDENT', 'INSTRUCTOR', 'INST_REP', 'ADMIN');
 CREATE TYPE grade_status AS ENUM ('VOID', 'OPEN', 'FINAL');
 CREATE TYPE grade_type AS ENUM ('INITIAL', 'FINAL');
+CREATE TYPE auth_provider AS ENUM ('LOCAL', 'GOOGLE', 'INSTITUTION');
+
+CREATE TABLE institution (
+    id              SERIAL PRIMARY KEY,
+    name            VARCHAR(50)  NOT NULL,
+    email           VARCHAR(80)  NOT NULL UNIQUE,
+    credits_balance INTEGER      NOT NULL DEFAULT 0,
+    created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
 -- Supporting minimal users & course tables (foreign key only)
 CREATE TABLE users (
-  id SERIAL PRIMARY KEY,
-  am INTEGER UNIQUE NOT NULL
+    id             SERIAL PRIMARY KEY,
+    username       VARCHAR(30)   NOT NULL UNIQUE,
+    email          VARCHAR(80)   NOT NULL UNIQUE,
+    full_name      VARCHAR(80)   NOT NULL,
+    role           user_role     NOT NULL,
+    external_id    INTEGER,
+    am             INTEGER,
+    institution_id INTEGER,
+    created_at     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_users_am UNIQUE (am),
+    CONSTRAINT fk_user_institution FOREIGN KEY (institution_id)
+        REFERENCES institution(id) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
-CREATE TABLE course (
-  id SERIAL PRIMARY KEY,
-  code VARCHAR(10) NOT NULL,
-  title VARCHAR(50) NOT NULL
+CREATE TABLE auth_account (
+    id              SERIAL PRIMARY KEY,
+    user_id         INTEGER       NOT NULL,
+    provider        auth_provider NOT NULL,
+    provider_uid    VARCHAR(128)  NOT NULL,        -- Google sub, eppn, local username etc.
+    password_hash   VARCHAR(255),                  -- filled only when provider='LOCAL'
+    password_salt   VARCHAR(255),
+    created_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_login      TIMESTAMP,
+    CONSTRAINT fk_auth_user FOREIGN KEY (user_id)
+        REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT uq_provider_uid UNIQUE (provider, provider_uid)
 );
+CREATE INDEX idx_auth_user ON auth_account (user_id);
+
+CREATE TABLE course (
+    id             SERIAL PRIMARY KEY,
+    code           VARCHAR(10)  NOT NULL UNIQUE,
+    title          VARCHAR(50)  NOT NULL,
+    exam_period    VARCHAR(20),
+    description    TEXT,
+    instructor_id  INTEGER      NOT NULL,
+    institution_id INTEGER      NOT NULL,
+    created_at     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_course_instructor  FOREIGN KEY (instructor_id)  REFERENCES users(id),
+    CONSTRAINT fk_course_institution FOREIGN KEY (institution_id) REFERENCES institution(id)
+);
+
 
 -- Grade batches
 CREATE TABLE grade_batch (
@@ -62,27 +107,3 @@ ALTER TABLE grade ADD FOREIGN KEY (grade_statistic_id) REFERENCES grade_statisti
 ALTER TABLE grade_batch ADD FOREIGN KEY (course_id) REFERENCES course(id);
 ALTER TABLE grade_batch ADD FOREIGN KEY (uploader_id) REFERENCES users(id);
 ALTER TABLE grade_statistic ADD FOREIGN KEY (course_id) REFERENCES course(id) ON DELETE CASCADE;
-
--- Triggers
-CREATE OR REPLACE FUNCTION fn_refresh_grade_stats() RETURNS TRIGGER LANGUAGE plpgsql AS $$
-BEGIN
-  WITH stats AS (
-    SELECT g.course_id, g.type,
-           AVG(g.value)::NUMERIC(5,2) AS mean,
-           PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY g.value)::NUMERIC(5,2) AS median,
-           STDDEV_POP(g.value)::NUMERIC(5,2) AS std_dev
-    FROM grade g
-    WHERE g.course_id = NEW.course_id AND g.type = NEW.type
-    GROUP BY g.course_id, g.type
-  )
-  INSERT INTO grade_statistic (course_id, type, mean, median, std_dev)
-  SELECT course_id, type, mean, median, std_dev FROM stats
-  ON CONFLICT (course_id, type)
-  DO UPDATE SET mean=EXCLUDED.mean, median=EXCLUDED.median, std_dev=EXCLUDED.std_dev, generated_at=CURRENT_TIMESTAMP;
-  RETURN NEW;
-END;
-$$;
-
-CREATE TRIGGER tg_grade_aiud_refresh_stats
-AFTER INSERT OR UPDATE OR DELETE ON grade
-FOR EACH ROW EXECUTE FUNCTION fn_refresh_grade_stats();
