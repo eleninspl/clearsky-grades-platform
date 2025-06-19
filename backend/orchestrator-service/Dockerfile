@@ -1,20 +1,20 @@
-# Base image
+# ✅ Base image
 FROM node:20
 
-# Create app directory
+# ✅ Ορίζουμε το working directory στο app
 WORKDIR /app
 
-# Copy package files
+# ✅ Αντιγραφή package files πρώτα για καλύτερο caching
 COPY package*.json ./
 
-# Install dependencies
+# ✅ Εγκατάσταση εξαρτήσεων
 RUN npm install
 
-# Copy rest of the code
+# ✅ Αντιγραφή όλων των υπόλοιπων αρχείων
 COPY . .
 
-# Expose the orchestrator port
+# ✅ Άνοιγμα port
 EXPOSE 5010
 
-# Start the server
+# ✅ Εκκίνηση της εφαρμογής
 CMD ["node", "src/index.js"]

@@ -28,3 +28,5 @@ export const reviewAPI = createAxiosInstance(import.meta.env.VITE_REVIEW_API_URL
 export const statisticsAPI = createAxiosInstance(import.meta.env.VITE_STATISTICS_API_URL);
 export const creditsAPI = createAxiosInstance(import.meta.env.VITE_CREDITS_API_URL);
 export const uploadAPI = createAxiosInstance(import.meta.env.VITE_UPLOAD_API_URL);
+export const orchestratorAPI = createAxiosInstance(import.meta.env.VITE_ORCHESTRATOR_API_URL);
+

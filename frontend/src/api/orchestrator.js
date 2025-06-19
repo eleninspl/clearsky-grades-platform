@@ -1,6 +1,6 @@
 import { orchestratorAPI } from '../utils/axiosInstance';
 
-export const fetchGradesByStudentId = async () => {
+export const fetchStudentDashboard = async () => {
   const res = await orchestratorAPI.get('/student-dashboard');
   return res.data;
 };
