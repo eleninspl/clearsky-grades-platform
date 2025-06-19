@@ -2,79 +2,83 @@ const axios = require('axios');
 
 const GRADES_SERVICE_URL = process.env.GRADES_SERVICE_URL || 'http://grades-service:5004';
 
-const getStudentGrades = async (req, res) => {
-  const { studentId } = req.params;
+// 📊 Δημόσια στατιστικά
+exports.getQuestionKeys = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const response = await axios.get(`${GRADES_SERVICE_URL}/grades/questions/${courseId}`);
+    res.json(response.data);
+  } catch (err) {
+    console.error('❌ Error fetching question keys:', err.message);
+    res.status(500).json({ error: 'Failed to fetch question keys' });
+  }
+};
 
+exports.getTotalDistribution = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const response = await axios.get(`${GRADES_SERVICE_URL}/grades/distribution/${courseId}`);
+    res.json(response.data);
+  } catch (err) {
+    console.error('❌ Error fetching total distribution:', err.message);
+    res.status(500).json({ error: 'Failed to fetch total distribution' });
+  }
+};
+
+exports.getQuestionDistribution = async (req, res) => {
+  try {
+    const { courseId, question } = req.params;
+    const response = await axios.get(`${GRADES_SERVICE_URL}/grades/distribution/${courseId}/q/${question}`);
+    res.json(response.data);
+  } catch (err) {
+    console.error('❌ Error fetching question distribution:', err.message);
+    res.status(500).json({ error: 'Failed to fetch question distribution' });
+  }
+};
+
+// Υφιστάμενες συναρτήσεις
+exports.getStudentGrades = async (req, res) => {
+  const { studentId } = req.params;
   try {
     const gradesRes = await axios.get(`${GRADES_SERVICE_URL}/grades/student/${studentId}`, {
       headers: {
         Authorization: req.headers.authorization
       }
     });
-
     res.json(gradesRes.data);
   } catch (err) {
     console.error(`❌ Failed to fetch grades for student ${studentId}:`, err.message);
-    res.status(500).json({ error: 'Failed to fetch grades from grades-service' });
+    res.status(500).json({ error: 'Failed to fetch grades' });
   }
 };
 
-const getInstructorCourses = async (req, res) => {
+exports.getInstructorCourses = async (req, res) => {
   const { instructorId } = req.params;
-
   try {
     const response = await axios.get(`${GRADES_SERVICE_URL}/grades/instructor/${instructorId}/courses`, {
       headers: {
-        Authorization: req.headers.authorization,
-      },
+        Authorization: req.headers.authorization
+      }
     });
-
     res.json(response.data);
   } catch (err) {
     console.error(`❌ Failed to fetch courses for instructor ${instructorId}:`, err.message);
-    res.status(500).json({ error: 'Failed to fetch instructor courses from grades-service' });
+    res.status(500).json({ error: 'Failed to fetch courses' });
   }
 };
 
-const FormData = require('form-data');
-const fs = require('fs');
-const path = require('path');
-
-const handleUpload = async (req, res) => {
-  const batchType = req.params.type;
-  const file = req.file;
-
-  if (!file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
-
-  const form = new FormData();
-  form.append('file', fs.createReadStream(file.path));
-
+exports.handleUpload = async (req, res) => {
+  const { type } = req.params;
   try {
-    const response = await axios.post(
-      `${GRADES_SERVICE_URL}/grades/${batchType}`,
-      form,
-      {
-        headers: {
-          ...form.getHeaders(),
-          Authorization: req.headers.authorization,
-        },
+    const response = await axios.post(`${GRADES_SERVICE_URL}/grades/${type}`, req.file, {
+      headers: {
+        Authorization: req.headers.authorization,
+        'Content-Type': 'multipart/form-data'
       }
-    );
-
-    fs.unlinkSync(file.path); // καθάρισε το tmp αρχείο
-    res.status(200).json(response.data);
+    });
+    res.json(response.data);
   } catch (err) {
-    console.error('❌ Upload failed via orchestrator:', err.message);
-    res.status(500).json({ error: 'Upload failed via orchestrator' });
+    console.error('❌ Upload failed:', err.message);
+    res.status(500).json({ error: 'Failed to upload file' });
   }
 };
-
-
-module.exports = {
-  getStudentGrades,
-  getInstructorCourses,
-  handleUpload
-};
-
