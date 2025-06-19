@@ -1,17 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const ctrl = require('../controllers/reviewController');
-const authorize = require('../middleware/authorize');
 
-// Review requests
-router.get('/requests', ctrl.getAllReviewRequests);
-router.get('/requests/:id', ctrl.getReviewRequestById);
+// Routes
 router.post('/requests', ctrl.createReviewRequest);
-
-// Review responses
-router.post('/responses', ctrl.createReviewResponse);
-
-// Get review requests for instructor
+router.get('/requests', ctrl.getAllReviewRequests);
 router.get('/', ctrl.getReviewRequestsByInstructor);
+router.post('/responses', ctrl.createReviewResponse);
 
 module.exports = router;
