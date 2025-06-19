@@ -111,12 +111,13 @@ services:
     ports:
       - "5439:5432"
     environment:
-      POSTGRES_DB: clearsky
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: coursedb
+      POSTGRES_USER: courseuser
+      POSTGRES_PASSWORD: secret
     volumes:
       - ../backend/course-service/init/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ../backend/course-service/init/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+
 
 
   review-service:
