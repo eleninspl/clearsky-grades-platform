@@ -10,9 +10,6 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Install additional module if not in package.json (axios)
-RUN npm install axios
-
 # Copy source code
 COPY ./src ./src
 

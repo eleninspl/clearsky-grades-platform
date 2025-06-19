@@ -1,3 +1,8 @@
+INSERT INTO course (id, code, title) VALUES
+(101, 'CS101', 'Intro to Computer Science'),
+(102, 'CS102', 'Data Structures'),
+(103, 'CS103', 'Algorithms');
+
 -- Grade Batches
 INSERT INTO grade_batch (id, course_id, uploader_id, type)
 VALUES 
