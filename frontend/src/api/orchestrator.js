@@ -5,3 +5,7 @@ export const fetchStudentGrades = async (studentId) => {
     return res.data;
   };
   
+  export const fetchInstructorCourses = async (instructorId) => {
+    const res = await orchestratorAPI.get(`/grades/instructor/${instructorId}/courses`);
+    return res.data;
+  };

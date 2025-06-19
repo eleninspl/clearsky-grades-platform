@@ -19,6 +19,25 @@ const getStudentGrades = async (req, res) => {
   }
 };
 
-module.exports = {
-  getStudentGrades
+const getInstructorCourses = async (req, res) => {
+  const { instructorId } = req.params;
+
+  try {
+    const response = await axios.get(`${GRADES_SERVICE_URL}/grades/instructor/${instructorId}/courses`, {
+      headers: {
+        Authorization: req.headers.authorization,
+      },
+    });
+
+    res.json(response.data);
+  } catch (err) {
+    console.error(`❌ Failed to fetch courses for instructor ${instructorId}:`, err.message);
+    res.status(500).json({ error: 'Failed to fetch instructor courses from grades-service' });
+  }
 };
+
+module.exports = {
+  getStudentGrades,
+  getInstructorCourses
+};
+

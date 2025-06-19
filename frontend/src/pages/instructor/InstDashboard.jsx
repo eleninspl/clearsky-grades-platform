@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './InstDashboard.css';
 import Navbar from './InstNavbar.jsx';
 import CourseCharts from '../../components/CourseCharts.jsx';
-import { fetchCoursesByInstructorId } from '../../api/course';
+import { fetchInstructorCourses } from '../../api/orchestrator';
 import { useAuth } from '../../auth/AuthContext';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
 
@@ -19,7 +19,7 @@ function InstDashboard() {
     const loadCourses = async () => {
       setLoading(true);
       try {
-        const data = await fetchCoursesByInstructorId(user.id);
+        const data = await fetchInstructorCourses(user.id);
         setCourses(data);
       } catch (err) {
         console.error('❌ Failed to load instructor courses:', err);
