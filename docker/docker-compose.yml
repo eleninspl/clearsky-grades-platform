@@ -12,17 +12,6 @@ services:
       - CHOKIDAR_USEPOLLING=true
     command: sh -c "npm install && npm run dev"
 
-  db-service:
-    build: ../backend/db-service
-    ports:
-      - "5433:5432"
-    env_file:
-      - ../backend/db-service/.env
-    volumes:
-      - ../backend/db-service/init.sql:/docker-entrypoint-initdb.d/01-init.sql
-      - ../backend/db-service/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
-
-    restart: always
 
   auth-service:
     build: ../backend/auth-service
@@ -32,7 +21,6 @@ services:
       - ../backend/auth-service/.env
     depends_on:
       - auth-db
-
   auth-db:
     image: postgres:16
     ports:
@@ -45,6 +33,7 @@ services:
       - ../backend/auth-service/init/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ../backend/auth-service/init/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
 
+
   user-service:
     build: ../backend/user-service
     ports:
@@ -53,7 +42,6 @@ services:
       - ../backend/user-service/.env
     depends_on:
       - user-db
-
   user-db:
     image: postgres:16
     ports:
@@ -75,7 +63,6 @@ services:
       - ../backend/institution-service/.env
     depends_on:
       - institution-db
-
   institution-db:
     image: postgres:16
     ports:
@@ -98,7 +85,6 @@ services:
       - ../backend/grades-service/.env
     depends_on:
       - grades-db
-
   grades-db:
     image: postgres:16
     ports:
@@ -120,7 +106,6 @@ services:
       - ../backend/course-service/.env
     depends_on:
       - course-db
-
   course-db:
     image: postgres:16
     ports:
@@ -133,6 +118,7 @@ services:
       - ../backend/course-service/init/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ../backend/course-service/init/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
 
+
   review-service:
     build: ../backend/review-service
     ports:
@@ -141,8 +127,6 @@ services:
       - ../backend/review-service/.env
     depends_on:
       - review-db
-
-
   review-db:
     image: postgres:16
     ports:
@@ -157,15 +141,6 @@ services:
     restart: always
 
 
-  statistics-service:
-    build: ../backend/statistics-service
-    ports:
-      - "5007:5007"
-    env_file:
-      - ../backend/statistics-service/.env
-    depends_on:
-      - db-service  
-
   credits-service:
     build: ../backend/credits-service
     ports:
@@ -174,7 +149,6 @@ services:
       - ../backend/credits-service/.env
     depends_on:
       - credits-db
-
   credits-db:
     image: postgres:16
     ports:
@@ -189,12 +163,21 @@ services:
     restart: always
 
 
-  upload-service:
-    build: ../backend/upload-service
+  orchestrator-service:
+    build: ../backend/orchestrator-service
     ports:
-      - "5009:5009"
+      - "5010:5010"
     env_file:
-      - ../backend/upload-service/.env
+      - ../backend/orchestrator-service/.env
+    depends_on:
+      - auth-service
+      - user-service
+      - institution-service
+      - course-service
+      - grades-service
+      - review-service
+      - credits-service
+    restart: unless-stopped
 
       
 volumes:
