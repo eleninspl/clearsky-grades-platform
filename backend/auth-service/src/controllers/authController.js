@@ -90,37 +90,56 @@ exports.logout = async (req, res) => {
   }
 };
 
+// controllers/authController.js
+
 exports.createUserByRole = async (req, res, next) => {
   const creator = req.user;
   const { email, username, password, role, id } = req.body;
 
+  // Έλεγχος έγκυρου role
   if (!['INSTRUCTOR', 'INST_REP', 'STUDENT'].includes(role)) {
     return res.sendStatus(400);
   }
 
   try {
+    // 1) Hash του password
     const hash = await bcrypt.hash(password, 10);
     const inst = creator.institution_id;
+    const fullname = username;
 
-    const createRes = await axios.post(`${USER_SERVICE}/users`, {
-      id,
-      username,
-      email,
-      full_name: username,
-      role,
-      institution_id: inst,
-    });
+    // 2) Εισαγωγή στον πίνακα users (μέσα στο authdb schema)
+    let userResult;
+    if (id) {
+      userResult = await db.query(
+        `INSERT INTO users
+           (id, username, email, full_name, role, institution_id)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING *`,
+        [id, username, email, fullname, role, inst]
+      );
+    } else {
+      userResult = await db.query(
+        `INSERT INTO users
+           (username, email, full_name, role, institution_id)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING *`,
+        [username, email, fullname, role, inst]
+      );
+    }
+    const user = userResult.rows[0];
 
-    const user = createRes.data;
-
+    // 3) Εισαγωγή στον πίνακα auth_account
     await db.query(
-      `INSERT INTO auth_account (user_id, provider, provider_uid, password_hash)
+      `INSERT INTO auth_account
+         (user_id, provider, provider_uid, password_hash)
        VALUES ($1, 'LOCAL', $2, $3)`,
       [user.id, email, hash]
     );
 
-    res.sendStatus(201);
+    // 4) Επιστροφή του νέου χρήστη
+    res.status(201).json(user);
   } catch (err) {
     next(err);
   }
 };
+
