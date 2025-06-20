@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './InstNavbar.css';
-import axios from 'axios';
+import { useAuthActions } from '../../hooks/useAuth';
 import logo from '../../assets/clearSKY-logo.png';
 
 function Navbar({ setCurrentComponent }) {
@@ -25,29 +26,7 @@ function Navbar({ setCurrentComponent }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = async () => {
-  setShowProfileDropdown(false);
-
-  const token = localStorage.getItem('token');
-  try {
-    await fetch('http://localhost:5001/auth/logout', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` }
-    });
-  } catch (err) {
-    console.error('Logout failed:', err);
-  }
-
-  // Καθάρισμα
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-
-  delete axios.defaults.headers.common['Authorization'];  // ⬅️ σημαντικό
-
-  // Προσθήκη replace για να μη δουλεύει το Back
-  navigate('/login', { replace: true });
-};
-
+  const { handleLogout } = useAuthActions();
 
 
   return (

@@ -1,28 +1,39 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { loginUser } from '../api/auth';
+import { login as apiLogin, logout as apiLogout } from '../api/orchestrator'; 
 import { useAuth } from '../auth/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-export const useAuthActions = () => {
+export function useAuthActions() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { login: contextLogin, logout: contextLogout } = useAuth();
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const handleLogin = async (email, password) => {
     setLoading(true);
     setError(null);
     try {
-      const { token, user } = await loginUser(email, password);
+      const { token, user } = await apiLogin(email, password);
       localStorage.setItem('token', token);
-      login(user);
-      navigate('/');
+      contextLogin(user);
+      navigate('/redirect', { replace: true });
     } catch (err) {
-      setError('Invalid credentials');
+      const msg = err.response?.data?.error || 'Login failed';
+      setError(msg);
     } finally {
       setLoading(false);
     }
   };
 
-  return { handleLogin, loading, error };
-};
+  const handleLogout = async () => {
+    try {
+      await apiLogout(); 
+    } catch (err) {
+      console.warn('Logout API failed, continuing locally');
+    }
+    contextLogout();
+    navigate('/login', { replace: true });
+  };
+
+  return { handleLogin, handleLogout, loading, error };
+}

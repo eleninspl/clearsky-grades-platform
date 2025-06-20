@@ -31,3 +31,24 @@ export const getQuestionDistribution = async (courseId, question) => {
   const res = await orchestratorAPI.get(`/grades/distribution/${courseId}/q/${question}`);
   return res.data;
 };
+
+
+
+export const login = async (email, password) => {
+  const res = await orchestratorAPI.post('/auth/login', { email, password });
+  return res.data; // { token, user }
+};
+
+export const signup = async (email, password, fullName) => {
+  const res = await orchestratorAPI.post('/auth/signup', {
+    email,
+    password,
+    fullName,
+  });
+  return res.data;
+};
+
+export const logout = async () => {
+  const res = await orchestratorAPI.post('/auth/logout');
+  return res.data;
+};

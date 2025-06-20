@@ -6,8 +6,6 @@ export default function RoleRedirect() {
   const { user } = useAuth();
 
   if (!user) return <Navigate to="/login" replace />;
-  console.log('User in RoleRedirect:', user);
-
 
   switch (user.role) {
     case 'INST_REP':
