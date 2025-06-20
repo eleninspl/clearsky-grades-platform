@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './RepNavbar.css';
-import axios from 'axios';    
 import logo from '../../assets/clearSKY-logo.png';
+import { useAuthActions } from '../../hooks/useAuth';
+import { useAuth } from '../../auth/AuthContext';
 
 function RepNavbar() {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const profileDropdownRef = useRef(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -19,30 +21,7 @@ function RepNavbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = async () => {
-  setShowProfileDropdown(false);
-
-  const token = localStorage.getItem('token');
-  try {
-    await fetch('http://localhost:5001/auth/logout', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` }
-    });
-  } catch (err) {
-    console.error('Logout failed:', err);
-  }
-
-  // Καθάρισμα
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-
-  delete axios.defaults.headers.common['Authorization'];  // ⬅️ σημαντικό
-
-  // Προσθήκη replace για να μη δουλεύει το Back
-  navigate('/login', { replace: true });
-};
-
-
+  const { handleLogout } = useAuthActions();
 
   return (
     <nav className="rep-navbar">
@@ -55,7 +34,7 @@ function RepNavbar() {
       <div className="rep-navbar-right">
         <div className="rep-navbar-profile-wrapper" ref={profileDropdownRef}>
           <button className="rep-navbar-link rep-navbar-profile-btn" onClick={() => setShowProfileDropdown(v => !v)}>
-            Representative's Name
+            {user?.full_name || 'User'}
           </button>
           {showProfileDropdown && (
             <div className="rep-navbar-profile-dropdown">

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './InstNavbar.css';
 import { useAuthActions } from '../../hooks/useAuth';
+import { useAuth } from '../../auth/AuthContext';
 import logo from '../../assets/clearSKY-logo.png';
 
 function Navbar({ setCurrentComponent }) {
@@ -11,6 +12,8 @@ function Navbar({ setCurrentComponent }) {
   const profileDropdownRef = useRef(null);
   const gradesDropdownRef = useRef(null);
   const navigate = useNavigate();
+  const { user } = useAuth(); 
+
 
   // Κλείσιμο dropdown όταν κάνεις click εκτός
   useEffect(() => {
@@ -28,20 +31,19 @@ function Navbar({ setCurrentComponent }) {
 
   const { handleLogout } = useAuthActions();
 
-
   return (
     <nav className="navbar">
       <div className="navbar-left">
         <img src={logo} alt="clearSKY logo" className="navbar-img-logo" />
         <button className="navbar-link" onClick={() => navigate('/instructor/dashboard')}>
           My Dashboard
-          </button>
+        </button>
         <button className="navbar-link" onClick={() => navigate('/instructor/courses')}>
           My Courses
         </button>
         <button className="navbar-link" onClick={() => navigate('/instructor/notifications')}>
           Notifications
-          </button>
+        </button>
         <div className="navbar-grades-wrapper" ref={gradesDropdownRef}>
           <button className="navbar-link navbar-grades-btn" onClick={() => setShowGradesDropdown(v => !v)}>
             Post Grades
@@ -61,8 +63,9 @@ function Navbar({ setCurrentComponent }) {
       <div className="navbar-right">
         <div className="navbar-profile-wrapper" ref={profileDropdownRef}>
           <button className="navbar-link navbar-profile-btn" onClick={() => setShowProfileDropdown(v => !v)}>
-            Instructor's Name
+            {user?.full_name || 'User'}
           </button>
+
           {showProfileDropdown && (
             <div className="navbar-profile-dropdown">
               <button className="navbar-profile-dropdown-btn">Profile</button>

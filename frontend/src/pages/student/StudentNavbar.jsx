@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './StudentNavbar.css';
 import logo from '../../assets/clearSKY-logo.png';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useAuthActions } from '../../hooks/useAuth';
+import { useAuth } from '../../auth/AuthContext';
 
 function StudentNavbar() {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const profileDropdownRef = useRef(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -19,30 +21,7 @@ function StudentNavbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = async () => {
-  setShowProfileDropdown(false);
-
-  const token = localStorage.getItem('token');
-  try {
-    await fetch('http://localhost:5001/auth/logout', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` }
-    });
-  } catch (err) {
-    console.error('Logout failed:', err);
-  }
-
-  // Καθάρισμα
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-
-  delete axios.defaults.headers.common['Authorization'];  // ⬅️ σημαντικό
-
-  // Προσθήκη replace για να μη δουλεύει το Back
-  navigate('/login', { replace: true });
-};
-
-
+  const { handleLogout } = useAuthActions();
 
   return (
     <nav className="student-navbar">
@@ -63,11 +42,8 @@ function StudentNavbar() {
 
       <div className="student-navbar-right">
         <div className="student-navbar-profile-wrapper" ref={profileDropdownRef}>
-          <button
-            className="student-navbar-link student-navbar-profile-btn"
-            onClick={() => setShowProfileDropdown(v => !v)}
-          >
-            Student's Name
+        <button className="rep-navbar-link rep-navbar-profile-btn" onClick={() => setShowProfileDropdown(v => !v)}>
+            {user?.full_name || 'User'}
           </button>
           {showProfileDropdown && (
             <div className="student-navbar-profile-dropdown">
