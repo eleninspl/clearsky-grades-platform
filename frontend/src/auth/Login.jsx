@@ -60,6 +60,9 @@ export default function Login() {
                 <button type="submit" className="login-btn" disabled={loading}>
                   {loading ? 'Logging in…' : 'Login'}
                 </button>
+                <button type="button" className="login-btn google">
+                  <span className="google-text">Login with Google</span>
+                </button>
               </div>
 
               {error && <div className="login-error">{error}</div>}

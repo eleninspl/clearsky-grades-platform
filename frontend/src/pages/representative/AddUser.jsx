@@ -15,6 +15,7 @@ function AddUser() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [id, setId] = useState(''); // ✅ added for student ID
+  const [googleEmail, setGoogleEmail] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -64,6 +65,12 @@ function AddUser() {
               <label>email</label>
               <input type="email" className="adduser-input" value={email} onChange={e => setEmail(e.target.value)} />
             </div>
+            {type === 'student' && (
+              <div className="adduser-form-row">
+                <label>Google email</label>
+                <input type="email" className="adduser-input" value={googleEmail} onChange={e => setGoogleEmail(e.target.value)} placeholder="(optional)" />
+              </div>
+            )}
             <div className="adduser-form-row">
               <label>password</label>
               <input type="password" className="adduser-input" value={password} onChange={e => setPassword(e.target.value)} />
