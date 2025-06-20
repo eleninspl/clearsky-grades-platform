@@ -19,7 +19,19 @@ function StudentDashboard() {
     const loadDashboard = async () => {
       try {
         const gradesData = await fetchStudentGrades(user.id);
-        setGrades(gradesData);
+
+        // Prefer FINAL over INITIAL for each course
+        const latestGrades = Object.values(
+          gradesData.reduce((acc, grade) => {
+            const { course_id } = grade;
+            if (!acc[course_id] || grade.type === 'FINAL') {
+              acc[course_id] = grade;
+            }
+            return acc;
+          }, {})
+        );
+
+        setGrades(latestGrades);
       } catch (err) {
         console.error('❌ Failed to fetch dashboard:', err);
         setError(err.message || 'Error fetching dashboard');
@@ -65,8 +77,7 @@ function StudentDashboard() {
               <thead>
                 <tr>
                   <th>Course</th>
-                  <th>Grade Type</th>
-                  <th>Final Grade</th>
+                  <th>Grade</th>
                 </tr>
               </thead>
               <tbody>
@@ -74,15 +85,10 @@ function StudentDashboard() {
                   <tr
                     key={index}
                     onClick={() => setSelectedCourseId(g.course_id)}
-                    className={
-                      selectedCourseId === g.course_id
-                        ? 'student-dashboard-row-selected'
-                        : ''
-                    }
+                    className={selectedCourseId === g.course_id ? 'student-dashboard-row-selected' : ''}
                     style={{ cursor: 'pointer' }}
                   >
                     <td>{g.course_title}</td>
-                    <td>{g.type}</td>
                     <td>{g.grade}</td>
                   </tr>
                 ))}
