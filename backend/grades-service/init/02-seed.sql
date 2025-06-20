@@ -129,7 +129,7 @@ ON CONFLICT DO NOTHING;
 INSERT INTO grade (type, value, user_am, course_id, grade_batch_id, status)
 VALUES
 ('INITIAL', 86, 103, 101, 1, 'OPEN'),
-('INITIAL', 92, 103, 102, 2, 'VOID'),
+('FINAL', 92, 103, 102, 2, 'FINAL'),
 ('INITIAL', 90, 103, 103, 3, 'OPEN');
 
 -- 📌 GRADE BATCH for CS103

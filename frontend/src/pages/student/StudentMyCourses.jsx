@@ -131,36 +131,46 @@ function StudentMyCourses() {
 
                   return (
                     <tr key={course.course_id}>
-                      <td>{courseTitle}</td>
-                      <td>{examPeriod}</td>
-                      <td>{gradingStatus}</td>
+                      <td>{course.course_title}</td>
+                      <td>{course.exam_period || '-'}</td>
+                      <td>
+                        {final ? 'closed' : initial ? 'open' : 'N/A'}
+                      </td>
                       <td className="student-courses-actions">
                         <button
                           onClick={() => {
-                            setActiveGradeCourse(activeGradeCourse === courseTitle ? null : courseTitle);
+                            setActiveGradeCourse(
+                              activeGradeCourse === course.course_title ? null : course.course_title
+                            );
                             setActiveReviewCourse(null);
                             setActiveStatusCourse(null);
                           }}
                         >
                           View my grades
                         </button>
-
+                  
                         <button
-                          disabled={!hasInitialOpen || hasReviewRequest || isClosed}
-
+                          disabled={!initial}
+                          title={
+                            initial ? '' : 'You can only request a review if an INITIAL grade exists.'
+                          }
                           onClick={() => {
-                            setActiveReviewCourse(activeReviewCourse === courseTitle ? null : courseTitle);
+                            setActiveReviewCourse(
+                              activeReviewCourse === course.course_title ? null : course.course_title
+                            );
                             setActiveGradeCourse(null);
                             setActiveStatusCourse(null);
                           }}
                         >
                           Ask for review
                         </button>
-
+                  
                         <button
                           disabled={!isAnswered}
                           onClick={() => {
-                            setActiveStatusCourse(activeStatusCourse === courseTitle ? null : courseTitle);
+                            setActiveStatusCourse(
+                              activeStatusCourse === course.course_title ? null : course.course_title
+                            );
                             setActiveReviewCourse(null);
                             setActiveGradeCourse(null);
                           }}
@@ -170,6 +180,8 @@ function StudentMyCourses() {
                       </td>
                     </tr>
                   );
+                  
+                  
                 })}
 
               </tbody>
