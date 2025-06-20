@@ -1,4 +1,6 @@
 const axios = require('axios');
+const fs = require('fs');
+const FormData = require('form-data');
 
 const GRADES_SERVICE_URL = process.env.GRADES_SERVICE_URL || 'http://grades-service:5004';
 
@@ -69,13 +71,18 @@ exports.getInstructorCourses = async (req, res) => {
 
 exports.handleUpload = async (req, res) => {
   const { type } = req.params;
+
   try {
-    const response = await axios.post(`${GRADES_SERVICE_URL}/grades/${type}`, req.file, {
+    const form = new FormData();
+    form.append('file', fs.createReadStream(req.file.path), req.file.originalname);
+
+    const response = await axios.post(`${GRADES_SERVICE_URL}/grades/${type}`, form, {
       headers: {
-        Authorization: req.headers.authorization,
-        'Content-Type': 'multipart/form-data'
+        ...form.getHeaders(),
+        Authorization: req.headers.authorization
       }
     });
+
     res.json(response.data);
   } catch (err) {
     console.error('❌ Upload failed:', err.message);

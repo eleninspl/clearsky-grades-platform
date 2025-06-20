@@ -13,17 +13,9 @@ export const fetchInstructorCourses = async (instructorId) => {
 export const uploadGradesFile = async (file, type) => {
   const formData = new FormData();
   formData.append('file', file);
-
-  const res = await orchestratorAPI.post(`/grades/${type}`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
-
+  const res = await orchestratorAPI.post(`/grades/${type}`, formData);
   return res.data;
 };
-
-// ✅ ΝΕΕΣ ΣΥΝΑΡΤΗΣΕΙΣ ΓΙΑ ΣΤΑΤΙΣΤΙΚΑ
 
 export const getDistribution = async (courseId) => {
   const res = await orchestratorAPI.get(`/grades/distribution/${courseId}`);
