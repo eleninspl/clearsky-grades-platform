@@ -110,8 +110,8 @@ function StudentMyCourses() {
                   const examPeriod = course.exam_period;
 
                   let gradingStatus = 'N/A';
-                  if (initial) gradingStatus = 'open';
-                  else if (final) gradingStatus = 'closed';
+                  if (final) gradingStatus = 'closed';
+                  else if (initial) gradingStatus = 'open';
                   const isClosed = gradingStatus === 'closed';
 
 
@@ -202,13 +202,31 @@ function StudentMyCourses() {
                     <h4>My Grades – {activeGradeCourse}</h4>
                     <div className="student-courses-grade-labels">
                       <label>Total</label>
-                      <input type="text" readOnly value={grades.find(c => c.course_title === activeGradeCourse)?.grade || ''} />
-                      {Object.entries(grades.find(c => c.course_title === activeGradeCourse)?.detailed_grade_json || {}).map(([key, val]) => (
-                        <React.Fragment key={key}>
-                          <label>{key.toUpperCase()}</label>
-                          <input type="text" readOnly value={val} />
-                        </React.Fragment>
-                      ))}
+                      <input
+                        type="text"
+                        readOnly
+                        value={
+                          (() => {
+                            const courseGrades = grades.filter(c => c.course_title === activeGradeCourse);
+                            const final = courseGrades.find(c => c.type === 'FINAL');
+                            const initial = courseGrades.find(c => c.type === 'INITIAL');
+                            return final?.grade || initial?.grade || '';
+                          })()
+                        }
+                      />
+                     {Object.entries(
+                      (() => {
+                        const courseGrades = grades.filter(c => c.course_title === activeGradeCourse);
+                        const final = courseGrades.find(c => c.type === 'FINAL');
+                        const initial = courseGrades.find(c => c.type === 'INITIAL');
+                        return final?.detailed_grade_json || initial?.detailed_grade_json || {};
+                      })()
+                    ).map(([key, val]) => (
+                      <React.Fragment key={key}>
+                        <label>{key.toUpperCase()}</label>
+                        <input type="text" readOnly value={val} />
+                      </React.Fragment>
+                    ))}
                     </div>
                   </div>
                   <div className="student-courses-grade-chartbox">
