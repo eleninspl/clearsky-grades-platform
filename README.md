@@ -8,26 +8,23 @@
 Κάνε clone το αποθετήριο και μπες στον φάκελο του project:
 
 bash
-Copy
-Edit
-git clone https://github.com/your-username/your-repo.git
+
+git clone https://github.com/ntua/saas25-21.git
 cd your-repo
 Εκτέλεσε το κατάλληλο script ανάλογα με το λειτουργικό σύστημα σου:
 
 🔵 macOS ή Linux:
 
-bash
-Copy
-Edit
+bash terminal
 ./start.sh
 
 
 🟦 Windows (PowerShell):
 
-powershell
-Copy
-Edit
+powershell terminal
 .\start.ps1
+
+
 Το script θα:
 
 Μεταβεί στον φάκελο docker/
@@ -36,6 +33,6 @@ Edit
 
 Εκκινήσει ξανά τα containers με docker-compose up -d
 
-Περιμένει έως ότου το http://localhost:5173 είναι διαθέσιμο
+Περιμένει έως ότου το http://localhost:5173/login είναι διαθέσιμο
 
 Ανοίξει αυτόματα την σελίδα στον browser
