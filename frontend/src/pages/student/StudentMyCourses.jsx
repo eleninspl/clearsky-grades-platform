@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import './StudentMyCourses.css';
 import StudentNavbar from './StudentNavbar';
 //import { fetchGradesByStudentId } from '../../api/grades';
+import { useReviewStatus } from '../../hooks/useReviewStatus';
 import { fetchStudentGrades } from '../../api/orchestrator';
-import { submitReviewRequest } from '../../api/reviews';
+import { createReviewRequest } from '../../api/orchestrator';
+
 import { useAuth } from '../../auth/AuthContext';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
 import SimpleBarChart from '../../components/SimpleBarChart';
@@ -56,10 +58,18 @@ function StudentMyCourses() {
     }
   
     try {
-      await submitReviewRequest({
-        grade_id: gradeObj.grade_id, // ✅ από το backend
-        user_id: user.id,            // ✅ από context
-        message: reviewComments[courseName] || ''
+      await createReviewRequest({
+        grade_id: gradeObj.grade_id,
+        user_id: user.id,
+        message: reviewComments[courseName] || '',
+        course_id: gradeObj.course_id,
+        course_title: gradeObj.course_title,
+        student_name: user.fullName || user.name || 'Anonymous',
+        instructor_id: gradeObj.instructor_id,
+        exam_period: gradeObj.exam_period,
+        grade_type: gradeObj.type,                        // ✅ εδώ είναι το "type" (π.χ. 'INITIAL')
+        grade_value: gradeObj.grade,
+        detailed_grade_json: gradeObj.detailed_grade_json || {},
       });
   
       alert('✅ Review request submitted successfully!');
@@ -70,15 +80,16 @@ function StudentMyCourses() {
     }
   };
   
-    // Ομαδοποίηση βαθμών ανά μάθημα
-    const groupedByCourse = grades.reduce((acc, grade) => {
-      const key = grade.course_id;
-      if (!acc[key]) acc[key] = { course: grade, initial: null, final: null };
-      if (grade.type === 'INITIAL') acc[key].initial = grade;
-      if (grade.type === 'FINAL') acc[key].final = grade;
-      return acc;
-    }, {});
-    
+
+  // Ομαδοποίηση βαθμών ανά μάθημα
+  const groupedByCourse = grades.reduce((acc, grade) => {
+    const key = grade.course_id;
+    if (!acc[key]) acc[key] = { course: grade, initial: null, final: null };
+    if (grade.type === 'INITIAL') acc[key].initial = grade;
+    if (grade.type === 'FINAL') acc[key].final = grade;
+    return acc;
+  }, {});
+
   return (
     <div className="student-courses-container">
       <StudentNavbar />
@@ -100,55 +111,55 @@ function StudentMyCourses() {
                 </tr>
               </thead>
               <tbody>
-              {Object.values(groupedByCourse).map(({ course, initial, final }) => {
-                const courseTitle = course.course_title;
-                const examPeriod = course.exam_period;
-                const gradingStatus = initial?.status || final?.status || 'VOID';
+                {Object.values(groupedByCourse).map(({ course, initial, final }) => {
+                  const courseTitle = course.course_title;
+                  const examPeriod = course.exam_period;
+                  const gradingStatus = initial?.status || final?.status || 'VOID';
 
-                const hasInitialOpen = initial && initial.status === 'OPEN';
-                const hasReview = false; // TODO: Θα γίνει true αν υπάρχει review (θα το φτιάξουμε)
-                
-                return (
-                  <tr key={course.course_id}>
-                    <td>{courseTitle}</td>
-                    <td>{examPeriod}</td>
-                    <td>{gradingStatus.toLowerCase()}</td>
-                    <td className="student-courses-actions">
-                      <button
-                        onClick={() => {
-                          setActiveGradeCourse(activeGradeCourse === courseTitle ? null : courseTitle);
-                          setActiveReviewCourse(null);
-                          setActiveStatusCourse(null);
-                        }}
-                      >
-                        View my grades
-                      </button>
+                  const hasInitialOpen = initial && initial.status === 'OPEN';
+                  const hasReview = false; // TODO: Θα γίνει true αν υπάρχει review (θα το φτιάξουμε)
 
-                      <button
-                        disabled={!hasInitialOpen || hasReview}
-                        onClick={() => {
-                          setActiveReviewCourse(activeReviewCourse === courseTitle ? null : courseTitle);
-                          setActiveGradeCourse(null);
-                          setActiveStatusCourse(null);
-                        }}
-                      >
-                        Ask for review
-                      </button>
+                  return (
+                    <tr key={course.course_id}>
+                      <td>{courseTitle}</td>
+                      <td>{examPeriod}</td>
+                      <td>{gradingStatus.toLowerCase()}</td>
+                      <td className="student-courses-actions">
+                        <button
+                          onClick={() => {
+                            setActiveGradeCourse(activeGradeCourse === courseTitle ? null : courseTitle);
+                            setActiveReviewCourse(null);
+                            setActiveStatusCourse(null);
+                          }}
+                        >
+                          View my grades
+                        </button>
 
-                      <button
-                        disabled={!hasReview}
-                        onClick={() => {
-                          setActiveStatusCourse(activeStatusCourse === courseTitle ? null : courseTitle);
-                          setActiveReviewCourse(null);
-                          setActiveGradeCourse(null);
-                        }}
-                      >
-                        View review status
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                        <button
+                          disabled={!hasInitialOpen || hasReview}
+                          onClick={() => {
+                            setActiveReviewCourse(activeReviewCourse === courseTitle ? null : courseTitle);
+                            setActiveGradeCourse(null);
+                            setActiveStatusCourse(null);
+                          }}
+                        >
+                          Ask for review
+                        </button>
+
+                        <button
+                          disabled={!hasReview}
+                          onClick={() => {
+                            setActiveStatusCourse(activeStatusCourse === courseTitle ? null : courseTitle);
+                            setActiveReviewCourse(null);
+                            setActiveGradeCourse(null);
+                          }}
+                        >
+                          View review status
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
 
 
               </tbody>
@@ -228,20 +239,46 @@ function StudentMyCourses() {
               </div>
             )}
 
-            {activeStatusCourse && (
-              <div className="student-courses-status-wrapper">
-                <div className="student-courses-status-box">
-                  <div className="student-courses-status-header">
-                    REVIEW REQUEST STATUS – {activeStatusCourse}
-                  </div>
-                  <textarea readOnly value="Status: Pending\n[This will be fetched from backend later]" />
-                  <div className="student-courses-status-buttons">
-                    <button className="download-btn">Download attachment</button>
-                    <button className="ack-btn">Ack</button>
+            {activeStatusCourse && (() => {
+              const courseIdForStatus = grades.find(c => c.course_title === activeStatusCourse)?.course_id || null;
+              const { status, response, loading: statusLoading, error: statusError } = useReviewStatus(user?.id, courseIdForStatus);
+
+              return (
+                <div className="student-courses-status-wrapper">
+                  <div className="student-courses-status-box">
+                    <div className="student-courses-status-header">
+                      REVIEW REQUEST STATUS – {activeStatusCourse}
+                    </div>
+
+                    {statusLoading && <p>Loading status...</p>}
+                    {statusError && <p>Error: {statusError}</p>}
+
+                    {!statusLoading && status && (
+                      <>
+                        <textarea
+                          readOnly
+                          value={
+                            `Status: ${status}\n` +
+                            (response
+                              ? `Instructor Message: ${response.message}\nFinal Grade: ${response.final_grade}`
+                              : 'No response yet.')
+                          }
+                          rows={6}
+                        />
+                        <div className="student-courses-status-buttons">
+                          <button className="download-btn" disabled>
+                            Download attachment
+                          </button>
+                          <button className="ack-btn" disabled>
+                            Ack
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </>
         )}
       </main>
