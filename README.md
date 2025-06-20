@@ -20,6 +20,8 @@ bash
 Copy
 Edit
 ./start.sh
+
+
 🟦 Windows (PowerShell):
 
 powershell
