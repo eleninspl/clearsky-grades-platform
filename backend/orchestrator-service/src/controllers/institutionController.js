@@ -29,4 +29,4 @@ exports.updateCredits = (req, res) => forward(req, res, 'patch', `/${req.params.
 
 // Stats
 exports.getStats = (req, res) => forward(req, res, 'get', '/stats');
-exports.getCourseEnrollment = (req, res) => forward(req, res, 'get', '/stats/course-enrollment');
+exports.getCourseList = (req, res) => forward(req, res, 'get', '/stats/course-list');

@@ -105,8 +105,8 @@ export const getInstitutionStats = async () => {
   return res.data;
 };
 
-export const getInstitutionCourseEnrollment = async () => {
-  const res = await orchestratorAPI.get('/institutions/stats/course-enrollment');
+export const getInstitutionCourseList = async () => {
+  const res = await orchestratorAPI.get('/institutions/stats/course-list');
   return res.data;
 };
 

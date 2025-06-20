@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './RepDashboard.css';
 import RepNavbar from './RepNavbar.jsx';
-import { getInstitutionStats } from '../../api/orchestrator';
+import { getInstitutionStats, getInstitutionCourseList } from '../../api/orchestrator';
 
 function RepDashboard() {
   const [stats, setStats] = useState({
@@ -10,6 +10,9 @@ function RepDashboard() {
     active_courses: 0
   });
   const [loading, setLoading] = useState(true);
+
+  const [courses, setCourses] = useState([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
 
   useEffect(() => {
     getInstitutionStats()
@@ -20,6 +23,16 @@ function RepDashboard() {
       .catch(err => {
         console.error('Failed to load stats:', err);
         setLoading(false);
+      });
+
+      getInstitutionCourseList()
+      .then(data => {
+        setCourses(data.courses || []);
+        setLoadingCourses(false);
+      })
+      .catch(err => {
+        console.error('Failed to load course list:', err);
+        setLoadingCourses(false);
       });
   }, []);
 
@@ -49,11 +62,32 @@ function RepDashboard() {
               </div>
             </div>
           </div>
-          <div className="rep-stats-charts">
-            <div className="rep-stats-chart">
-              <h3>Course Enrollment</h3>
-              <div className="rep-stats-chart-placeholder">[Course Enrollment Chart]</div>
-            </div>
+
+
+          <div className="rep-stats-table">
+            <h3>Course & Instructor List</h3>
+            {loadingCourses ? (
+              <p>Loading courses...</p>
+            ) : (
+              <table className="rep-table">
+                <thead>
+                  <tr>
+                    <th>Course Code</th>
+                    <th>Title</th>
+                    <th>Instructor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {courses.map(course => (
+                    <tr key={course.courseCode}>
+                      <td>{course.courseCode}</td>
+                      <td>{course.courseTitle}</td>
+                      <td>{course.instructorName}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </main>

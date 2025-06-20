@@ -12,6 +12,6 @@ router.delete('/:id', ctrl.remove);
 // Protected (requires Authorization header)
 router.patch('/:id/credits', ctrl.updateCredits);
 router.get('/stats', ctrl.getStats);
-router.get('/stats/course-enrollment', ctrl.getCourseEnrollment);
+router.get('/stats/course-list', ctrl.getCourseList);
 
 module.exports = router;

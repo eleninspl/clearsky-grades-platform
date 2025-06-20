@@ -76,3 +76,29 @@
   color: #6c757d;
   font-size: 1.1rem;
 } 
+
+.rep-stats-table {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+.rep-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.rep-table th,
+.rep-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.rep-table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}

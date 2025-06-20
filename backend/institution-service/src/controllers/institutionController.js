@@ -66,13 +66,13 @@ exports.deleteInstitution = async (req, res) => {
 exports.getInstitutionStats = async (req, res) => {
   const creator = req.user;
   const inst = creator.inst;
-  
+
   if (!creator.inst) return res.status(403).json({ error: 'Missing institution ID in JWT' });
 
   try {
     const client = await pool.connect();
-    
-    
+
+
     const [studentsRes, instructorsRes, coursesRes] = await Promise.all([
       client.query(`SELECT COUNT(*) FROM users WHERE institution_id = $1 AND role = 'STUDENT'`, [inst]),
       client.query(`SELECT COUNT(*) FROM users WHERE institution_id = $1 AND role = 'INSTRUCTOR'`, [inst]),
@@ -92,35 +92,31 @@ exports.getInstitutionStats = async (req, res) => {
   }
 };
 
-exports.getInstitutionCourseEnrollment = async (req, res) => {
-  const creator = req.user;
-  const inst = creator.inst ?? creator.institution_id;
+exports.getCourseListWithInstructors = async (req, res) => {
+  const inst = req.user.inst ?? req.user.institution_id;
   if (!inst) return res.status(403).json({ error: 'Missing institution ID in JWT' });
 
   try {
-    const client = await pool.connect();
-    const { rows } = await client.query(
-      `SELECT c.id, c.title,
-              COUNT(DISTINCT g.user_am) AS enrolled_students
-       FROM course c
-       LEFT JOIN grade g
-         ON g.course_id = c.id AND g.status = 'FINAL'
-       WHERE c.institution_id = $1
-       GROUP BY c.id, c.title
-       ORDER BY enrolled_students DESC`,
-      [inst]
-    );
-    client.release();
+    const result = await pool.query(`
+      SELECT 
+        c.code AS course_code,
+        c.title AS course_title,
+        u.full_name AS instructor_name
+      FROM course c
+      JOIN users u ON u.id = c.instructor_id
+      WHERE c.institution_id = $1
+      ORDER BY c.title
+    `, [inst]);
 
-    res.json({
-      enrollment: rows.map(r => ({
-        courseId: r.id,
-        title: r.title,
-        enrolled: parseInt(r.enrolled_students, 10)
-      }))
-    });
+    const courses = result.rows.map(row => ({
+      courseCode: row.course_code,
+      courseTitle: row.course_title,
+      instructorName: row.instructor_name
+    }));
+
+    res.json({ courses });
   } catch (err) {
-    console.error('[getInstitutionCourseEnrollment]', err);
+    console.error('[getCourseListWithInstructors]', err);
     res.status(500).json({ error: 'Database error' });
   }
 };

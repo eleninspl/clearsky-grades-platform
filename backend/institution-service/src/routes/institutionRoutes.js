@@ -4,7 +4,7 @@ const controller = require('../controllers/institutionController');
 const authorize = require('../middleware/authorize');
 
 router.get('/stats', authorize(['INST_REP']), controller.getInstitutionStats);
-router.get('/stats/course-enrollment', authorize(['INST_REP']), controller.getInstitutionCourseEnrollment);
+router.get('/stats/course-list', authorize(['INST_REP']), controller.getCourseListWithInstructors);
 
 router.get('/', controller.getAllInstitutions);
 router.get('/:id', controller.getInstitutionById);
