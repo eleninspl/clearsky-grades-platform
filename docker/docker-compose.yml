@@ -34,27 +34,6 @@ services:
       - ../backend/auth-service/init/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
 
 
-  user-service:
-    build: ../backend/user-service
-    ports:
-      - "5002:5002"
-    env_file:
-      - ../backend/user-service/.env
-    depends_on:
-      - user-db
-  user-db:
-    image: postgres:16
-    ports:
-      - "5435:5432"
-    environment:
-      POSTGRES_DB: userdb
-      POSTGRES_USER: useruser
-      POSTGRES_PASSWORD: secret
-    volumes:
-      - ../backend/user-service/init/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-      - ../backend/user-service/init/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
-
-
   institution-service:
     build: ../backend/institution-service
     ports:
@@ -96,28 +75,6 @@ services:
     volumes:
       - ../backend/grades-service/init/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ../backend/grades-service/init/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
-
-
-  course-service:
-    build: ../backend/course-service
-    ports:
-      - "5005:5005"
-    env_file:
-      - ../backend/course-service/.env
-    depends_on:
-      - course-db
-  course-db:
-    image: postgres:16
-    ports:
-      - "5439:5432"
-    environment:
-      POSTGRES_DB: coursedb
-      POSTGRES_USER: courseuser
-      POSTGRES_PASSWORD: secret
-    volumes:
-      - ../backend/course-service/init/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-      - ../backend/course-service/init/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
-
 
 
   review-service:
@@ -172,9 +129,7 @@ services:
       - ../backend/orchestrator-service/.env
     depends_on:
       - auth-service
-      - user-service
       - institution-service
-      - course-service
       - grades-service
       - review-service
       - credits-service

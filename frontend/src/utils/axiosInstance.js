@@ -33,10 +33,7 @@ const createAxiosInstance = (baseURL) => {
 };
 
 // Δημιουργούμε instances για κάθε service
-export const authAPI = createAxiosInstance(import.meta.env.VITE_AUTH_API_URL);
-export const userAPI = createAxiosInstance(import.meta.env.VITE_USER_API_URL);
-export const institutionAPI = createAxiosInstance(import.meta.env.VITE_INSTITUTION_API_URL);
-export const gradesAPI = createAxiosInstance(import.meta.env.VITE_GRADES_API_URL);
+
 
 export const reviewAPI = createAxiosInstance(import.meta.env.VITE_REVIEW_API_URL);
 

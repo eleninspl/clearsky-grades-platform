@@ -41,10 +41,6 @@ function AddUser() {
     }
   };
 
-  const handleChangePassword = () => {
-    navigate('/representative/dashboard');
-  };
-
   return (
     <div className="adduser-container">
       <RepNavbar />
@@ -83,7 +79,6 @@ function AddUser() {
 
             <div className="adduser-btn-row">
               <button type="submit" className="adduser-btn">Add user</button>
-              <button type="button" className="adduser-btn" onClick={handleChangePassword}>Change passw</button>
             </div>
           </form>
         </section>

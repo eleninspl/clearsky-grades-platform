@@ -46,28 +46,6 @@ function PostFinalGrades() {
           </div>
         </section>
 
-        <section className="grades-section">
-          <div className="grades-section-title">XLSX file parsing</div>
-          <div className="grades-parsing-form">
-            <div className="grades-form-row">
-              <label>Course:</label>
-              <input type="text" className="grades-input" placeholder="Course name" />
-            </div>
-            <div className="grades-form-row">
-              <label>Period:</label>
-              <input type="text" className="grades-input" placeholder="Exam period" />
-            </div>
-            <div className="grades-form-row">
-              <label>n. of grades</label>
-              <input type="text" className="grades-input" placeholder="N" />
-            </div>
-            <div className="grades-btn-row">
-              <button className="grades-btn" onClick={handleConfirm}>CONFIRM</button>
-              <button className="grades-btn">CANCEL</button>
-            </div>
-          </div>
-        </section>
-
         <section className="grades-message-area">
           <div className="grades-message-title">Message area</div>
           <div className="grades-message-box">{message}</div> {/* ✅ display message */}
