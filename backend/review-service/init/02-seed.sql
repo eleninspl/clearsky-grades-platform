@@ -17,7 +17,7 @@ INSERT INTO review_request (
   9001,
   'Test Course',
   'Test Student',
-  9002,
+  102,
   'Fall 2099'
 );
 

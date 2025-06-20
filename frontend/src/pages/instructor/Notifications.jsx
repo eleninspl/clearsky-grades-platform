@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './InstNavbar.jsx';
 import './Notifications.css';
-import { fetchReviewRequestsByInstructor, submitReviewResponse } from '../../api/reviews';
+import { getReviewRequestsByInstructor, submitReviewResponse } from '../../api/orchestrator';
 import { useAuth } from '../../auth/AuthContext';
 
 function Notifications() {
@@ -12,13 +12,12 @@ function Notifications() {
   const [selectedReply, setSelectedReply] = useState(null);
   const [action, setAction] = useState('Total accept');
   const [message, setMessage] = useState('');
-  const [finalGrade, setFinalGrade] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
     if (!user?.id) return;
     setLoading(true);
-    fetchReviewRequestsByInstructor(user.id)
+    getReviewRequestsByInstructor(user.id)
       .then(setRequests)
       .catch(() => setError('Failed to fetch review requests'))
       .finally(() => setLoading(false));
@@ -37,7 +36,7 @@ function Notifications() {
             <table className="notifications-table">
               <thead>
                 <tr>
-                  <th>course name</th>
+                  <th>course title</th>
                   <th>exam period</th>
                   <th>student</th>
                   <th>action</th>
@@ -49,7 +48,7 @@ function Notifications() {
                 )}
                 {requests.map((n, idx) => (
                   <tr key={n.review_id}>
-                    <td>{n.course_name}</td>
+                    <td>{n.course_title}</td>
                     <td>{n.exam_period}</td>
                     <td>{n.student_name}</td>
                     <td>
@@ -69,7 +68,7 @@ function Notifications() {
               <div className="notifications-reply-form-wrapper">
                 <div className="notifications-reply-form-title">
                   REPLY TO GRADE REVIEW REQUEST &nbsp;
-                  <b>{requests[selectedReply].course_name}</b> &nbsp;
+                  <b>{requests[selectedReply].course_title}</b> &nbsp;
                   {requests[selectedReply].exam_period} &nbsp;
                   <b>{requests[selectedReply].student_name}</b>
                 </div>
@@ -97,21 +96,6 @@ function Notifications() {
                       className="notifications-reply-textarea"
                     />
                   </div>
-                  {action === 'Total accept' && (
-                    <div className="notifications-reply-row">
-                      <label>Final Grade</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="10"
-                        step="0.1"
-                        value={finalGrade}
-                        onChange={e => setFinalGrade(e.target.value)}
-                        className="notifications-final-grade-input"
-                        placeholder="0-10"
-                      />
-                    </div>
-                  )}
                   <div className="notifications-reply-row notifications-reply-row-end">
                     <button
                       type="button"
@@ -121,16 +105,14 @@ function Notifications() {
                         await submitReviewResponse({
                           review_request_id: req.review_id,
                           responder_id: user.id,
-                          message,
-                          final_grade: action === 'Total accept' ? finalGrade : undefined
-                        });
+                          message
+                        });                                              
                         // Refresh requests
                         if (user?.id) {
-                          fetchReviewRequestsByInstructor(user.id).then(setRequests);
-                        }
+                          getReviewRequestsByInstructor(user.id).then(setRequests);
+                        }                        
                         setSelectedReply(null);
-                        setMessage('');
-                        setFinalGrade('');
+                        setMessage(''); 
                         setSuccessMsg('Η απάντηση καταχωρήθηκε και το αίτημα αφαιρέθηκε από τα notifications.');
                         setTimeout(() => setSuccessMsg(''), 3000);
                       }}
