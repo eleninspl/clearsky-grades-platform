@@ -6,19 +6,20 @@ import { useAuth } from '../../auth/AuthContext';
 import CourseCharts from '../../components/CourseCharts';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
 
-
 function AllCourses() {
   const [selectedCourse, setSelectedCourse] = useState(null);
-  const { statistics } = useCourseStatistics(selectedCourse?.id);
+  const [gradeType, setGradeType] = useState(null); // θα το καθορίζουμε δυναμικά
 
   const { user } = useAuth();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
+  const { statistics } = useCourseStatistics(selectedCourse?.id, gradeType);
+
   useEffect(() => {
     if (!user?.id) return;
-  
+
     const loadCourses = async () => {
       setLoading(true);
       try {
@@ -31,17 +32,21 @@ function AllCourses() {
         setLoading(false);
       }
     };
-  
+
     loadCourses();
   }, [user?.id]);
-  
 
   const handleCourseClick = (course) => {
     setSelectedCourse(course);
+
+    // 👇 Επιλογή τύπου ανάλογα με το αν υπάρχει final_submission
+    const hasFinal = course.final_submission && course.final_submission !== '-';
+    setGradeType(hasFinal ? 'FINAL' : 'INITIAL');
   };
 
   const handleClosePopup = () => {
     setSelectedCourse(null);
+    setGradeType(null);
   };
 
   return (
@@ -93,7 +98,9 @@ function AllCourses() {
             <div className="courses-popup" onClick={(e) => e.stopPropagation()}>
               <div className="courses-popup-header">
                 <h3>{selectedCourse.course_name}</h3>
-                <button className="courses-popup-close" onClick={handleClosePopup}>×</button>
+                <button className="courses-popup-close" onClick={handleClosePopup}>
+                  ×
+                </button>
               </div>
               <div className="courses-popup-content">
                 <div className="courses-popup-description">
@@ -101,8 +108,11 @@ function AllCourses() {
                   <p>{selectedCourse.description || 'No description available.'}</p>
                 </div>
                 <div className="courses-popup-charts">
-                  <h4>Course Statistics</h4>
-                  <CourseCharts courseName={selectedCourse?.course_name} statistics={statistics} />
+                  <h4>Course Statistics ({gradeType})</h4>
+                  <CourseCharts
+                    courseName={selectedCourse?.course_name}
+                    statistics={statistics}
+                  />
                 </div>
               </div>
             </div>

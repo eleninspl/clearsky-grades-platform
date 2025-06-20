@@ -22,8 +22,8 @@ router.get('/instructor/:id/courses', authorize(['INSTRUCTOR', 'ADMIN']), contro
 router.post('/:type', authorize(['INSTRUCTOR']), upload.single('file'), controller.handleUpload);
 
 // 🔓 Public: Grade statistics
-router.get('/questions/:courseId', controller.getQuestionKeys);
-router.get('/distribution/:courseId', controller.getTotalDistribution);
-router.get('/distribution/:courseId/q/:question', controller.getQuestionDistribution);
+router.get('/distribution/:courseId/:type', controller.getTotalDistribution);
+router.get('/distribution/:courseId/:type/q/:question', controller.getQuestionDistribution);
+router.get('/questions/:courseId/:type', controller.getQuestionKeys);
 
 module.exports = router;

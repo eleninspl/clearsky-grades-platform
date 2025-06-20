@@ -7,11 +7,16 @@ import { useAuth } from '../../auth/AuthContext';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
 
 function InstDashboard() {
-
   const { user } = useAuth();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const [selectedCourseName, setSelectedCourseName] = useState('');
+  const [gradeType, setGradeType] = useState(null); // 👈 ΝΕΟ: καθορίζει INITIAL ή FINAL
+
+  const { statistics, loading: statsLoading } = useCourseStatistics(selectedCourseId, gradeType);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -31,15 +36,18 @@ function InstDashboard() {
 
     loadCourses();
   }, [user?.id]);
- 
-  const [selectedCourseId, setSelectedCourseId] = useState(null);
-  const [selectedCourseName, setSelectedCourseName] = useState('');
-  const { statistics, loading: statsLoading } = useCourseStatistics(selectedCourseId);
+
+  // 👇 Ενημέρωση τύπου όταν φορτώνεται course
+  const selectCourse = (course) => {
+    setSelectedCourseId(course.id);
+    setSelectedCourseName(course.course_name);
+    const hasFinal = course.final_submission && course.final_submission !== '-';
+    setGradeType(hasFinal ? 'FINAL' : 'INITIAL');
+  };
 
   useEffect(() => {
     if (courses.length > 0 && !selectedCourseId) {
-      setSelectedCourseId(courses[0].id);
-      setSelectedCourseName(courses[0].course_name);
+      selectCourse(courses[0]); // 👈 auto-select πρώτο course
     }
   }, [courses]);
 
@@ -74,10 +82,7 @@ function InstDashboard() {
                   <tr
                     key={course.id}
                     className={selectedCourseId === course.id ? 'stats-row-selected' : ''}
-                    onClick={() => {
-                      setSelectedCourseId(course.id);
-                      setSelectedCourseName(course.course_name);
-                    }}
+                    onClick={() => selectCourse(course)}
                     style={{ cursor: 'pointer' }}
                   >
                     <td>{course.course_name}</td>
@@ -90,9 +95,14 @@ function InstDashboard() {
             </table>
           )}
         </div>
+
         {selectedCourseId && statistics.length > 0 && (
-          <CourseCharts courseName={selectedCourseName} statistics={statistics} />
+          <>
+            <h4>Statistics ({gradeType})</h4>
+            <CourseCharts courseName={selectedCourseName} statistics={statistics} />
+          </>
         )}
+
       </main>
     </div>
   );

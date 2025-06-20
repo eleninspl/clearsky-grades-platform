@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getDistribution, getQuestionDistribution, getQuestionKeys } from '../api/grades';
 
-export const useCourseStatistics = (courseId) => {
+export const useCourseStatistics = (courseId, type = 'INITIAL') => {
   const [statistics, setStatistics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,12 +12,12 @@ export const useCourseStatistics = (courseId) => {
     const fetchStats = async () => {
       setLoading(true);
       try {
-        const total = await getDistribution(courseId);
-        const keys = await getQuestionKeys(courseId);
+        const total = await getDistribution(courseId, type);
+        const keys = await getQuestionKeys(courseId, type);        
 
         const questions = await Promise.all(
           keys.map(q =>
-            getQuestionDistribution(courseId, q).then(data => ({ label: q, data }))
+            getQuestionDistribution(courseId, q, type).then(data => ({ label: q, data }))
           )
         );
 

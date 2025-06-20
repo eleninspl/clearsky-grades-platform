@@ -41,7 +41,11 @@ function StudentMyCourses() {
   const [reviewComments, setReviewComments] = useState({});
 
   const courseId = grades.find(c => c.course_title === activeGradeCourse)?.course_id || null;
-  const { statistics, loading: statsLoading, error: statsError } = useCourseStatistics(courseId);
+
+  const courseGrades = grades.filter(c => c.course_title === activeGradeCourse);
+  const gradeType = courseGrades.some(c => c.type === 'FINAL') ? 'FINAL' : 'INITIAL';
+
+  const { statistics, loading: statsLoading, error: statsError } = useCourseStatistics(courseId, gradeType);
 
   const handleSubmit = async (courseName) => {
     const gradeObj = grades.find(
@@ -214,23 +218,23 @@ function StudentMyCourses() {
                           })()
                         }
                       />
-                     {Object.entries(
-                      (() => {
-                        const courseGrades = grades.filter(c => c.course_title === activeGradeCourse);
-                        const final = courseGrades.find(c => c.type === 'FINAL');
-                        const initial = courseGrades.find(c => c.type === 'INITIAL');
-                        return final?.detailed_grade_json || initial?.detailed_grade_json || {};
-                      })()
-                    ).map(([key, val]) => (
-                      <React.Fragment key={key}>
-                        <label>{key.toUpperCase()}</label>
-                        <input type="text" readOnly value={val} />
-                      </React.Fragment>
-                    ))}
+                      {Object.entries(
+                        (() => {
+                          const courseGrades = grades.filter(c => c.course_title === activeGradeCourse);
+                          const final = courseGrades.find(c => c.type === 'FINAL');
+                          const initial = courseGrades.find(c => c.type === 'INITIAL');
+                          return final?.detailed_grade_json || initial?.detailed_grade_json || {};
+                        })()
+                      ).map(([key, val]) => (
+                        <React.Fragment key={key}>
+                          <label>{key.toUpperCase()}</label>
+                          <input type="text" readOnly value={val} />
+                        </React.Fragment>
+                      ))}
                     </div>
                   </div>
                   <div className="student-courses-grade-chartbox">
-                    <h4>{activeGradeCourse} – Statistics</h4>
+                    <h4>{activeGradeCourse} – Statistics ({gradeType})</h4>
 
                     {statsLoading && <p>Loading charts...</p>}
                     {statsError && <p>{statsError}</p>}

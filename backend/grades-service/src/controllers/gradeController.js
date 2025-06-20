@@ -276,19 +276,23 @@ exports.handleUpload = async (req, res) => {
 
 // 🔢 Ολική κατανομή βαθμών
 exports.getTotalDistribution = async (req, res) => {
-  const { courseId } = req.params;
-  console.log('[getTotalDistribution]', { courseId });
+  const { courseId, type } = req.params;
+  const gradeType = type?.toUpperCase();
+
+  if (!isValidType(gradeType)) {
+    return res.status(400).json({ error: 'Invalid grade type' });
+  }
 
   try {
     const query = `
       SELECT value AS grade, COUNT(*) AS count
       FROM grade
-      WHERE course_id = $1 AND type = 'INITIAL'
+      WHERE course_id = $1 AND type = $2
       GROUP BY grade
       ORDER BY grade;
     `;
 
-    const { rows } = await pool.query(query, [courseId]);
+    const { rows } = await pool.query(query, [courseId, gradeType]);
 
     const result = Array.from({ length: 10 }, (_, i) => {
       const found = rows.find(r => parseInt(r.grade) === i + 1);
@@ -303,9 +307,15 @@ exports.getTotalDistribution = async (req, res) => {
 };
 
 
+
 // 🔍 Κατανομή για συγκεκριμένη ερώτηση
 exports.getQuestionDistribution = async (req, res) => {
-  const { courseId, question } = req.params;
+  const { courseId, type, question } = req.params;
+  const gradeType = type?.toUpperCase();
+
+  if (!isValidType(gradeType)) {
+    return res.status(400).json({ error: 'Invalid grade type' });
+  }
 
   try {
     const result = await pool.query(
@@ -314,15 +324,14 @@ exports.getQuestionDistribution = async (req, res) => {
         CAST(detailed_grade_json->>$1 AS INTEGER) AS grade,
         COUNT(*) AS count
       FROM grade
-      WHERE course_id = $2 AND type = 'INITIAL'
+      WHERE course_id = $2 AND type = $3
         AND detailed_grade_json->>$1 IS NOT NULL
       GROUP BY grade
       ORDER BY grade
       `,
-      [question, courseId]
+      [question, courseId, gradeType]
     );
 
-    // Δεν συμπληρώνουμε εδώ με 0s γιατί οι ερωτήσεις δεν έχουν πάντα 0–10
     const distribution = result.rows.map(r => ({
       grade: parseInt(r.grade),
       count: parseInt(r.count),
@@ -335,19 +344,25 @@ exports.getQuestionDistribution = async (req, res) => {
   }
 };
 
+
 // 🔑 GET /statistics/questions/:courseId
 exports.getQuestionKeys = async (req, res) => {
-  const { courseId } = req.params;
+  const { courseId, type } = req.params;
+  const gradeType = type?.toUpperCase();
+
+  if (!isValidType(gradeType)) {
+    return res.status(400).json({ error: 'Invalid grade type' });
+  }
 
   try {
     const query = `
       SELECT jsonb_object_keys(detailed_grade_json) AS key
       FROM grade
-      WHERE course_id = $1 AND type = 'INITIAL'
+      WHERE course_id = $1 AND type = $2
         AND detailed_grade_json IS NOT NULL
     `;
 
-    const { rows } = await pool.query(query, [courseId]);
+    const { rows } = await pool.query(query, [courseId, gradeType]);
     const uniqueKeys = [...new Set(rows.map(r => r.key))].sort();
 
     res.json(uniqueKeys);
@@ -356,5 +371,4 @@ exports.getQuestionKeys = async (req, res) => {
     res.status(500).json({ error: 'Failed to retrieve question keys.' });
   }
 };
-
 

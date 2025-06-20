@@ -17,17 +17,17 @@ export const uploadGradesFile = async (file, type) => {
   return res.data;
 };
 
-export const getDistribution = async (courseId) => {
-  const res = await orchestratorAPI.get(`/grades/distribution/${courseId}`);
+export const getDistribution = async (courseId, type = 'INITIAL') => {
+  const res = await orchestratorAPI.get(`/grades/distribution/${courseId}/${type}`);
   return res.data;
 };
 
-export const getQuestionKeys = async (courseId) => {
-  const res = await orchestratorAPI.get(`/grades/questions/${courseId}`);
+export const getQuestionKeys = async (courseId, type = 'INITIAL') => {
+  const res = await orchestratorAPI.get(`/grades/questions/${courseId}/${type}`);
   return res.data;
 };
 
-export const getQuestionDistribution = async (courseId, question) => {
-  const res = await orchestratorAPI.get(`/grades/distribution/${courseId}/q/${question}`);
+export const getQuestionDistribution = async (courseId, question, type = 'INITIAL') => {
+  const res = await orchestratorAPI.get(`/grades/distribution/${courseId}/${type}/q/${question}`);
   return res.data;
 };

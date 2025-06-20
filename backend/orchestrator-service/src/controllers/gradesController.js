@@ -7,8 +7,8 @@ const GRADES_SERVICE_URL = process.env.GRADES_SERVICE_URL || 'http://grades-serv
 // 📊 Δημόσια στατιστικά
 exports.getQuestionKeys = async (req, res) => {
   try {
-    const { courseId } = req.params;
-    const response = await axios.get(`${GRADES_SERVICE_URL}/grades/questions/${courseId}`);
+    const { courseId, type } = req.params;
+    const response = await axios.get(`${GRADES_SERVICE_URL}/grades/questions/${courseId}/${type}`);    
     res.json(response.data);
   } catch (err) {
     console.error('❌ Error fetching question keys:', err.message);
@@ -18,8 +18,8 @@ exports.getQuestionKeys = async (req, res) => {
 
 exports.getTotalDistribution = async (req, res) => {
   try {
-    const { courseId } = req.params;
-    const response = await axios.get(`${GRADES_SERVICE_URL}/grades/distribution/${courseId}`);
+    const { courseId, type } = req.params;
+    const response = await axios.get(`${GRADES_SERVICE_URL}/grades/distribution/${courseId}/${type}`);    
     res.json(response.data);
   } catch (err) {
     console.error('❌ Error fetching total distribution:', err.message);
@@ -29,8 +29,8 @@ exports.getTotalDistribution = async (req, res) => {
 
 exports.getQuestionDistribution = async (req, res) => {
   try {
-    const { courseId, question } = req.params;
-    const response = await axios.get(`${GRADES_SERVICE_URL}/grades/distribution/${courseId}/q/${question}`);
+    const { courseId, type, question } = req.params;
+    const response = await axios.get(`${GRADES_SERVICE_URL}/grades/distribution/${courseId}/${type}/q/${question}`);    
     res.json(response.data);
   } catch (err) {
     console.error('❌ Error fetching question distribution:', err.message);
