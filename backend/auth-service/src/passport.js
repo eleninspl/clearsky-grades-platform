@@ -11,6 +11,7 @@ const USER_SERVICE = process.env.USER_SERVICE_URL;
 passport.use(
   new LocalStrategy({ usernameField: 'email' }, async (email, password, done) => {
     try {
+      // Step 1: Find account by email
       const { rows } = await db.query(
         `SELECT * FROM auth_account WHERE provider = 'LOCAL' AND provider_uid = $1`,
         [email]
@@ -18,16 +19,27 @@ passport.use(
       if (!rows.length) return done(null, false, { message: 'Unknown user' });
 
       const account = rows[0];
+
+      // Step 2: Verify password
       const valid = await bcrypt.compare(password, account.password_hash);
       if (!valid) return done(null, false, { message: 'Wrong credentials' });
 
-      const user = await axios.get(`${USER_SERVICE}/users/${account.user_id}`);
-      return done(null, user.data);
+      // Step 3: Get user from local 'users' table
+      const { rows: userRows } = await db.query(
+        `SELECT * FROM users WHERE id = $1`,
+        [account.user_id]
+      );
+      if (!userRows.length) return done(null, false, { message: 'User record not found' });
+
+      const user = userRows[0];
+      return done(null, user);
+
     } catch (err) {
       return done(err);
     }
   })
 );
+
 
 // ──────────────── GOOGLE STRATEGY ────────────────
 passport.use(

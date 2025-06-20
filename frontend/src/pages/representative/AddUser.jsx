@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import RepNavbar from './RepNavbar.jsx';
 import './AddUser.css';
-import { createUserByRole } from '../../api/auth';
+import { createUserByRole } from '../../api/orchestrator.js';
 
 const userTypes = [
   { value: 'instructor', label: 'Instructor' },
