@@ -2,6 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthActions } from '../hooks/useAuth';
+import { useGoogleLogin } from '@react-oauth/google';
+//import axios from '../utils/axiosInstance';
+import { authAPI } from '../utils/axiosInstance';
 import './Login.css';
 import logo from '../assets/clearSKY-logo.png';
 
@@ -23,6 +26,26 @@ export default function Login() {
     e.preventDefault();
     await handleLogin(email.trim(), password);
   };
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const res = await authAPI.post('/auth/google', {
+          id_token: tokenResponse.credential,
+        });
+        const { token } = res.data;
+        localStorage.setItem('token', token);
+        navigate('/redirect');
+      } catch (err) {
+        console.error('Google login failed:', err);
+        // Μπορείς να βάλεις και setError αν θέλεις μήνυμα στο UI
+      }
+    },
+    onError: (err) => {
+      console.error('Google login error:', err);
+    },
+    flow: 'implicit', // χρησιμοποιεί popup
+  });
 
   return (
     <div className="login-container">
@@ -60,7 +83,11 @@ export default function Login() {
                 <button type="submit" className="login-btn" disabled={loading}>
                   {loading ? 'Logging in…' : 'Login'}
                 </button>
-                <button type="button" className="login-btn google">
+                <button
+                  type="button"
+                  className="login-btn google"
+                  onClick={() => googleLogin()}
+                >
                   <span className="google-text">Login with Google</span>
                 </button>
               </div>
