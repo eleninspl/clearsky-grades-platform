@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './InstDashboard.css';
 import Navbar from './InstNavbar.jsx';
 import CourseCharts from '../../components/CourseCharts.jsx';
-import { fetchInstructorCourses } from '../../api/orchestrator';
+import { fetchInstructorCourses } from '../../api/grades.js';
 import { useAuth } from '../../auth/AuthContext';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
 

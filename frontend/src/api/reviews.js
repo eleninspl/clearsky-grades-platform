@@ -1,35 +1,30 @@
-import { reviewAPI } from '../utils/axiosInstance';
+import { orchestratorAPI } from '../utils/axiosInstance';
 
-// Υποβολή νέου αιτήματος αναβαθμολόγησης
-export const submitReviewRequest = async ({ grade_id, user_id, message }) => {
-  const res = await reviewAPI.post('/requests', {
-    grade_id,
-    user_id,
-    message
+export const createReviewRequest = async (reviewData) => {
+  const res = await orchestratorAPI.post('/review/requests', reviewData);
+  return res.data;
+};
+
+export const getReviewRequestsByInstructor = async (instructorId) => {
+  const res = await orchestratorAPI.get('/review/instructor', {
+    params: { instructorId },
   });
   return res.data;
 };
 
-// Φέρνει όλα τα review requests για συγκεκριμένο instructor
-export const fetchReviewRequestsByInstructor = async (instructorId) => {
-  const res = await reviewAPI.get(`/?instructorId=${instructorId}`);
+export const submitReviewResponse = async (responseData) => {
+  const res = await orchestratorAPI.post('/review/responses', responseData);
   return res.data;
 };
 
-// Υποβολή απάντησης instructor σε review request
+export const getReviewStatusForStudent = async (userId, courseId) => {
+  const res = await orchestratorAPI.get('/review/status', {
+    params: { user_id: userId, course_id: courseId },
+  });
+  return res.data;
+};
 
-export const submitReviewResponse = async ({ review_request_id, responder_id, message, final_grade }) => {
-  if (!review_request_id || !responder_id || !message) {
-    throw new Error('Missing required fields for response');
-  }
-
-  const payload = {
-    review_request_id,
-    responder_id,
-    message,
-    final_grade: final_grade || null  // fallback σε null αν undefined
-  };
-
-  const res = await reviewAPI.post('/responses', payload);
+export const getReviewRequestsForStudent = async (studentId) => {
+  const res = await orchestratorAPI.get(`/review/requests/student/${studentId}`);
   return res.data;
 };

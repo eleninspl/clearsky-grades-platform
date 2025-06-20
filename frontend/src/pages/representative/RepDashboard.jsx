@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './RepDashboard.css';
 import RepNavbar from './RepNavbar.jsx';
-import { getInstitutionStats, getInstitutionCourseList } from '../../api/orchestrator';
+import { getInstitutionStats, getInstitutionCourseList } from '../../api/institution.js';
 
 function RepDashboard() {
   const [stats, setStats] = useState({

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './PostFinalGrades.css';
 import Navbar from './InstNavbar.jsx';
-import { uploadGradesFile } from '../../api/orchestrator'; // ✅ import
+import { uploadGradesFile } from '../../api/grades'; // ✅ import
 
 function PostFinalGrades() {
   const navigate = useNavigate();

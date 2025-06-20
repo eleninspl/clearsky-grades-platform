@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './StudentDashboard.css';
 import StudentNavbar from './StudentNavbar';
 import CourseCharts from '../../components/CourseCharts';
-import { fetchStudentGrades } from '../../api/orchestrator';
+import { fetchStudentGrades } from '../../api/grades';
 import { useAuth } from '../../auth/AuthContext';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
 

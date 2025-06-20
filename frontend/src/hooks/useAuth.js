@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { login as apiLogin, logout as apiLogout } from '../api/orchestrator'; 
+import { login as apiLogin, logout as apiLogout } from '../api/auth'; 
 import { useAuth } from '../auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
 

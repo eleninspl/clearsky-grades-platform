@@ -35,7 +35,7 @@ const createAxiosInstance = (baseURL) => {
 // Δημιουργούμε instances για κάθε service
 
 
-export const reviewAPI = createAxiosInstance(import.meta.env.VITE_REVIEW_API_URL);
+
 
 export const creditsAPI = createAxiosInstance(import.meta.env.VITE_CREDITS_API_URL);
 

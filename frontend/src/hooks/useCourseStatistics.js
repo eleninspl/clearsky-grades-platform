@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getDistribution, getQuestionDistribution, getQuestionKeys } from '../api/orchestrator';
+import { getDistribution, getQuestionDistribution, getQuestionKeys } from '../api/grades';
 
 export const useCourseStatistics = (courseId) => {
   const [statistics, setStatistics] = useState([]);

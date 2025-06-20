@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './InstNavbar.jsx';
 import './Notifications.css';
-import { getReviewRequestsByInstructor, submitReviewResponse } from '../../api/orchestrator';
+import { getReviewRequestsByInstructor, submitReviewResponse } from '../../api/reviews';
 import { useAuth } from '../../auth/AuthContext';
 
 function Notifications() {

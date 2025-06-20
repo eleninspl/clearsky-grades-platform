@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getReviewStatusForStudent } from '../api/orchestrator';
+import { getReviewStatusForStudent } from '../api/reviews';
 
 export const useReviewStatus = (userId, courseId) => {
   const [status, setStatus] = useState(null);

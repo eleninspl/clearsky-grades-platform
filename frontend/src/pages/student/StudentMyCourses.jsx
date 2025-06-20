@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import './StudentMyCourses.css';
 import StudentNavbar from './StudentNavbar';
-//import { fetchGradesByStudentId } from '../../api/grades';
 import { useReviewStatus } from '../../hooks/useReviewStatus';
-import { fetchStudentGrades } from '../../api/orchestrator';
-import { createReviewRequest } from '../../api/orchestrator';
-
+import { fetchStudentGrades } from '../../api/grades';
+import { createReviewRequest } from '../../api/reviews';
+import { useStudentReviews } from '../../hooks/useStudentReviews';
 import { useAuth } from '../../auth/AuthContext';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
 import SimpleBarChart from '../../components/SimpleBarChart';
 
-
 function StudentMyCourses() {
   const { user } = useAuth();
+  const { reviews: reviewRequests } = useStudentReviews(user?.id);
+
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -41,23 +41,18 @@ function StudentMyCourses() {
   const [reviewComments, setReviewComments] = useState({});
 
   const courseId = grades.find(c => c.course_title === activeGradeCourse)?.course_id || null;
-  const {
-    statistics,
-    loading: statsLoading,
-    error: statsError,
-  } = useCourseStatistics(courseId);
+  const { statistics, loading: statsLoading, error: statsError } = useCourseStatistics(courseId);
 
   const handleSubmit = async (courseName) => {
     const gradeObj = grades.find(
       (g) => g.course_title === courseName && g.type === 'INITIAL'
     );
-    console.log('🧪 gradeObj', gradeObj);
 
     if (!gradeObj) {
       alert('No INITIAL grade found for this course.');
       return;
     }
-  
+
     try {
       await createReviewRequest({
         grade_id: gradeObj.grade_id,
@@ -68,11 +63,11 @@ function StudentMyCourses() {
         student_name: user.full_name || 'Anonymous',
         instructor_id: gradeObj.instructor_id,
         exam_period: gradeObj.exam_period,
-        grade_type: gradeObj.type,                        // ✅ εδώ είναι το "type" (π.χ. 'INITIAL')
+        grade_type: gradeObj.type,
         grade_value: gradeObj.grade,
         detailed_grade_json: gradeObj.detailed_grade_json || {},
       });
-  
+
       alert('✅ Review request submitted successfully!');
       setActiveReviewCourse(null);
     } catch (err) {
@@ -80,9 +75,7 @@ function StudentMyCourses() {
       alert(`Σφάλμα: ${err.response?.data?.error || err.message}`);
     }
   };
-  
 
-  // Ομαδοποίηση βαθμών ανά μάθημα
   const groupedByCourse = grades.reduce((acc, grade) => {
     const key = grade.course_id;
     if (!acc[key]) acc[key] = { course: grade, initial: null, final: null };
@@ -115,16 +108,28 @@ function StudentMyCourses() {
                 {Object.values(groupedByCourse).map(({ course, initial, final }) => {
                   const courseTitle = course.course_title;
                   const examPeriod = course.exam_period;
-                  const gradingStatus = initial?.status || final?.status || 'VOID';
+
+                  let gradingStatus = 'N/A';
+                  if (initial) gradingStatus = 'open';
+                  else if (final) gradingStatus = 'closed';
+                  const isClosed = gradingStatus === 'closed';
+
 
                   const hasInitialOpen = initial && initial.status === 'OPEN';
-                  const hasReview = false; // TODO: Θα γίνει true αν υπάρχει review (θα το φτιάξουμε)
+
+                  const hasReviewRequest = reviewRequests?.some(
+                    r => r.course_id === course.course_id
+                  );
+
+                  const isAnswered = reviewRequests?.some(
+                    r => r.course_id === course.course_id && r.status === 'ANSWERED'
+                  );
 
                   return (
                     <tr key={course.course_id}>
                       <td>{courseTitle}</td>
                       <td>{examPeriod}</td>
-                      <td>{gradingStatus.toLowerCase()}</td>
+                      <td>{gradingStatus}</td>
                       <td className="student-courses-actions">
                         <button
                           onClick={() => {
@@ -137,7 +142,8 @@ function StudentMyCourses() {
                         </button>
 
                         <button
-                          disabled={!hasInitialOpen || hasReview}
+                          disabled={!hasInitialOpen || hasReviewRequest || isClosed}
+
                           onClick={() => {
                             setActiveReviewCourse(activeReviewCourse === courseTitle ? null : courseTitle);
                             setActiveGradeCourse(null);
@@ -148,7 +154,7 @@ function StudentMyCourses() {
                         </button>
 
                         <button
-                          disabled={!hasReview}
+                          disabled={!isAnswered}
                           onClick={() => {
                             setActiveStatusCourse(activeStatusCourse === courseTitle ? null : courseTitle);
                             setActiveReviewCourse(null);
@@ -161,7 +167,6 @@ function StudentMyCourses() {
                     </tr>
                   );
                 })}
-
 
               </tbody>
             </table>
@@ -214,7 +219,6 @@ function StudentMyCourses() {
 
                     {!statsLoading && statistics?.length > 0 && (
                       <div className="student-courses-charts-scroll">
-                        {/* Total Chart */}
                         <div className="chart-card">
                           <h5>Total</h5>
                           <SimpleBarChart
@@ -222,8 +226,6 @@ function StudentMyCourses() {
                             height={280}
                           />
                         </div>
-
-                        {/* Per-Question Charts */}
                         {statistics
                           .filter((s) => s.label !== 'total')
                           .map((stat) => (
@@ -235,7 +237,6 @@ function StudentMyCourses() {
                       </div>
                     )}
                   </div>
-
                 </div>
               </div>
             )}
