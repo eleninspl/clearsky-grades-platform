@@ -51,7 +51,8 @@ function StudentMyCourses() {
     const gradeObj = grades.find(
       (g) => g.course_title === courseName && g.type === 'INITIAL'
     );
-  
+    console.log('🧪 gradeObj', gradeObj);
+
     if (!gradeObj) {
       alert('No INITIAL grade found for this course.');
       return;
@@ -64,7 +65,7 @@ function StudentMyCourses() {
         message: reviewComments[courseName] || '',
         course_id: gradeObj.course_id,
         course_title: gradeObj.course_title,
-        student_name: user.fullName || user.name || 'Anonymous',
+        student_name: user.full_name || 'Anonymous',
         instructor_id: gradeObj.instructor_id,
         exam_period: gradeObj.exam_period,
         grade_type: gradeObj.type,                        // ✅ εδώ είναι το "type" (π.χ. 'INITIAL')

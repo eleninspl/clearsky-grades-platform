@@ -36,7 +36,13 @@ module.exports = (roles = [], instIds = null) => async (req, res, next) => {
     if (instIds && !instIds.includes(payload.inst))
       return res.sendStatus(403);
 
-    req.user = payload; // { sub, role, inst }
+    req.user = {
+      id: payload.sub,
+      full_name: payload.full_name,
+      role: payload.role,
+      institution_id: payload.inst
+    };
+    
     next();
   } catch (err) {
     return res.status(401).json({ error: 'Invalid token' });

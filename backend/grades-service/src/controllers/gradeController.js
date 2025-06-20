@@ -37,13 +37,15 @@ exports.getGradesByStudent = async (req, res) => {
         g.grade_batch_id,
         g.course_id,
         c.title AS course_title,
-        c.exam_period AS exam_period,  -- ✅ ΝΕΟ ΠΕΔΙΟ
+        c.exam_period AS exam_period,
+        c.instructor_id,                       -- 👈 ΕΔΩ
         g.detailed_grade_json
       FROM grade g
       JOIN course c ON g.course_id = c.id
       WHERE g.user_am = $1
       ORDER BY g.course_id, g.type
     `, [id]);
+    
 
     res.json(result.rows);
   } catch (err) {

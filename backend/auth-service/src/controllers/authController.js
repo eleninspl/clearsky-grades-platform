@@ -10,6 +10,7 @@ function issueToken(user) {
   return jwt.sign(
     {
       sub: user.id,
+      full_name: user.full_name,
       role: user.role,
       inst: user.institution_id,
     },
