@@ -1,13 +1,23 @@
 const express = require('express');
-const app = express();
-const creditsRoutes = require('./routes/creditsRoutes');
+const router = express.Router();
 
-app.use(express.json());
+const {
+  getBalance,
+  buyCredits,
+  consumeCredit,
+  getHistory
+} = require('../controllers/creditsController');
 
-// Σύνδεση του route base path
-app.use('/credits', creditsRoutes);
+// GET balance for institution
+router.get('/:institutionId/balance', getBalance);
 
-const PORT = process.env.PORT || 5003;
-app.listen(PORT, () => {
-  console.log(`Credits service running on port ${PORT}`);
-});
+// POST to buy credits
+router.post('/:institutionId/buy', buyCredits);
+
+// POST to consume 1 credit
+router.post('/:institutionId/consume', consumeCredit);
+
+// GET transaction history
+router.get('/:institutionId/history', getHistory);
+
+module.exports = router;

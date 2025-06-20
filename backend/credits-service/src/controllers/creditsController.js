@@ -98,3 +98,11 @@ exports.getHistory = async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 };
+
+
+module.exports = {
+  getBalance: exports.getBalance,
+  buyCredits: exports.buyCredits,
+  consumeCredit: exports.consumeCredit,
+  getHistory: exports.getHistory
+};
