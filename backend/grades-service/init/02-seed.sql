@@ -30,12 +30,22 @@ VALUES (
 -- 📌 INSTRUCTOR
 INSERT INTO users (id, username, email, full_name, role, institution_id)
 VALUES (102, 'instructor', 'instructor@demo.edu', 'Instructor User', 'INSTRUCTOR', 1);
+INSERT INTO users (id, username, email, full_name, role, institution_id)
+VALUES (105, 'instructor2', 'instructor2@demo.edu', 'Instructor 2 User', 'INSTRUCTOR', 1);
 
 INSERT INTO auth_account (user_id, provider, provider_uid, password_hash)
 VALUES (
   102,
   'LOCAL',
   'instructor@demo.edu',
+  '$2b$10$NwuB3yy/LRn9ooLT/W4wGOB6o.NwxS0eYvqQLxWoF0tMZyke.aWz6'
+);
+
+INSERT INTO auth_account (user_id, provider, provider_uid, password_hash)
+VALUES (
+  105,
+  'LOCAL',
+  'instructor2@demo.edu',
   '$2b$10$NwuB3yy/LRn9ooLT/W4wGOB6o.NwxS0eYvqQLxWoF0tMZyke.aWz6'
 );
 
@@ -98,9 +108,10 @@ VALUES
 (102, 'CS102', 'Data Structures', 'Spring 2024', 'Covers arrays, linked lists, stacks, queues, trees, graphs, and algorithm analysis.', 102, 1),
 (103, 'CS103', 'Algorithms', 'Spring 2024', 'Covers sorting, searching, and algorithm design and analysis.', 102, 1),
 (201, 'PHY101', 'Physics I', 'Fall 2024', 'Covers classical mechanics, motion, energy, and basic thermodynamics.', 102, 1),
-(202, 'CS201', 'Software as a Service', 'Fall 2024', 'Focuses on software development lifecycle, agile methods, and system design.', 102, 1),
+(3206, 'CS3206', 'Software as a Service', 'Spring 2024', 'Focuses on software development lifecycle, agile methods, and system design.', 102, 1),
 (203, 'MATH101', 'Mathematics I', 'Fall 2024', 'Introduction to linear algebra, calculus, and mathematical reasoning.', 102, 1),
-(3205, 'CS3205', 'Software Engineering', 'Fall 2024', 'Auto-inserted course for upload test with ID 3205.', 102, 1)
+(3205, 'CS3205', 'Software Engineering', 'Fall 2024', 'Auto-inserted course for upload test with ID 3205.', 102, 1),
+(3207, 'CS3207', 'Artificial Intelligence', 'Fall 2024', 'Auto-inserted course for AI instruction with ID 3207.', 105, 1)
 ON CONFLICT DO NOTHING;
 
 -- 🧹 Delete previous grades for this student

@@ -28,12 +28,21 @@ VALUES (
 -- 📌 INSTRUCTOR
 INSERT INTO users (id, username, email, full_name, role, institution_id)
 VALUES (102, 'instructor', 'instructor@demo.edu', 'Instructor User', 'INSTRUCTOR', 1);
+INSERT INTO users (id, username, email, full_name, role, institution_id)
+VALUES (105, 'instructor2', 'instructor2@demo.edu', 'Instructor 2 User', 'INSTRUCTOR', 1);
 
 INSERT INTO auth_account (user_id, provider, provider_uid, password_hash)
 VALUES (
   102,
   'LOCAL',
   'instructor@demo.edu',
+  '$2b$10$NwuB3yy/LRn9ooLT/W4wGOB6o.NwxS0eYvqQLxWoF0tMZyke.aWz6'
+);
+INSERT INTO auth_account (user_id, provider, provider_uid, password_hash)
+VALUES (
+  105,
+  'LOCAL',
+  'instructor2@demo.edu',
   '$2b$10$NwuB3yy/LRn9ooLT/W4wGOB6o.NwxS0eYvqQLxWoF0tMZyke.aWz6'
 );
 
