@@ -34,6 +34,9 @@ router.get('/google/callback',
   }
 );
 
+router.get('/users/:id', ctrl.getUserById);
+
+
 // ───────────────────────────────────────────
 // User provisioning (admins / institutional reps)
 router.post('/users',

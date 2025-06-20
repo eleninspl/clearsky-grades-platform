@@ -52,6 +52,24 @@ exports.signup = async (req, res, next) => {
   }
 };
 
+// GET /auth/users/:id
+exports.getUserById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await db.query(`SELECT * FROM users WHERE id = $1`, [id]);
+
+    if (result.rows.length === 0)
+      return res.status(404).json({ error: 'User not found' });
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Get User by ID Error:', err.message);
+    res.status(500).json({ error: 'Database error' });
+  }
+};
+
+
 /* POST /auth/login */
 exports.login = [
   passport.authenticate('local', { session: false }),
@@ -142,4 +160,5 @@ exports.createUserByRole = async (req, res, next) => {
     next(err);
   }
 };
+
 
