@@ -3,14 +3,13 @@
 ## TEAM 21
 
 🛠️ Οδηγίες
-Βεβαιώσου ότι το Docker Desktop είναι ανοιχτό και σε λειτουργία.
+Βεβαιώσου ότι το Docker Desktop είναι ανοιχτό και σε λειτουργία!!
 
 Κάνε clone το αποθετήριο και μπες στον φάκελο του project:
 
-bash
-
 git clone https://github.com/ntua/saas25-21.git
 cd your-repo
+
 Εκτέλεσε το κατάλληλο script ανάλογα με το λειτουργικό σύστημα σου:
 
 🔵 macOS ή Linux:
