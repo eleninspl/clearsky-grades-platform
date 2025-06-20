@@ -136,17 +136,21 @@ exports.handleUpload = async (req, res) => {
   const uploader_id = req.user.sub;
   const filePath = req.file.path;
   const batch_type = req.params.type?.toUpperCase() || 'INITIAL';
-  
 
   try {
     const workbook = XLSX.readFile(filePath);
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet, { range: 2 }); // Skip 2 header rows
+    const rows = XLSX.utils.sheet_to_json(sheet, { range: 2 }); // Skip first 2 header rows
+
+    console.log(`📊 Parsed ${rows.length} rows from Excel`);
+    console.log('👀 Last parsed row:', rows[rows.length - 1]);
 
     const client = await pool.connect();
     const courseRegex = /\((\d+)\)/;
     const uploaded_at = new Date();
     const academic_year = uploaded_at.getFullYear();
+
+    await client.query('BEGIN');
 
     for (const row of rows) {
       const am = parseInt(row['Αριθμός Μητρώου']);
@@ -156,35 +160,40 @@ exports.handleUpload = async (req, res) => {
       const courseText = row['Τμήμα Τάξης'];
       const period = row['Περίοδος δήλωσης']; // e.g., "2024-2025 ΧΕΙΜ 2024"
 
-      if (!am || isNaN(grade) || !courseText || !period) continue;
+      if (!am || isNaN(grade) || !courseText || !period) {
+        console.warn(`⚠️ Skipping row due to missing fields:`, row);
+        continue;
+      }
 
       const courseMatch = courseText.match(courseRegex);
-      if (!courseMatch) continue;
+      if (!courseMatch) {
+        console.warn(`⚠️ Skipping row due to invalid courseText:`, courseText);
+        continue;
+      }
+
       const course_id = parseInt(courseMatch[1]);
 
-      // 1. Ensure grade_batch exists (reuse or insert)
+      // 1. Ensure grade_batch exists
       let grade_batch_id;
       const batchResult = await client.query(
         `SELECT id FROM grade_batch WHERE course_id = $1 AND academic_year = $2 AND type = $3`,
         [course_id, academic_year, batch_type]
       );
-      
-      
+
       if (batchResult.rowCount > 0) {
         grade_batch_id = batchResult.rows[0].id;
-      } else { 
+      } else {
         const newBatch = await client.query(
           `INSERT INTO grade_batch (
             course_id, uploader_id, type, original_file, uploaded_at
           ) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-          [course_id, uploader_id, batch_type, req.file.originalname, uploaded_at] 
+          [course_id, uploader_id, batch_type, req.file.originalname, uploaded_at]
         );
         grade_batch_id = newBatch.rows[0].id;
       }
 
-      // 2. Ensure user exists by am
+      // 2. Ensure user exists by AM
       let user_id;
-      
       const findUser = await client.query('SELECT id FROM users WHERE am = $1', [am]);
 
       if (findUser.rowCount === 0) {
@@ -210,7 +219,8 @@ exports.handleUpload = async (req, res) => {
 
           console.log(`✅ Created user ${am} and auth_account: ${provider_uid}`);
         } catch (insertError) {
-          console.error(`❌ Failed to insert auth_account for AM ${am}:`, insertError);
+          console.error(`❌ Failed to insert user/auth_account for AM ${am}:`, insertError);
+          continue; // skip this row if user creation fails
         }
       } else {
         user_id = findUser.rows[0].id;
@@ -223,15 +233,36 @@ exports.handleUpload = async (req, res) => {
         detailed[q] = row[q] ?? null;
       }
 
-      // 4. Insert grade using user_am
-      await client.query(`
-        INSERT INTO grade (
-        value, user_am, course_id, grade_batch_id, detailed_grade_json, type
-        ) VALUES ($1, $2, $3, $4, $5, $6)
-      `, [grade, am, course_id, grade_batch_id, detailed, batch_type]);
+      // 4. Insert or update grade
+      try {
+        const existingGrade = await client.query(
+          `SELECT id FROM grade WHERE user_am = $1 AND course_id = $2 AND grade_batch_id = $3`,
+          [am, course_id, grade_batch_id]
+        );
 
+        if (existingGrade.rowCount > 0) {
+          await client.query(
+            `UPDATE grade
+             SET value = $1, detailed_grade_json = $2, type = $3
+             WHERE user_am = $4 AND course_id = $5 AND grade_batch_id = $6`,
+            [grade, detailed, batch_type, am, course_id, grade_batch_id]
+          );
+          console.log(`🔁 Updated grade for AM ${am}`);
+        } else {
+          await client.query(
+            `INSERT INTO grade (
+              value, user_am, course_id, grade_batch_id, detailed_grade_json, type
+            ) VALUES ($1, $2, $3, $4, $5, $6)`,
+            [grade, am, course_id, grade_batch_id, detailed, batch_type]
+          );
+          console.log(`✅ Inserted new grade for AM ${am}`);
+        }
+      } catch (gradeError) {
+        console.error(`❌ Failed to insert/update grade for AM ${am}:`, gradeError);
+      }
     }
 
+    await client.query('COMMIT');
     client.release();
     fs.unlinkSync(filePath);
     res.status(200).json({ message: 'Grades uploaded successfully' });
@@ -240,6 +271,7 @@ exports.handleUpload = async (req, res) => {
     res.status(500).json({ error: 'Upload failed' });
   }
 };
+
 
 
 // 🔢 Ολική κατανομή βαθμών
