@@ -92,62 +92,6 @@ exports.getInstitutionStats = async (req, res) => {
   }
 };
 
-exports.getInstitutionAverageGrade = async (req, res) => {
-  const creator = req.user;
-  const inst = creator.inst ?? creator.institution_id;
-  if (!inst) return res.status(403).json({ error: 'Missing institution ID in JWT' });
-
-  try {
-    const client = await pool.connect();
-    const { rows } = await client.query(
-      `SELECT COALESCE(AVG(g.value),0)::NUMERIC(5,2) AS average_grade
-       FROM grade g
-       JOIN course c ON g.course_id = c.id
-       WHERE c.institution_id = $1
-         AND g.status = 'FINAL'`,
-      [inst]
-    );
-    client.release();
-
-    res.json({ average_grade: rows[0].average_grade });
-  } catch (err) {
-    console.error('[getInstitutionAverageGrade]', err);
-    res.status(500).json({ error: 'Database error' });
-  }
-};
-
-exports.getInstitutionGradeDistribution = async (req, res) => {
-  const creator = req.user;
-  const inst = creator.inst ?? creator.institution_id;
-  if (!inst) return res.status(403).json({ error: 'Missing institution ID in JWT' });
-
-  try {
-    const client = await pool.connect();
-    const { rows } = await client.query(
-      `SELECT width_bucket(g.value, 0, 100, 10) AS bucket,
-              COUNT(*) AS count
-       FROM grade g
-       JOIN course c ON g.course_id = c.id
-       WHERE c.institution_id = $1
-         AND g.status = 'FINAL'
-       GROUP BY bucket
-       ORDER BY bucket`,
-      [inst]
-    );
-    client.release();
-
-    res.json({
-      distribution: rows.map(r => ({
-        bucket: r.bucket,
-        count: parseInt(r.count, 10)
-      }))
-    });
-  } catch (err) {
-    console.error('[getInstitutionGradeDistribution]', err);
-    res.status(500).json({ error: 'Database error' });
-  }
-};
-
 exports.getInstitutionCourseEnrollment = async (req, res) => {
   const creator = req.user;
   const inst = creator.inst ?? creator.institution_id;

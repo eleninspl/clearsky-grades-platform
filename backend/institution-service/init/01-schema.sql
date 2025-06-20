@@ -46,3 +46,16 @@ CREATE TABLE auth_account (
     CONSTRAINT uq_provider_uid UNIQUE (provider, provider_uid)
 );
 CREATE INDEX idx_auth_user ON auth_account (user_id);
+
+CREATE TABLE course (
+    id             SERIAL PRIMARY KEY,
+    code           VARCHAR(10)  NOT NULL UNIQUE,
+    title          VARCHAR(50)  NOT NULL,
+    exam_period    VARCHAR(20),
+    description    TEXT,
+    instructor_id  INTEGER      NOT NULL,
+    institution_id INTEGER      NOT NULL,
+    created_at     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_course_instructor  FOREIGN KEY (instructor_id)  REFERENCES users(id),
+    CONSTRAINT fk_course_institution FOREIGN KEY (institution_id) REFERENCES institution(id)
+);

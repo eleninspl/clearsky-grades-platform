@@ -4,8 +4,6 @@ const controller = require('../controllers/institutionController');
 const authorize = require('../middleware/authorize');
 
 router.get('/stats', authorize(['INST_REP']), controller.getInstitutionStats);
-router.get('/stats/average-grade', authorize(['INST_REP']), controller.getInstitutionAverageGrade);
-router.get('/stats/grade-distribution',authorize(['INST_REP']), controller.getInstitutionGradeDistribution);
 router.get('/stats/course-enrollment', authorize(['INST_REP']), controller.getInstitutionCourseEnrollment);
 
 router.get('/', controller.getAllInstitutions);

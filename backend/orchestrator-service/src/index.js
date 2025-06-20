@@ -4,6 +4,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const gradesRoutes = require('./routes/gradesRoutes');
 const authRoutes = require('./routes/authRoutes');
+const institutionRoutes = require('./routes/institutionRoutes');
 
 dotenv.config();
 const app = express();
@@ -17,6 +18,7 @@ app.use(morgan('dev'));
 // Routes
 app.use('/grades', gradesRoutes);
 app.use('/auth', authRoutes);
+app.use('/institutions', institutionRoutes);
 
 // Test route (προαιρετικό)
 app.get('/', (req, res) => {

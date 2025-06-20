@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './RepDashboard.css';
 import RepNavbar from './RepNavbar.jsx';
-import { getInstitutionStats } from '../../api/institution';
+import { getInstitutionStats } from '../../api/orchestrator';
 
 function RepDashboard() {
   const [stats, setStats] = useState({
@@ -48,16 +48,8 @@ function RepDashboard() {
                 {loading ? '...' : stats.active_courses}
               </div>
             </div>
-            <div className="rep-stats-card">
-              <h3>Average Grade</h3>
-              <div className="rep-stats-value">7.8</div>
-            </div>
           </div>
           <div className="rep-stats-charts">
-            <div className="rep-stats-chart">
-              <h3>Grade Distribution</h3>
-              <div className="rep-stats-chart-placeholder">[Grade Distribution Chart]</div>
-            </div>
             <div className="rep-stats-chart">
               <h3>Course Enrollment</h3>
               <div className="rep-stats-chart-placeholder">[Course Enrollment Chart]</div>
