@@ -19,28 +19,26 @@ function RepCredits() {
   const remaining = safeBalance;
 
   const handlePurchase = async () => {
-  try {
-    const user = JSON.parse(localStorage.getItem('user'));
-    const institutionId = user?.institution_id;
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const institutionId = user?.institution_id;
 
-    if (!institutionId || !creditsToBuy || Number(creditsToBuy) <= 0) {
-      alert('Enter a valid amount');
-      return;
+      if (!institutionId || !creditsToBuy || Number(creditsToBuy) <= 0) {
+        alert('Enter a valid amount');
+        return;
+      }
+
+      const result = await buyCredits(institutionId, Number(creditsToBuy));
+      console.log('✅ Buy result:', result);
+
+      await reload();
+      setShowModal(false);
+      setCreditsToBuy('');
+    } catch (err) {
+      console.error('❌ Buy credits failed:', err?.response?.data || err.message || err);
+      alert('Failed to buy credits');
     }
-
-    const result = await buyCredits(institutionId, Number(creditsToBuy));
-    console.log('✅ Buy result:', result);
-
-    await reload();
-    setShowModal(false);
-    setCreditsToBuy('');
-  } catch (err) {
-    console.error('❌ Buy credits failed:', err?.response?.data || err.message || err);
-    alert('Failed to buy credits');
-  }
-};
-
-
+  };
 
   return (
     <div className="rep-credits-container">
@@ -85,22 +83,33 @@ function RepCredits() {
       {showModal && (
         <div className="popup-overlay">
           <div className="popup-modal">
+            <button className="popup-close" onClick={() => setShowModal(false)}>×</button>
             <h3>Buy Credits</h3>
             <input
               type="number"
               min="1"
-              className="adduser-input"
+              className="popup-input"
               value={creditsToBuy}
               onChange={(e) => setCreditsToBuy(e.target.value)}
               placeholder="Enter amount"
             />
-            <div className="adduser-btn-row">
-              <button className="adduser-btn" onClick={handlePurchase}>Submit</button>
-              <button className="adduser-btn" onClick={() => setShowModal(false)}>Cancel</button>
+            <div className="popup-btn-row">
+              <button
+                className="popup-btn"
+                onClick={handlePurchase}
+                disabled={!creditsToBuy || Number(creditsToBuy) <= 0}
+              >
+                Submit
+              </button>
+              <button className="popup-btn" onClick={() => setShowModal(false)}>
+                Cancel
+              </button>
             </div>
           </div>
         </div>
       )}
+
+
     </div>
   );
 }

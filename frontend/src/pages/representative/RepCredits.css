@@ -78,9 +78,9 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.4);
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -88,9 +88,131 @@
 }
 
 .popup-modal {
+  position: relative;
   background: white;
-  padding: 24px;
+  padding: 30px 24px;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  width: 360px;
+  text-align: center;
+  animation: fadeInScale 0.3s ease;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.popup-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #888;
+  cursor: pointer;
+}
+
+.popup-close:hover {
+  color: #22586A;
+}
+
+.popup-modal h3 {
+  color: #22586A;
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.popup-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
   border-radius: 8px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
-  width: 300px;
+  font-size: 1rem;
+  margin-bottom: 20px;
+}
+
+.popup-btn-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.popup-btn {
+  flex: 1;
+  background: #22586A;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.popup-btn:hover {
+  background: #1a4352;
+}
+
+.popup-btn:disabled {
+  background: #cccccc;
+  color: white;
+  cursor: not-allowed;
+}
+
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.popup-modal h3 {
+  color: #22586A;
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.popup-modal input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-bottom: 20px;
+}
+
+.adduser-btn-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.adduser-btn {
+  flex: 1;
+  background: #22586A;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.adduser-btn:hover {
+  background: #1a4352;
 }
