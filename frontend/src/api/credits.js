@@ -1,21 +1,21 @@
-import { creditsAPI } from '../utils/axiosInstance';
+import { orchestratorAPI } from '../utils/axiosInstance';
 
-export const getCreditBalance = async (institutionId) => {
-  const res = await creditsAPI.get(`/${institutionId}`);
-  return res.data; // { credits_balance: number }
+// Λήψη υπολοίπου credits για institution
+export const getCreditsBalance = async (institutionId) => {
+  const res = await orchestratorAPI.get(`/credits/${institutionId}/balance`);
+  return res.data;
 };
 
+// Αγορά credits για institution
 export const buyCredits = async (institutionId, amount) => {
-  const res = await creditsAPI.post(`/${institutionId}/buy`, { amount });
-  return res.data; // { message, new_balance }
+  const res = await orchestratorAPI.post(`/credits/${institutionId}/buy`, {
+    amount,
+  });
+  return res.data;
 };
 
-export const consumeCredit = async (institutionId) => {
-  const res = await creditsAPI.post(`/${institutionId}/use`);
-  return res.data; // { message, remaining }
-};
-
+// Ιστορικό συναλλαγών
 export const getCreditHistory = async (institutionId) => {
-  const res = await creditsAPI.get(`/${institutionId}/history`);
-  return res.data; // [{ tx_type, amount, created_at }, ...]
+  const res = await orchestratorAPI.get(`/credits/${institutionId}/history`);
+  return res.data;
 };

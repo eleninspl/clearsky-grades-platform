@@ -7,6 +7,7 @@ const gradesRoutes = require('./routes/gradesRoutes');
 const authRoutes = require('./routes/authRoutes');
 const institutionRoutes = require('./routes/institutionRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
+const creditsRoutes = require('./routes/creditsRoutes');
 
 dotenv.config();
 const app = express();
@@ -22,6 +23,7 @@ app.use('/grades', gradesRoutes);
 app.use('/auth', authRoutes);
 app.use('/institutions', institutionRoutes);
 app.use('/review', reviewRoutes);
+app.use('/credits', creditsRoutes);
 
 // Test route (προαιρετικό)
 app.get('/', (req, res) => {

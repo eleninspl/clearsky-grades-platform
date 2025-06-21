@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getCreditBalance, getCreditHistory } from '../api/credits';
+import { getCreditsBalance, getCreditHistory } from '../api/credits'; // updated import
 import { useAuth } from '../auth/AuthContext';
 
 export const useCredits = () => {
@@ -13,15 +13,17 @@ export const useCredits = () => {
     if (!user?.institution_id) return;
 
     setLoading(true);
+    setError(null);
+
     try {
-      const [b, h] = await Promise.all([
-        getCreditBalance(user.institution_id),
-        getCreditHistory(user.institution_id),
+      const [balanceData, historyData] = await Promise.all([
+        getCreditsBalance(user.institution_id), // updated function
+        getCreditHistory(user.institution_id),  // updated function
       ]);
-      setBalance(b.credits_balance);
-      setHistory(h);
+      setBalance(balanceData.balance); // παραμένει σωστό
+      setHistory(historyData);
     } catch (err) {
-      setError(err?.message || 'Failed to fetch credits');
+      setError(err?.response?.data?.error || err.message || 'Failed to fetch credits');
     } finally {
       setLoading(false);
     }
@@ -29,7 +31,13 @@ export const useCredits = () => {
 
   useEffect(() => {
     load();
-  }, [user]);
+  }, [user?.institution_id]);
 
-  return { balance, history, loading, error, reload: load }; // ✅ added reload
+  return {
+    balance,
+    history,
+    loading,
+    error,
+    reload: load,
+  };
 };
