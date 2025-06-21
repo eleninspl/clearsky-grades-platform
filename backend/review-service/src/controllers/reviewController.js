@@ -157,7 +157,8 @@ exports.getReviewStatusForStudent = async (req, res) => {
       course_title: request.course_title,
       exam_period: request.exam_period,
       instructor_id: request.instructor_id,
-      instructor_response: response
+      instructor_response: response,
+      student_message: request.message
     });
   } catch (err) {
     console.error('❌ Error fetching review status:', err);

@@ -4,6 +4,7 @@ import { getReviewStatusForStudent } from '../api/reviews';
 export const useReviewStatus = (userId, courseId) => {
   const [status, setStatus] = useState(null);
   const [response, setResponse] = useState(null);
+  const [studentMessage, setStudentMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -13,13 +14,15 @@ export const useReviewStatus = (userId, courseId) => {
     const fetchStatus = async () => {
       setLoading(true);
       try {
-        const data = await getReviewStatusForStudent(userId, courseId);
-        setStatus(data.status);
-        setResponse(data.instructor_response);
+        const reviewData = await getReviewStatusForStudent(userId, courseId);
+        setStatus(reviewData.status);
+        setResponse(reviewData.instructor_response);
+        setStudentMessage(reviewData.student_message);
       } catch (err) {
         if (err.response?.status === 404) {
           setStatus('NOT_SUBMITTED');
           setResponse(null);
+          setStudentMessage('');
         } else {
           setError(err.message || 'Error fetching review status');
         }
@@ -31,5 +34,11 @@ export const useReviewStatus = (userId, courseId) => {
     fetchStatus();
   }, [userId, courseId]);
 
-  return { status, response, loading, error };
+  return {
+    status,
+    response,
+    studentMessage,
+    loading,
+    error,
+  };
 };

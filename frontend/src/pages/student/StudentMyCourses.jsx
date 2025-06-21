@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import './StudentMyCourses.css';
 import StudentNavbar from './StudentNavbar';
+import CourseTable from '../../components/CourseTable';
+import GradeDetails from '../../components/GradeDetails';
 import { useReviewStatus } from '../../hooks/useReviewStatus';
 import { fetchStudentGrades } from '../../api/grades';
 import { createReviewRequest } from '../../api/reviews';
 import { useStudentReviews } from '../../hooks/useStudentReviews';
 import { useAuth } from '../../auth/AuthContext';
 import { useCourseStatistics } from '../../hooks/useCourseStatistics';
-import SimpleBarChart from '../../components/SimpleBarChart';
 
 function StudentMyCourses() {
   const { user } = useAuth();
@@ -17,51 +18,39 @@ function StudentMyCourses() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const loadGrades = async () => {
-      try {
-        const data = await fetchStudentGrades(user.id);
-        setGrades(data);
-      } catch (err) {
-        console.error('❌ Failed to fetch grades:', err);
-        setError(err.message || 'Error fetching grades');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadGrades();
-  }, [user]);
-
   const [activeReviewCourse, setActiveReviewCourse] = useState(null);
   const [activeGradeCourse, setActiveGradeCourse] = useState(null);
   const [activeStatusCourse, setActiveStatusCourse] = useState(null);
   const [reviewComments, setReviewComments] = useState({});
 
-  const courseId = grades.find(c => c.course_title === activeGradeCourse)?.course_id || null;
+  useEffect(() => {
+    if (!user?.id) return;
+    const loadGrades = async () => {
+      try {
+        const data = await fetchStudentGrades(user.id);
+        setGrades(data);
+      } catch (err) {
+        setError(err.message || 'Error fetching grades');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadGrades();
+  }, [user]);
 
+  const courseId = grades.find(c => c.course_title === activeGradeCourse)?.course_id || null;
   const courseGrades = grades.filter(c => c.course_title === activeGradeCourse);
   const gradeType = courseGrades.some(c => c.type === 'FINAL') ? 'FINAL' : 'INITIAL';
-
   const { statistics, loading: statsLoading, error: statsError } = useCourseStatistics(courseId, gradeType);
 
   const handleSubmit = async (courseName) => {
     const gradeObj = grades.find(
       (g) => g.course_title === courseName && g.type === 'INITIAL'
     );
-
-    if (!gradeObj) {
-      alert('No INITIAL grade found for this course.');
-      return;
-    }
-
+    if (!gradeObj) return alert('No INITIAL grade found for this course.');
     if (reviewRequests?.some(r => r.grade_id === gradeObj.grade_id)) {
-      alert("You've already submitted a review request for this grade.");
-      return;
-    }    
-
+      return alert("You've already submitted a review request for this grade.");
+    }
     try {
       await createReviewRequest({
         grade_id: gradeObj.grade_id,
@@ -76,12 +65,10 @@ function StudentMyCourses() {
         grade_value: gradeObj.grade,
         detailed_grade_json: gradeObj.detailed_grade_json || {},
       });
-
-      await refetchReviews(); // 🔁 Φόρτωσε ξανά τα review requests
+      await refetchReviews();
       alert('✅ Review request submitted successfully!');
       setActiveReviewCourse(null);
     } catch (err) {
-      console.error('❌ Failed to submit review:', err);
       alert(`Σφάλμα: ${err.response?.data?.error || err.message}`);
     }
   };
@@ -94,6 +81,16 @@ function StudentMyCourses() {
     return acc;
   }, {});
 
+  // Κλήση του useReviewStatus εδώ, ΜΟΝΟ αν υπάρχει activeStatusCourse
+  const courseForStatus = grades.find(c => c.course_id === activeStatusCourse);
+  const {
+    status,
+    response,
+    studentMessage,
+    loading: statusLoading,
+    error: statusError,
+  } = useReviewStatus(user?.id, activeStatusCourse);
+
   return (
     <div className="student-courses-container">
       <StudentNavbar />
@@ -105,100 +102,17 @@ function StudentMyCourses() {
 
         {!loading && !error && (
           <>
-            <table className="student-courses-table">
-              <thead>
-                <tr>
-                  <th>Course</th>
-                  <th>Exam Period</th>
-                  <th>Grading Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.values(groupedByCourse).map(({ course, initial, final }) => {
-                  const courseTitle = course.course_title;
-                  const examPeriod = course.exam_period;
-
-                  let gradingStatus = 'N/A';
-                  if (final) gradingStatus = 'closed';
-                  else if (initial) gradingStatus = 'open';
-                  const isClosed = gradingStatus === 'closed';
-
-
-                  const hasInitialOpen = initial && initial.status === 'OPEN';
-
-                  const hasReviewRequest = initial && reviewRequests?.some(
-                    r => r.grade_id === initial.grade_id
-                  );
-
-                  const isAnswered = reviewRequests?.some(
-                    r => r.course_id === course.course_id && r.status === 'ANSWERED'
-                  );
-
-                  return (
-                    <tr key={course.course_id}>
-                      <td>{course.course_title}</td>
-                      <td>{course.exam_period || '-'}</td>
-                      <td>
-                        {final ? 'closed' : initial ? 'open' : 'N/A'}
-                      </td>
-                      <td className="student-courses-actions">
-                        <button
-                          onClick={() => {
-                            setActiveGradeCourse(
-                              activeGradeCourse === course.course_title ? null : course.course_title
-                            );
-                            setActiveReviewCourse(null);
-                            setActiveStatusCourse(null);
-                          }}
-                        >
-                          View my grades
-                        </button>
-
-                        <button
-                          disabled={!initial || hasReviewRequest || loadingReviews}
-                          title={
-                            loadingReviews
-                              ? 'Loading review request status...'
-                              : !initial
-                                ? 'You can only request a review if an INITIAL grade exists.'
-                                : hasReviewRequest
-                                  ? 'You have already submitted a review request for this grade.'
-                                  : ''
-                          }
-                          onClick={() => {
-                            setActiveReviewCourse(
-                              activeReviewCourse === course.course_title ? null : course.course_title
-                            );
-                            setActiveGradeCourse(null);
-                            setActiveStatusCourse(null);
-                          }}
-                        >
-                          Ask for review
-                        </button>
-
-
-                        <button
-                          disabled={!isAnswered}
-                          onClick={() => {
-                            setActiveStatusCourse(
-                              activeStatusCourse === course.course_title ? null : course.course_title
-                            );
-                            setActiveReviewCourse(null);
-                            setActiveGradeCourse(null);
-                          }}
-                        >
-                          View review status
-                        </button>
-                      </td>
-                    </tr>
-                  );
-
-
-                })}
-
-              </tbody>
-            </table>
+            <CourseTable
+              groupedByCourse={groupedByCourse}
+              activeGradeCourse={activeGradeCourse}
+              activeReviewCourse={activeReviewCourse}
+              activeStatusCourse={activeStatusCourse}
+              setActiveGradeCourse={setActiveGradeCourse}
+              setActiveReviewCourse={setActiveReviewCourse}
+              setActiveStatusCourse={setActiveStatusCourse}
+              reviewRequests={reviewRequests}
+              loadingReviews={loadingReviews}
+            />
 
             {activeReviewCourse && (
               <div className="student-courses-review-wrapper">
@@ -225,109 +139,38 @@ function StudentMyCourses() {
             )}
 
             {activeGradeCourse && (
-              <div className="student-courses-grade-wrapper">
-                <div className="student-courses-grade-grid">
-                  <div className="student-courses-grade-box">
-                    <h4>My Grades – {activeGradeCourse}</h4>
-                    <div className="student-courses-grade-labels">
-                      <label>Total</label>
-                      <input
-                        type="text"
-                        readOnly
-                        value={
-                          (() => {
-                            const courseGrades = grades.filter(c => c.course_title === activeGradeCourse);
-                            const final = courseGrades.find(c => c.type === 'FINAL');
-                            const initial = courseGrades.find(c => c.type === 'INITIAL');
-                            return final?.grade || initial?.grade || '';
-                          })()
-                        }
-                      />
-                      {Object.entries(
-                        (() => {
-                          const courseGrades = grades.filter(c => c.course_title === activeGradeCourse);
-                          const final = courseGrades.find(c => c.type === 'FINAL');
-                          const initial = courseGrades.find(c => c.type === 'INITIAL');
-                          return final?.detailed_grade_json || initial?.detailed_grade_json || {};
-                        })()
-                      ).map(([key, val]) => (
-                        <React.Fragment key={key}>
-                          <label>{key.toUpperCase()}</label>
-                          <input type="text" readOnly value={val} />
-                        </React.Fragment>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="student-courses-grade-chartbox">
-                    <h4>{activeGradeCourse} – Statistics ({gradeType})</h4>
-
-                    {statsLoading && <p>Loading charts...</p>}
-                    {statsError && <p>{statsError}</p>}
-
-                    {!statsLoading && statistics?.length > 0 && (
-                      <div className="student-courses-charts-scroll">
-                        <div className="chart-card">
-                          <h5>Total</h5>
-                          <SimpleBarChart
-                            data={statistics.find((s) => s.label === 'total')?.data || []}
-                            height={280}
-                          />
-                        </div>
-                        {statistics
-                          .filter((s) => s.label !== 'total')
-                          .map((stat) => (
-                            <div key={stat.label} className="chart-card">
-                              <h5>{stat.label}</h5>
-                              <SimpleBarChart data={stat.data} height={280} />
-                            </div>
-                          ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <GradeDetails
+                grades={grades}
+                activeGradeCourse={activeGradeCourse}
+                statistics={statistics}
+                statsLoading={statsLoading}
+                statsError={statsError}
+                gradeType={gradeType}
+              />
             )}
 
-            {activeStatusCourse && (() => {
-              const courseIdForStatus = grades.find(c => c.course_title === activeStatusCourse)?.course_id || null;
-              const { status, response, loading: statusLoading, error: statusError } = useReviewStatus(user?.id, courseIdForStatus);
-
-              return (
-                <div className="student-courses-status-wrapper">
-                  <div className="student-courses-status-box">
-                    <div className="student-courses-status-header">
-                      REVIEW REQUEST STATUS – {activeStatusCourse}
-                    </div>
-
-                    {statusLoading && <p>Loading status...</p>}
-                    {statusError && <p>Error: {statusError}</p>}
-
-                    {!statusLoading && status && (
-                      <>
-                        <textarea
-                          readOnly
-                          value={
-                            `Status: ${status}\n` +
-                            (response
-                              ? `Instructor Message: ${response.message}\nFinal Grade: ${response.final_grade}`
-                              : 'No response yet.')
-                          }
-                          rows={6}
-                        />
-                        <div className="student-courses-status-buttons">
-                          <button className="download-btn" disabled>
-                            Download attachment
-                          </button>
-                          <button className="ack-btn" disabled>
-                            Ack
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              );
-            })()}
+            {activeStatusCourse && (
+              <div className="student-review-status-box">
+                <h4>Review Request Status – {courseForStatus?.course_title || 'Unknown Course'}</h4>
+                {statusLoading ? (
+                  <p>Loading...</p>
+                ) : statusError ? (
+                  <p style={{ color: 'red' }}>Error: {statusError}</p>
+                ) : (
+                  <textarea
+                    readOnly
+                    rows={6}
+                    value={
+                      `Status: ${status}\n` +
+                      `Your message: ${studentMessage || '—'}\n` +
+                      (response
+                        ? `Instructor Message: ${response.message}`
+                        : 'Instructor has not responded yet.')
+                    }
+                  />
+                )}
+              </div>
+            )}
           </>
         )}
       </main>
