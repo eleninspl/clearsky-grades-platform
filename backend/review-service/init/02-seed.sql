@@ -10,7 +10,8 @@ INSERT INTO user_snapshot (id, full_name, role) VALUES
 
 -- Student
 INSERT INTO user_snapshot (id, full_name, role) VALUES
-(103, 'Student User', 'STUDENT');
+(103, 'Student User', 'STUDENT'),
+(104, 'Dimitris', 'STUDENT');
 
 -- 📌 Courses Snapshot
 INSERT INTO course_snapshot (id, title, code, instructor_id, exam_period) VALUES
@@ -33,11 +34,11 @@ INSERT INTO review_request (
   exam_period
 ) VALUES (
   9999,  -- πρέπει να ταιριάζει με το grade.id στο grades-service
-  103,
+  104,
   'Παρακαλώ επανεξέταση στην ερώτηση 2.',
   103,
   'Algorithms',
-  'Student User',
+  'Dimitris',
   102,
   'Spring 2024'
 );

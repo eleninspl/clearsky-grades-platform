@@ -74,14 +74,6 @@ function Notifications() {
                 </div>
                 <form className="notifications-reply-form">
                   <div className="notifications-reply-row">
-                    <label>Action</label>
-                    <select value={action} onChange={e => setAction(e.target.value)}>
-                      <option>Total accept</option>
-                      <option>Partial accept</option>
-                      <option>Reject</option>
-                    </select>
-                  </div>
-                  <div className="notifications-reply-row">
                     <label>student's message</label>
                     <div className="notifications-student-message">
                       {requests[selectedReply].student_message}

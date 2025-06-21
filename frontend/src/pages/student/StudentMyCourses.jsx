@@ -164,7 +164,7 @@ function StudentMyCourses() {
                       <textarea readOnly value={studentMessage || ''} />
 
                       <label>Status</label>
-                      <input readOnly value={status || 'Pending'} />
+                      <input readOnly value={(status || 'Pending').toLowerCase()} />
 
                       <label>Instructor Response</label>
                       <textarea readOnly value={typeof response === 'object' ? response?.message || JSON.stringify(response) : response || 'No response yet'} />
