@@ -13,7 +13,7 @@ CREATE TABLE institution (
     email           VARCHAR(80)  NOT NULL UNIQUE,
     credits_balance INTEGER      NOT NULL DEFAULT 0,
     created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+); 
 
 -- Supporting minimal users & course tables (foreign key only)
 CREATE TABLE users (
@@ -58,7 +58,6 @@ CREATE TABLE course (
     CONSTRAINT fk_course_instructor  FOREIGN KEY (instructor_id)  REFERENCES users(id),
     CONSTRAINT fk_course_institution FOREIGN KEY (institution_id) REFERENCES institution(id)
 );
-
 
 -- Grade batches
 CREATE TABLE grade_batch (

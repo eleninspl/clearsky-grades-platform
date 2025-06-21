@@ -1,108 +1,84 @@
-// src/controllers/creditsController.js
-const pool = require('../db');
-const axios = require('axios');
+const pool = require('../db'); // Βεβαιώσου ότι έχεις db connection (π.χ. με pg.Pool)
 
-exports.getBalance = async (req, res) => {
+// GET /:institutionId/balance
+const getBalance = async (req, res) => {
   const { institutionId } = req.params;
-  const token = req.headers.authorization;
   try {
-    const response = await axios.get(
-      `http://institution-service:5003/institutions/${institutionId}`,
-      { headers: { Authorization: token } }
+    const result = await pool.query(
+      'SELECT credits_balance FROM credits_service.institution WHERE id = $1',
+      [institutionId]
     );
-    res.json({ credits_balance: response.data.credits_balance });
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Institution not found' });
+    }
+    res.json({ balance: result.rows[0].credits_balance });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Institution service error' });
+    res.status(500).json({ error: 'Database error', details: err.message });
   }
 };
 
-exports.buyCredits = async (req, res) => {
+// POST /:institutionId/buy
+const buyCredits = async (req, res) => {
   const { institutionId } = req.params;
   const { amount } = req.body;
-  const token = req.headers.authorization;
 
   if (!amount || amount <= 0) {
-    return res.status(400).json({ error: 'Invalid credit amount' });
+    return res.status(400).json({ error: 'Invalid amount' });
   }
 
   try {
-    // Καταγραφή συναλλαγής
     await pool.query(
-      `INSERT INTO credit_transaction (institution_id, amount, tx_type, description)
-       VALUES ($1, $2, 'PURCHASE', 'Buy credits')`,
+      `INSERT INTO credits_service.credit_transaction 
+        (institution_id, amount, tx_type) 
+       VALUES ($1, $2, 'PURCHASE')`,
       [institutionId, amount]
     );
-
-    // Ενημέρωση balance μέσω institution-service
-    const instRes = await axios.patch(
-      `http://institution-service:5003/institutions/${institutionId}/credits`,
-      { delta: amount },
-      { headers: { Authorization: token } }
-    );
-
-    res.json({
-      message: 'Credits added',
-      new_balance: instRes.data.credits_balance
-    });
+    res.status(201).json({ message: 'Credits purchased' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Database error' });
+    res.status(500).json({ error: 'Database error', details: err.message });
   }
 };
 
-exports.consumeCredit = async (req, res) => {
+// GET /:institutionId/history
+const getHistory = async (req, res) => {
   const { institutionId } = req.params;
-  const token = req.headers.authorization;
-
   try {
-    // Ενημέρωση balance μέσω institution-service (αφαίρεση 1 credit)
-    const instRes = await axios.patch(
-      `http://institution-service:5003/institutions/${institutionId}/credits`,
-      { delta: -1 },
-      { headers: { Authorization: token } }
-    );
-
-    if (instRes.data.credits_balance < 0) {
-      return res.status(400).json({ error: 'Insufficient credits' });
-    }
-
-    // Καταγραφή συναλλαγής
-    await pool.query(
-      `INSERT INTO credit_transaction (institution_id, amount, tx_type, description)
-       VALUES ($1, -1, 'CONSUME', 'Consumed 1 credit')`,
+    const result = await pool.query(
+      `SELECT id, amount, tx_type, created_at 
+       FROM credits_service.credit_transaction 
+       WHERE institution_id = $1 
+       ORDER BY created_at DESC`,
       [institutionId]
     );
 
-    res.json({ message: 'Credit consumed', remaining: instRes.data.credits_balance });
+    const transactions = result.rows.map(tx => {
+      let description = '';
+      switch (tx.tx_type) {
+        case 'PURCHASE':
+          description = `Purchased ${tx.amount} credit(s)`;
+          break;
+        case 'CONSUME':
+          description = `Consumed ${Math.abs(tx.amount)} credit(s)`;
+          break;
+        default:
+          description = 'Unknown transaction';
+      }
+
+      return {
+        ...tx,
+        description
+      };
+    });
+
+    res.json(transactions);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Database error' });
-  }
-};
-
-exports.getHistory = async (req, res) => {
-  const { institutionId } = req.params;
-
-  try {
-    const result = await pool.query(`
-      SELECT tx_type, amount, created_at
-      FROM credit_transaction
-      WHERE institution_id = $1
-      ORDER BY created_at DESC
-    `, [institutionId]);
-
-    res.json(result.rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Database error' });
+    res.status(500).json({ error: 'Database error', details: err.message });
   }
 };
 
 
 module.exports = {
-  getBalance: exports.getBalance,
-  buyCredits: exports.buyCredits,
-  consumeCredit: exports.consumeCredit,
-  getHistory: exports.getHistory
+  getBalance,
+  buyCredits,
+  getHistory
 };

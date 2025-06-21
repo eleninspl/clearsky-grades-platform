@@ -14,9 +14,6 @@ router.get('/:institutionId/balance', getBalance);
 // POST to buy credits
 router.post('/:institutionId/buy', buyCredits);
 
-// POST to consume 1 credit
-router.post('/:institutionId/consume', consumeCredit);
-
 // GET transaction history
 router.get('/:institutionId/history', getHistory);
 
