@@ -325,3 +325,32 @@ body, .student-courses-container, .student-courses-title, .student-courses-table
   font-weight: 600;
   text-align: center;
 }
+
+.student-courses-review-wrapper {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+.student-courses-review-box h4 {
+  margin-bottom: 15px;
+}
+
+.student-courses-review-labels label {
+  display: block;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.student-courses-review-labels input,
+.student-courses-review-labels textarea {
+  width: 100%;
+  margin-top: 5px;
+  padding: 8px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: none;
+}

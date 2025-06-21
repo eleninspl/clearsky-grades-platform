@@ -150,27 +150,31 @@ function StudentMyCourses() {
             )}
 
             {activeStatusCourse && (
-              <div className="student-review-status-box">
-                <h4>Review Request Status – {courseForStatus?.course_title || 'Unknown Course'}</h4>
-                {statusLoading ? (
-                  <p>Loading...</p>
-                ) : statusError ? (
-                  <p style={{ color: 'red' }}>Error: {statusError}</p>
-                ) : (
-                  <textarea
-                    readOnly
-                    rows={6}
-                    value={
-                      `Status: ${status}\n` +
-                      `Your message: ${studentMessage || '—'}\n` +
-                      (response
-                        ? `Instructor Message: ${response.message}`
-                        : 'Instructor has not responded yet.')
-                    }
-                  />
-                )}
+              <div className="student-courses-review-wrapper">
+                <div className="student-courses-review-box">
+                  <h4>Review Request – {groupedByCourse[activeStatusCourse]?.course?.course_title}</h4>
+
+                  {statusLoading ? (
+                    <p>Loading review status...</p>
+                  ) : statusError ? (
+                    <p style={{ color: 'red' }}>{statusError}</p>
+                  ) : (
+                    <div className="student-courses-review-labels">
+                      <label>Your message</label>
+                      <textarea readOnly value={studentMessage || ''} />
+
+                      <label>Status</label>
+                      <input readOnly value={status || 'Pending'} />
+
+                      <label>Instructor Response</label>
+                      <textarea readOnly value={typeof response === 'object' ? response?.message || JSON.stringify(response) : response || 'No response yet'} />
+
+                    </div>
+                  )}
+                </div>
               </div>
             )}
+
           </>
         )}
       </main>
