@@ -21,6 +21,7 @@ services:
       - ../backend/auth-service/.env
     depends_on:
       - auth-db
+      - rabbitmq
   auth-db:
     image: postgres:16
     ports:
@@ -42,6 +43,7 @@ services:
       - ../backend/institution-service/.env
     depends_on:
       - institution-db
+      - rabbitmq
   institution-db:
     image: postgres:16
     ports:
@@ -64,6 +66,7 @@ services:
       - ../backend/grades-service/.env
     depends_on:
       - grades-db
+      - rabbitmq
   grades-db:
     image: postgres:16
     ports:
@@ -85,6 +88,7 @@ services:
       - ../backend/review-service/.env
     depends_on:
       - review-db
+      - rabbitmq
   review-db:
     image: postgres:16
     ports:
@@ -107,6 +111,7 @@ services:
       - ../backend/credits-service/.env
     depends_on:
       - credits-db
+      - rabbitmq
   credits-db:
     image: postgres:16
     ports:
@@ -134,6 +139,17 @@ services:
       - review-service
       - credits-service
     restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"       # AMQP port
+      - "15672:15672"     # Web UI port
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    restart: always
 
       
 volumes:
