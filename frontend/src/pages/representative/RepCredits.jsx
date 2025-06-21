@@ -3,9 +3,12 @@ import './RepCredits.css';
 import RepNavbar from './RepNavbar.jsx';
 import { useCredits } from '../../hooks/useCredits';
 import { buyCredits } from '../../api/credits';
+import CreditsHistoryPopup from '../../components/CreditsHistoryPopup';
+
 
 function RepCredits() {
   const { balance, history, loading, error, reload } = useCredits();
+  const [showHistory, setShowHistory] = useState(false);
 
   const [showModal, setShowModal] = useState(false); // ✅ Popup control
   const [creditsToBuy, setCreditsToBuy] = useState(''); // ✅ Credit input
@@ -74,7 +77,10 @@ function RepCredits() {
             <button className="rep-credits-btn" onClick={() => setShowModal(true)}>
               Purchase Credits
             </button>
-            <button className="rep-credits-btn">View Usage History</button>
+            <button className="rep-credits-btn" onClick={() => setShowHistory(true)}>
+              View Usage History
+            </button>
+
           </div>
         </div>
       </main>
@@ -109,7 +115,10 @@ function RepCredits() {
         </div>
       )}
 
-
+      {showHistory && (
+        <CreditsHistoryPopup onClose={() => setShowHistory(false)} />
+      )}
+      
     </div>
   );
 }
