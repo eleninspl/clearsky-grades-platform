@@ -163,3 +163,37 @@ exports.createUserByRole = async (req, res, next) => {
 };
 
 
+// ✅ Google login verification
+exports.verifyGoogle = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Missing email' });
+  }
+
+  try {
+    const result = await db.query(
+      `
+      SELECT u.id, u.email, u.role, u.full_name, u.institution_id
+      FROM users u
+      JOIN auth_account a ON a.user_id = u.id
+      WHERE a.provider = 'GOOGLE'
+        AND a.provider_uid = $1
+        AND u.role = 'STUDENT'
+      `,
+      [email]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found or not a student' });
+    }
+
+    const user = result.rows[0];
+    const token = issueToken(user);
+
+    res.status(200).json({ token });
+  } catch (err) {
+    console.error('verifyGoogle failed:', err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

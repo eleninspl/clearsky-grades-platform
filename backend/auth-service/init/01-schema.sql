@@ -22,6 +22,7 @@ CREATE TABLE users (
     external_id    INTEGER,
     am             INTEGER,
     institution_id INTEGER,
+    google_email   VARCHAR(80),
     created_at     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT uq_users_am UNIQUE (am)

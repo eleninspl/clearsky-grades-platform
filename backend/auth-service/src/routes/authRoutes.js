@@ -9,6 +9,7 @@ const router = express.Router();
 
 // ───────────────────────────────────────────
 // Local signup / login
+router.post('/verify-google', ctrl.verifyGoogle);
 router.post('/signup', ctrl.signup);
 router.post('/login',  ctrl.login);
 router.post('/logout',
