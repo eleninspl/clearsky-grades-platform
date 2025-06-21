@@ -21,7 +21,6 @@ services:
       - ../backend/auth-service/.env
     depends_on:
       - auth-db
-      - rabbitmq
   auth-db:
     image: postgres:16
     ports:
@@ -43,7 +42,6 @@ services:
       - ../backend/institution-service/.env
     depends_on:
       - institution-db
-      - rabbitmq
   institution-db:
     image: postgres:16
     ports:
@@ -66,7 +64,6 @@ services:
       - ../backend/grades-service/.env
     depends_on:
       - grades-db
-      - rabbitmq
   grades-db:
     image: postgres:16
     ports:
@@ -88,7 +85,6 @@ services:
       - ../backend/review-service/.env
     depends_on:
       - review-db
-      - rabbitmq
   review-db:
     image: postgres:16
     ports:
@@ -111,7 +107,6 @@ services:
       - ../backend/credits-service/.env
     depends_on:
       - credits-db
-      - rabbitmq
   credits-db:
     image: postgres:16
     ports:

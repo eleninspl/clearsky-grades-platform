@@ -6,25 +6,24 @@ VALUES
     (3, 'Aristotle University of Thessaloniki', 'auth@example.gr', 0)
 ON CONFLICT (id) DO NOTHING;
 
--- 📌 Credit Transactions (mixed types)
-INSERT INTO credits_service.credit_transaction ( institution_id, amount, tx_type )
+-- 📌 Credit Transactions
+-- ΠΡΟΣΟΧΗ: όλες οι CONSUME είναι αρνητικές
+INSERT INTO credits_service.credit_transaction (institution_id, amount, tx_type)
 VALUES
-    -- NTUA buys 10 credits
+    -- NTUA: αγοράζει και καταναλώνει
     (1, 10, 'PURCHASE'),
-
-    -- NTUA consumes 1 credit for CS101 upload
     (1, -1, 'CONSUME'),
+    (1, -2, 'CONSUME'),
 
-    -- NTUA consumes 1 credit (e.g. error)
-    (1, 1, 'CONSUME'),
-
-    -- UoC buys 5 credits
+    -- UoC: αγοράζει
     (2, 5, 'PURCHASE'),
 
-    -- AUTH tries to consume with 0 balance (should fail in prod if validated)
-    (3, -1, 'CONSUME')
+    -- AUTH: δεν έχει credits, δεν κάνει CONSUME
+
+    -- Προσθέτουμε μια ακόμα κατανάλωση για demo
+    (1, -3, 'CONSUME')
 ON CONFLICT DO NOTHING;
 
--- Optional: reset sequence if using SERIAL and manual IDs
+-- 📌 Reset sequence counters (για SERIAL ids)
 SELECT setval('credits_service.institution_id_seq', (SELECT MAX(id) FROM credits_service.institution));
 SELECT setval('credits_service.credit_transaction_id_seq', (SELECT MAX(id) FROM credits_service.credit_transaction));
