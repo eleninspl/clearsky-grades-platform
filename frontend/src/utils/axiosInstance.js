@@ -77,7 +77,8 @@ const createAxiosInstance = (baseURL) => {
 };
 
 // ✅ Δημιουργία axios instances για κάθε μικροϋπηρεσία
-export const authAPI = createAxiosInstance(import.meta.env.VITE_AUTH_API_URL);
+//export const authAPI = createAxiosInstance(import.meta.env.VITE_AUTH_API_URL);
+export const authAPI = createAxiosInstance(import.meta.env.VITE_ORCHESTRATOR_API_URL);
 export const orchestratorAPI = createAxiosInstance(import.meta.env.VITE_ORCHESTRATOR_API_URL);
 export const creditsAPI = createAxiosInstance(import.meta.env.VITE_CREDITS_API_URL);
 export const reviewAPI = createAxiosInstance(import.meta.env.VITE_REVIEW_API_URL);
