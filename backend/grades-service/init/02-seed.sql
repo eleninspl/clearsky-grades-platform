@@ -126,11 +126,11 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 -- ✅ GRADES για student@demo.edu
-INSERT INTO grade (type, value, user_am, course_id, grade_batch_id, status)
+INSERT INTO grade (type, value, user_am, course_id, grade_batch_id)
 VALUES
-('INITIAL', 86, 103, 101, 1, 'OPEN'),
-('FINAL', 92, 103, 102, 2, 'FINAL'),
-('INITIAL', 90, 103, 103, 3, 'OPEN');
+('INITIAL', 86, 103, 101, 1),
+('FINAL', 92, 103, 102, 2),
+('INITIAL', 90, 103, 103, 3);
 
 -- 📌 GRADE BATCH for CS103
 INSERT INTO grade_batch (id, course_id, uploader_id, type)
@@ -193,7 +193,7 @@ DECLARE
 BEGIN
   FOR i IN 1..10 LOOP
     INSERT INTO grade (
-      type, value, user_am, course_id, grade_batch_id, status, detailed_grade_json
+      type, value, user_am, course_id, grade_batch_id, detailed_grade_json
     )
     VALUES (
       'INITIAL',
@@ -201,7 +201,6 @@ BEGIN
       student_ams[i],
       103,
       4,
-      'OPEN',
       jsonb_build_object(
         'Q01', q1[i],
         'Q02', q2[i],
@@ -215,14 +214,13 @@ BEGIN
 END $$;
 
 -- ➕ Προσθήκη βαθμού για τον demo φοιτητή (user_am = 103) στο μάθημα CS103 (course_id = 103)
-INSERT INTO grade (type, value, user_am, course_id, grade_batch_id, status, detailed_grade_json)
+INSERT INTO grade (type, value, user_am, course_id, grade_batch_id, detailed_grade_json)
 VALUES (
   'INITIAL',
   8,  -- Μπορείς να αλλάξεις την τιμή του βαθμού όπως θες
   103,
   103,
   4,
-  'OPEN',
   jsonb_build_object(
     'Q01', 9,
     'Q02', 8,
@@ -249,8 +247,4 @@ BEGIN
   );
 END
 $$;
-
-
-
-
 

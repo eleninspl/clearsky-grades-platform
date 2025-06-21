@@ -33,7 +33,6 @@ exports.getGradesByStudent = async (req, res) => {
         g.id AS grade_id,
         g.value AS grade,
         g.type,
-        g.status,
         g.grade_batch_id,
         g.course_id,
         c.title AS course_title,
@@ -109,11 +108,11 @@ exports.createGrade = async (req, res) => {
 
 exports.updateGrade = async (req, res) => {
   const { id } = req.params;
-  const { value, status } = req.body;
+  const { value } = req.body;
   try {
     const result = await pool.query(`
-      UPDATE grade SET value = $1, status = $2 WHERE id = $3 RETURNING *
-    `, [value, status, id]);
+      UPDATE grade SET value = $1 WHERE id = $2 RETURNING *
+    `, [value, id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Grade not found' });
     res.json(result.rows[0]);
   } catch (err) {
