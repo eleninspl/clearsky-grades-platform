@@ -164,3 +164,18 @@ exports.getReviewStatusForStudent = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+exports.getReviewRequestsForStudent = async (req, res) => {
+  const { studentId } = req.params;
+
+  try {
+    const result = await pool.query(`
+      SELECT * FROM review_request WHERE user_id = $1
+    `, [studentId]);
+
+    res.json(result.rows); 
+  } catch (err) {
+    console.error('❌ Error fetching student review requests:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+};

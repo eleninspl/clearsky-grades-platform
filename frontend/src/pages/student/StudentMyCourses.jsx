@@ -11,7 +11,7 @@ import SimpleBarChart from '../../components/SimpleBarChart';
 
 function StudentMyCourses() {
   const { user } = useAuth();
-  const { reviews: reviewRequests } = useStudentReviews(user?.id);
+  const { reviews: reviewRequests, loading: loadingReviews, refetch: refetchReviews } = useStudentReviews(user?.id);
 
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +57,11 @@ function StudentMyCourses() {
       return;
     }
 
+    if (reviewRequests?.some(r => r.grade_id === gradeObj.grade_id)) {
+      alert("You've already submitted a review request for this grade.");
+      return;
+    }    
+
     try {
       await createReviewRequest({
         grade_id: gradeObj.grade_id,
@@ -72,6 +77,7 @@ function StudentMyCourses() {
         detailed_grade_json: gradeObj.detailed_grade_json || {},
       });
 
+      await refetchReviews(); // 🔁 Φόρτωσε ξανά τα review requests
       alert('✅ Review request submitted successfully!');
       setActiveReviewCourse(null);
     } catch (err) {
@@ -121,8 +127,8 @@ function StudentMyCourses() {
 
                   const hasInitialOpen = initial && initial.status === 'OPEN';
 
-                  const hasReviewRequest = reviewRequests?.some(
-                    r => r.course_id === course.course_id
+                  const hasReviewRequest = initial && reviewRequests?.some(
+                    r => r.grade_id === initial.grade_id
                   );
 
                   const isAnswered = reviewRequests?.some(
@@ -148,11 +154,17 @@ function StudentMyCourses() {
                         >
                           View my grades
                         </button>
-                  
+
                         <button
-                          disabled={!initial}
+                          disabled={!initial || hasReviewRequest || loadingReviews}
                           title={
-                            initial ? '' : 'You can only request a review if an INITIAL grade exists.'
+                            loadingReviews
+                              ? 'Loading review request status...'
+                              : !initial
+                                ? 'You can only request a review if an INITIAL grade exists.'
+                                : hasReviewRequest
+                                  ? 'You have already submitted a review request for this grade.'
+                                  : ''
                           }
                           onClick={() => {
                             setActiveReviewCourse(
@@ -164,7 +176,8 @@ function StudentMyCourses() {
                         >
                           Ask for review
                         </button>
-                  
+
+
                         <button
                           disabled={!isAnswered}
                           onClick={() => {
@@ -180,8 +193,8 @@ function StudentMyCourses() {
                       </td>
                     </tr>
                   );
-                  
-                  
+
+
                 })}
 
               </tbody>

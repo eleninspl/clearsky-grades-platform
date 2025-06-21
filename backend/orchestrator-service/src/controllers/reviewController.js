@@ -26,3 +26,4 @@ exports.getAllReviewRequests = (req, res) => forward(req, res, 'get', '/requests
 exports.getReviewRequestsByInstructor = (req, res) => forward(req, res, 'get', '/instructor');
 exports.createReviewResponse = (req, res) => forward(req, res, 'post', '/responses', req.body);
 exports.getReviewStatusForStudent = (req, res) => forward(req, res, 'get', '/status');
+exports.getReviewRequestsForStudent = (req, res) =>  forward(req, res, 'get', `/requests/student/${req.params.studentId}`);
