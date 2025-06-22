@@ -34,10 +34,53 @@ services:
       - ../backend/auth-service/init/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
 
 
+  credits-service:
+    build: ../backend/credits-service
+    ports:
+      - "5002:5002"
+    env_file:
+      - ../backend/credits-service/.env
+    depends_on:
+      - credits-db
+  credits-db:
+    image: postgres:16
+    ports:
+      - "5440:5432"
+    environment:
+      POSTGRES_DB: creditsdb
+      POSTGRES_USER: creditsuser
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - ../backend/credits-service/init/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ../backend/credits-service/init/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    restart: always
+
+
+  grades-service:
+    build: ../backend/grades-service
+    ports:
+      - "5003:5003"
+    env_file:
+      - ../backend/grades-service/.env
+    depends_on:
+      - grades-db
+  grades-db:
+    image: postgres:16
+    ports:
+      - "5436:5432"
+    environment:
+      POSTGRES_DB: gradedb
+      POSTGRES_USER: gradeuser
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - ../backend/grades-service/init/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ../backend/grades-service/init/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+
+
   institution-service:
     build: ../backend/institution-service
     ports:
-      - "5003:5003"
+      - "5004:5004"
     env_file:
       - ../backend/institution-service/.env
     depends_on:
@@ -56,25 +99,19 @@ services:
     restart: always
 
   
-  grades-service:
-    build: ../backend/grades-service
+  orchestrator-service:
+    build: ../backend/orchestrator-service
     ports:
-      - "5004:5004"
+      - "5005:5005"
     env_file:
-      - ../backend/grades-service/.env
+      - ../backend/orchestrator-service/.env
     depends_on:
-      - grades-db
-  grades-db:
-    image: postgres:16
-    ports:
-      - "5436:5432"
-    environment:
-      POSTGRES_DB: gradedb
-      POSTGRES_USER: gradeuser
-      POSTGRES_PASSWORD: secret
-    volumes:
-      - ../backend/grades-service/init/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-      - ../backend/grades-service/init/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+      - auth-service
+      - institution-service
+      - grades-service
+      - review-service
+      - credits-service
+    restart: unless-stopped
 
 
   review-service:
@@ -99,41 +136,6 @@ services:
     restart: always
 
 
-  credits-service:
-    build: ../backend/credits-service
-    ports:
-      - "5008:5008"
-    env_file:
-      - ../backend/credits-service/.env
-    depends_on:
-      - credits-db
-  credits-db:
-    image: postgres:16
-    ports:
-      - "5440:5432"
-    environment:
-      POSTGRES_DB: creditsdb
-      POSTGRES_USER: creditsuser
-      POSTGRES_PASSWORD: secret
-    volumes:
-      - ../backend/credits-service/init/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-      - ../backend/credits-service/init/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
-    restart: always
-
-
-  orchestrator-service:
-    build: ../backend/orchestrator-service
-    ports:
-      - "5010:5010"
-    env_file:
-      - ../backend/orchestrator-service/.env
-    depends_on:
-      - auth-service
-      - institution-service
-      - grades-service
-      - review-service
-      - credits-service
-    restart: unless-stopped
 
   rabbitmq:
     image: rabbitmq:3-management
