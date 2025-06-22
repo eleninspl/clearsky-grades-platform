@@ -1,4 +1,4 @@
-const { publishUserCreated } = require('../rabbitmq'); // προσαρμόζεις το path
+const { publishUserCreated } = require('../rabbitmq');
 const axios = require('axios');
 
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL;

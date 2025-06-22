@@ -8,6 +8,7 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const initRabbit = async () => {
   let retries = 5;
+
   while (retries) {
     try {
       const connection = await amqp.connect(RABBITMQ_URL);
@@ -18,7 +19,7 @@ const initRabbit = async () => {
       break;
     } catch (err) {
       retries--;
-      console.error('❌ RabbitMQ not ready. Retrying in 5s... (${retries} attempts left)');
+      console.error(`❌ RabbitMQ not ready. Retrying in 5s... (${retries} attempts left)`);
       await sleep(5000);
     }
   }
@@ -28,28 +29,9 @@ const initRabbit = async () => {
   }
 };
 
-const publishUserCreated = async (message) => {
-  if (!channel) {
-    console.warn('⚠️ RabbitMQ channel not available');
-    return;
-  }
-
-  console.log('📨 Publishing message to RabbitMQ:', message);
-
-  if (!message.userId || !message.email || !message.role) {
-    console.warn('⚠️ Incomplete user data for RabbitMQ message:', message);
-    return;
-  }
-
-  channel.sendToQueue('user_created', Buffer.from(JSON.stringify(message)), {
-    persistent: true
-  });
-
-  console.log('✅ Message sent to queue');
-};
-
+const getChannel = () => channel;
 
 module.exports = {
   initRabbit,
-  publishUserCreated
+  getChannel
 };

@@ -7,6 +7,10 @@ CREATE TYPE user_role AS ENUM ('STUDENT', 'INSTRUCTOR', 'INST_REP', 'ADMIN');
 CREATE TYPE grade_type AS ENUM ('INITIAL', 'FINAL');
 CREATE TYPE auth_provider AS ENUM ('LOCAL', 'GOOGLE', 'INSTITUTION');
 
+-- Add enum type for review status
+CREATE TYPE review_status AS ENUM ('VOID', 'OPEN', 'CLOSED');
+
+
 CREATE TABLE institution (
     id              SERIAL PRIMARY KEY,
     name            VARCHAR(50)  NOT NULL,
@@ -51,6 +55,7 @@ CREATE TABLE course (
     code           VARCHAR(10)  NOT NULL UNIQUE,
     title          VARCHAR(50)  NOT NULL,
     exam_period    VARCHAR(20),
+    review_state    review_status NOT NULL DEFAULT 'VOID',
     description    TEXT,
     instructor_id  INTEGER      NOT NULL,
     institution_id INTEGER      NOT NULL,
