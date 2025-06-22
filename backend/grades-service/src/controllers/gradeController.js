@@ -139,8 +139,26 @@ exports.handleUpload = async (req, res) => {
   try {
     const workbook = XLSX.readFile(filePath);
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet, { range: 2 }); // Skip first 2 header rows
 
+    // ✅ Minimal change: validate format
+    const expectedColumns = [
+      'Αριθμός Μητρώου', 'Ονοματεπώνυμο', 'Ακαδημαϊκό E-mail',
+      'Περίοδος δήλωσης', 'Τμήμα Τάξης', 'Κλίμακα βαθμολόγησης',
+      'Βαθμολογία', 'Q01', 'Q02', 'Q03', 'Q04', 'Q05',
+      'Q06', 'Q07', 'Q08', 'Q09', 'Q10'
+    ];
+
+    const actualColumns = XLSX.utils.sheet_to_json(sheet, { header: 1, range: 2 })[0];
+    const missingColumns = expectedColumns.filter(col => !actualColumns.includes(col));
+
+    if (missingColumns.length > 0) {
+      fs.unlinkSync(filePath);
+      return res.status(400).json({
+        error: `Wrong file format. Missing columns: ${missingColumns.join(', ')}`
+      });
+    }
+
+    const rows = XLSX.utils.sheet_to_json(sheet, { range: 2 });
     console.log(`📊 Parsed ${rows.length} rows from Excel`);
     console.log('👀 Last parsed row:', rows[rows.length - 1]);
 
@@ -157,7 +175,7 @@ exports.handleUpload = async (req, res) => {
       const email = row['Ακαδημαϊκό E-mail'];
       const grade = parseInt(row['Βαθμολογία']);
       const courseText = row['Τμήμα Τάξης'];
-      const period = row['Περίοδος δήλωσης']; // e.g., "2024-2025 ΧΕΙΜ 2024"
+      const period = row['Περίοδος δήλωσης'];
 
       if (!am || isNaN(grade) || !courseText || !period) {
         console.warn(`⚠️ Skipping row due to missing fields:`, row);
@@ -172,7 +190,6 @@ exports.handleUpload = async (req, res) => {
 
       const course_id = parseInt(courseMatch[1]);
 
-      // 1. Ensure grade_batch exists
       let grade_batch_id;
       const batchResult = await client.query(
         `SELECT id FROM grade_batch WHERE course_id = $1 AND academic_year = $2 AND type = $3`,
@@ -191,7 +208,6 @@ exports.handleUpload = async (req, res) => {
         grade_batch_id = newBatch.rows[0].id;
       }
 
-      // 2. Ensure user exists by AM
       let user_id;
       const findUser = await client.query('SELECT id FROM users WHERE am = $1', [am]);
 
@@ -219,20 +235,18 @@ exports.handleUpload = async (req, res) => {
           console.log(`✅ Created user ${am} and auth_account: ${provider_uid}`);
         } catch (insertError) {
           console.error(`❌ Failed to insert user/auth_account for AM ${am}:`, insertError);
-          continue; // skip this row if user creation fails
+          continue;
         }
       } else {
         user_id = findUser.rows[0].id;
       }
 
-      // 3. Build detailed grade JSON (Q01–Q10)
       const detailed = {};
       for (let i = 1; i <= 10; i++) {
         const q = `Q${i.toString().padStart(2, '0')}`;
         detailed[q] = row[q] ?? null;
       }
 
-      // 4. Insert or update grade
       try {
         const existingGrade = await client.query(
           `SELECT id FROM grade WHERE user_am = $1 AND course_id = $2 AND grade_batch_id = $3`,
@@ -265,9 +279,15 @@ exports.handleUpload = async (req, res) => {
     client.release();
     fs.unlinkSync(filePath);
     res.status(200).json({ message: 'Grades uploaded successfully' });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Upload failed' });
+    console.error('❌ Unexpected error during upload:', err);
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+
+    // ✅ Minimal change: send full message
+    res.status(500).json({
+      error: err.message || 'Unexpected error during upload'
+    });
   }
 };
 

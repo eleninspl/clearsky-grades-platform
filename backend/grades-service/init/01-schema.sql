@@ -94,7 +94,54 @@ CREATE TABLE grade (
   grade_batch_id INTEGER,
   grade_statistic_id INTEGER,
   CONSTRAINT uq_grade_user_course_type UNIQUE (user_am, course_id, type)
+
 );
+
+CREATE OR REPLACE FUNCTION fn_consume_credit_on_initial_batch() 
+RETURNS TRIGGER 
+LANGUAGE plpgsql 
+AS $$
+DECLARE
+    v_inst_id INTEGER;
+    v_year    SMALLINT := EXTRACT(YEAR FROM NEW.uploaded_at)::SMALLINT;
+    v_exists  BOOLEAN;
+BEGIN
+    -- Only for INITIAL type batches
+    IF NEW.type <> 'INITIAL' THEN 
+        RETURN NEW; 
+    END IF;
+
+    -- Get institution ID from course
+    SELECT institution_id INTO v_inst_id 
+    FROM course 
+    WHERE id = NEW.course_id;
+
+    -- Check if an INITIAL batch for the same course and year already exists (excluding this one)
+    SELECT EXISTS (
+        SELECT 1 
+        FROM grade_batch gb
+        WHERE gb.type = 'INITIAL'
+          AND gb.course_id = NEW.course_id
+          AND EXTRACT(YEAR FROM gb.uploaded_at) = v_year
+          AND gb.id <> NEW.id
+    ) INTO v_exists;
+
+    -- If not already consumed, subtract 1 credit
+    IF NOT v_exists THEN
+        UPDATE institution
+        SET credits_balance = credits_balance - 1
+        WHERE id = v_inst_id;
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER tg_gb_ai_consume_credit
+AFTER INSERT ON grade_batch
+FOR EACH ROW
+EXECUTE FUNCTION fn_consume_credit_on_initial_batch();
+
 
 -- FK constraints (optional: remove if isolating)
 ALTER TABLE grade ADD FOREIGN KEY (user_am) REFERENCES users(am) ON DELETE CASCADE;
