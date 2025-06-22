@@ -89,6 +89,15 @@ exports.handleUpload = async (req, res) => {
     res.json(response.data);
   } catch (err) {
     console.error('❌ Upload failed:', err.message);
-    res.status(500).json({ error: 'Failed to upload file' });
+  
+    const backendError =
+      err.response?.data?.error ||
+      err.response?.data?.message ||
+      err.message ||
+      'Σφάλμα κατά την αποστολή βαθμών.';
+  
+    res.status(err.response?.status || 500).json({
+      error: backendError
+    });
   }
 };

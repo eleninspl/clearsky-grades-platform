@@ -13,9 +13,17 @@ export const fetchInstructorCourses = async (instructorId) => {
 export const uploadGradesFile = async (file, type) => {
   const formData = new FormData();
   formData.append('file', file);
-  const res = await orchestratorAPI.post(`/grades/${type}`, formData);
-  return res.data;
+
+  try {
+    const res = await orchestratorAPI.post(`/grades/${type}`, formData);
+    return res.data;
+  } catch (err) {
+    // ✅ Προωθούμε το πραγματικό backend error στον caller
+    const backendError = err.response?.data;
+    throw backendError || new Error('Failed to upload file');
+  }
 };
+
 
 export const getDistribution = async (courseId, type = 'INITIAL') => {
   const res = await orchestratorAPI.get(`/grades/distribution/${courseId}/${type}`);

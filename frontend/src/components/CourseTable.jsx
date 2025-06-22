@@ -23,7 +23,7 @@ function CourseTable({
             </thead>
             <tbody>
                 {Object.values(groupedByCourse).map(({ course, initial, final }) => {
-                    const gradingStatus = course.review_state || 'void';
+                    const gradingStatus = (course.review_state || 'void').toLowerCase();
                     const isSubmitted = initial && reviewRequests?.some(r => r.grade_id === initial.grade_id);
                     const hasReviewRequest = isSubmitted;
 
