@@ -1,3 +1,4 @@
+const { publishUserCreated } = require('../rabbitmq'); // προσαρμόζεις το path
 const axios = require('axios');
 
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL;
@@ -16,11 +17,15 @@ exports.signup = async (req, res) => {
   try {
     const response = await axios.post(`${AUTH_SERVICE_URL}/auth/signup`, req.body);
     res.json(response.data);
+
+    // 🔁 Publish στο RabbitMQ
+    await publishUserCreated(response.data);
   } catch (err) {
     console.error('[Signup error]', err.response?.data || err.message);
     res.status(err.response?.status || 500).json({ error: err.response?.data?.message || 'Signup failed' });
   }
 };
+
 
 exports.logout = async (req, res) => {
   try {
@@ -95,12 +100,18 @@ exports.createUserByRole = async (req, res) => {
         Authorization: req.headers.authorization
       }
     });
+
     res.status(201).json(response.data);
+
+    // 🔁 Publish event για RabbitMQ
+    await publishUserCreated(response.data);
+
   } catch (err) {
     console.error('[Create user error]', err.response?.data || err.message);
     res.status(err.response?.status || 500).json({ error: 'User creation failed' });
   }
 };
+
 
 // src/controllers/authController.js
 const jwt = require('jsonwebtoken');
