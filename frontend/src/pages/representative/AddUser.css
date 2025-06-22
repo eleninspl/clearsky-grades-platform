@@ -69,19 +69,21 @@
   margin-top: 10px;
 }
 
+
 .adduser-btn {
   padding: 10px 32px;
   display: block;
   font-size: 1.08rem;
-  border: 2px solid #888;
+  border: 2px solid #22586A;         /* match border */
   border-radius: 6px;
-  background: #eaeaea;
+  background: #22586A;              /* updated */
+  color: white;                     /* ensures text is readable */
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .adduser-btn:hover {
-  background: #d6e4f0;
+  background: #1a4453;
 }
 
 .adduser-message-content {

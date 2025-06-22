@@ -21,6 +21,12 @@ function AddUser() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Basic validation
+    if (!username || !email || !password || (type === 'student' && !id)) {
+      alert('Please fill in all required fields.');
+      return;
+    }
+
     const payload = {
       username,
       email,
