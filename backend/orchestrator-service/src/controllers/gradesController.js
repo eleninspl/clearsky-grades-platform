@@ -41,6 +41,9 @@ exports.getQuestionDistribution = async (req, res) => {
 // Υφιστάμενες συναρτήσεις
 exports.getStudentGrades = async (req, res) => {
   const { studentId } = req.params;
+  // Debug log
+  console.log(`[DEBUG] getStudentGrades called for studentId: ${studentId}, headers:`, req.headers);
+
   try {
     const gradesRes = await axios.get(`${GRADES_SERVICE_URL}/grades/student/${studentId}`, {
       headers: {

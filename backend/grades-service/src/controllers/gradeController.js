@@ -237,12 +237,12 @@ async function getCourseIdAndValidateState(client, courseText, batch_type) {
 
   const currentState = result.rows[0].review_state;
 
-  if (batch_type === 'INITIAL' && currentState !== 'VOID') {
-    throw new Error(`Initial grades require VOID state (currently: ${currentState})`);
+  if (batch_type === 'INITIAL' && currentState !== 'void') {
+    throw new Error(`Initial grades require void state (currently: ${currentState})`);
   }
 
-  if (batch_type === 'FINAL' && currentState !== 'OPEN') {
-    throw new Error(`Final grades require OPEN state (currently: ${currentState})`);
+  if (batch_type === 'FINAL' && currentState !== 'open') {
+    throw new Error(`Final grades require open state (currently: ${currentState})`);
   }
 
   return course_id;
@@ -267,9 +267,9 @@ async function findOrCreateBatch(client, course_id, uploader_id, type, filename,
 
 async function updateReviewState(client, course_id, batch_type) {
   if (batch_type === 'INITIAL') {
-    await client.query('UPDATE course SET review_state = $1 WHERE id = $2', ['OPEN', course_id]);
+    await client.query('UPDATE course SET review_state = $1 WHERE id = $2', ['open', course_id]);
   } else if (batch_type === 'FINAL') {
-    await client.query('UPDATE course SET review_state = $1 WHERE id = $2', ['CLOSED', course_id]);
+    await client.query('UPDATE course SET review_state = $1 WHERE id = $2', ['closed', course_id]);
   }
 }
 
