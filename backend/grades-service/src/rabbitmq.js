@@ -1,4 +1,3 @@
-// backend/grades-service/rabbitmq.js
 const amqp = require('amqplib');
 const pool = require('./db');
 
@@ -14,14 +13,13 @@ const initConsumer = async () => {
             const connection = await amqp.connect(RABBITMQ_URL);
             const channel = await connection.createChannel();
 
+            // ============ Consumer 1: user_created ============
             await channel.assertQueue('user_created', { durable: true });
-
             console.log('🎧 [RabbitMQ] Listening for user_created messages...');
 
             channel.consume('user_created', async (msg) => {
                 if (msg !== null) {
                     const data = JSON.parse(msg.content.toString());
-
                     console.log('📥 Received user_created:', data);
 
                     try {
@@ -39,7 +37,7 @@ const initConsumer = async () => {
                         if (existing.rowCount === 0) {
                             await pool.query(
                                 `INSERT INTO users (id, username, email, full_name, role, am, institution_id)
-                     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                                 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
                                 [
                                     userId,
                                     username || `user_${userId}`,
@@ -63,8 +61,39 @@ const initConsumer = async () => {
                 }
             });
 
-            break; // ✅ Εξοδος από retry loop αν συνδεθεί επιτυχώς
+            // ============ Consumer 2: credit.purchased ============
+            await channel.assertQueue('credit.purchased', { durable: true });
+            console.log('🎧 [RabbitMQ] Listening for credit.purchased messages...');
 
+            channel.consume('credit.purchased', async (msg) => {
+                if (msg !== null) {
+                    const data = JSON.parse(msg.content.toString());
+                    console.log('📥 Received credit.purchased:', data);
+
+                    try {
+                        const { institutionId, amount } = data;
+
+                        if (!institutionId || !amount) {
+                            throw new Error('Missing institutionId or amount');
+                        }
+
+                        await pool.query(
+                            `UPDATE institution
+                             SET credits_balance = credits_balance + $1
+                             WHERE id = $2`,
+                            [amount, institutionId]
+                        );
+
+                        console.log(`✅ Updated institution ${institutionId} with +${amount} credits.`);
+                        channel.ack(msg);
+                    } catch (err) {
+                        console.error('❌ Error handling credit.purchased:', err);
+                        channel.nack(msg, false, false); // discard if fail
+                    }
+                }
+            });
+
+            break; // ✅ έξοδος από το retry loop αν όλα πάνε καλά
         } catch (err) {
             retries--;
             console.error(`❌ RabbitMQ not ready. Retrying in 5s... (${retries} left)`);
