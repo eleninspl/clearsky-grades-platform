@@ -13,18 +13,6 @@ exports.login = async (req, res) => {
   }
 };
 
-exports.signup = async (req, res) => {
-  try {
-    const response = await axios.post(`${AUTH_SERVICE_URL}/auth/signup`, req.body);
-    res.json(response.data);
-
-  } catch (err) {
-    console.error('[Signup error]', err.response?.data || err.message);
-    res.status(err.response?.status || 500).json({ error: err.response?.data?.message || 'Signup failed' });
-  }
-};
-
-
 exports.logout = async (req, res) => {
   try {
     const response = await axios.post(`${AUTH_SERVICE_URL}/auth/logout`, null, {

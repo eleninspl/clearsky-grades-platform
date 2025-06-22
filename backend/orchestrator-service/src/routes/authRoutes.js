@@ -4,7 +4,6 @@ const ctrl = require('../controllers/authController');
 
 // ➕ Authentication routes
 router.post('/login', ctrl.login);
-router.post('/signup', ctrl.signup);
 router.post('/logout', ctrl.logout);
 
 // ➕ Google OAuth routes
