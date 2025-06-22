@@ -9,6 +9,7 @@ Access control: Enforced via authorize.js middleware using JWT and roles
 
 ## Folder Structure
 
+<pre>
 auth-service/
 ├── init/
 │   ├── 01-schema.sql            # SQL schema for users
@@ -30,6 +31,7 @@ auth-service/
 ├── Dockerfile                        # Docker container definition
 ├── package.json                      # Dependencies and scripts
 └── README.md                         # You are here
+</pre>
 
 ## Authentication & Roles
 JWT tokens are issued on login or OAuth success and must be passed in the Authorization header. Role checking is enforced on protected routes.
