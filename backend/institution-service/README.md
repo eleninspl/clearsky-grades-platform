@@ -1,24 +1,57 @@
 # Institution Service
 
-Manages educational institutions used by the system.
+The Institution Service is a standalone microservice responsible for managing institution-related operations such as creation, listing, updates, credit adjustments, and deletion. It enforces role-based access control to ensure only representatives and authorized users can perform relevant actions.
 
-## Endpoints
+## Overview
+Tech stack: Node.js, Express, PostgreSQL
+Purpose: Handle the lifecycle and credit management of institutions in the system
+Access control: Secured via middleware (authorize.js) based on JWT tokens
 
-| Method | Endpoint             | Auth | Description              |
-|--------|----------------------|------|--------------------------|
-| GET    | `/institutions`      | ❌   | List all institutions    |
-| GET    | `/institutions/:id`  | ❌   | Get institution by ID    |
-| POST   | `/institutions`      | ✅   | Create a new institution |
-| PUT    | `/institutions/:id`  | ✅   | Update institution info  |
-| DELETE | `/institutions/:id`  | ✅   | Delete an institution    |
+## Folder Structure
 
-## ENV
+institution-service/
+├── init/
+│   ├── 01-schema.sql          # SQL schema for institutions
+│   └── 02-seed.sql            # Optional seed data for testing
+├── src/
+│   ├── controllers/
+│   │   └── institutionController.js   # Core logic for handling requests
+│   ├── middleware/
+│   │   └── authorize.js               # JWT-based role checking
+│   ├── routes/
+│   │   └── institutionRoutes.js       # API endpoint definitions
+│   ├── db.js                          # PostgreSQL DB connection
+│   └── index.js                       # App entry point
+├── .env                               # Environment configuration
+├── Dockerfile                         # Docker build instructions
+├── package.json                       # Dependencies and scripts
+└── README.md                          # You are here
 
-PORT=5003
-DB_URL=postgresql://postgres:postgres@db-service:5432/clearsky
-JWT_SECRET=my_jwt_secret
+## Authentication & Roles
+JWT is expected in the Authorization header.
 
-## Notes
+Middleware in authorize.js checks the user's role:
 
-- All write operations require authentication.
-- Each institution has a `credits_balance` field used by `credits-service`.
+Representatives can fully manage institutions (CRUD and credit changes)
+
+Instructors and Students are denied access to these endpoints
+
+## API Endpoints
+Defined in institutionRoutes.js and implemented in institutionController.js. Key routes:
+
+GET	/stats	Get institution statistics	
+
+GET	/stats/course-list	Get course list with instructors	
+
+GET	/	Get all institutions	
+
+GET	/:id	Get a single institution by ID	
+
+POST	/	Create a new institution	
+
+PUT	/:id	Update institution name/email	
+
+DELETE	/:id	Delete an institution	
+
+PATCH	/:id/credits	Adjust an institution’s credit balance
+

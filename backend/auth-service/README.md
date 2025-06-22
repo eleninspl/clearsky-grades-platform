@@ -1,25 +1,58 @@
 # Auth Service
 
-Handles Google OAuth2 login and issues JWT tokens.
+The Auth Service is a standalone authentication and user provisioning microservice. It handles user login, signup, Google OAuth integration, and role-based account creation. It is responsible for issuing and verifying JWTs used throughout the system.
 
-## Endpoints
+## Overview
+Tech stack: Node.js, Express, PostgreSQL, Passport.js
+Purpose: User authentication, token issuance, and user provisioning
+Access control: Enforced via authorize.js middleware using JWT and roles
 
-| Method | Endpoint              | Auth | Description                 |
-|--------|-----------------------|------|-----------------------------|
-| GET    | `/auth/google`        | ❌   | Redirect to Google login    |
-| GET    | `/auth/google/callback` | ❌ | Handle Google callback and issue JWT |
+## Folder Structure
 
-## ENV
+auth-service/
+├── init/
+│   ├── 01-schema.sql            # SQL schema for users
+│   └── 02-seed.sql              # Seed data for development
+├── src/
+│   ├── controllers/
+│   │   └── authController.js         # Core logic for auth routes
+│   ├── middleware/
+│   │   └── authorize.js              # JWT role authorization
+│   ├── routes/
+│   │   └── authRoutes.js             # REST routes for auth
+│   ├── utils/
+│   │   └── verify.js                 # Token and data verification logic
+│   ├── db.js                         # Database connection setup
+│   ├── passport.js                   # Passport strategies (Google)
+│   └── index.js                      # Entry point
+├── hash.js                           # Password hashing utility
+├── .env                              # Environment variables
+├── Dockerfile                        # Docker container definition
+├── package.json                      # Dependencies and scripts
+└── README.md                         # You are here
 
-PORT=5001
-GOOGLE_CLIENT_ID=666438303746-mv41n4pmptnmtloi38mpvb7h5u52hpi6.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=
-JWT_SECRET=my_jwt_secret
+## Authentication & Roles
+JWT tokens are issued on login or OAuth success and must be passed in the Authorization header. Role checking is enforced on protected routes.
 
+## API Endpoints
+Defined in authRoutes.js and implemented in authController.js.
 
-## Notes
+Method	Endpoint	
 
-- Uses Google OAuth2 for authentication.
-- Issues signed JWT tokens for further use in protected services.
-- No direct connection to the database (delegates user creation to `user-service`).
+POST	/signup	Register a user via local email/password	
 
+POST	/login	Login and receive a JWT	
+
+POST	/logout	Logout (JWT invalidation is client-side)	
+
+POST	/verify-google	Initiate Google OAuth login	
+
+POST	/verify-google-token	Verify Google ID token (client-side flow)	
+
+GET	/google	Start Google OAuth (server-side flow)	
+
+GET	/google/callback	Handle Google OAuth redirect and token issuance	
+
+GET	/users/:id	Get user info by ID	 (token logic may apply)
+
+POST	/users	Create a user with a specific role	

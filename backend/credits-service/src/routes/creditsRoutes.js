@@ -5,7 +5,6 @@ const authorize = require('../middleware/authorize');
 const {
   getBalance,
   buyCredits,
-  consumeCredit,
   getHistory
 } = require('../controllers/creditsController');
 

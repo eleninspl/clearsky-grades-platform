@@ -1,25 +1,55 @@
 # Review Service
 
-Handles grade review requests and instructor responses.
+## Review Service
+The Review Service is a standalone microservice responsible for managing grade review requests in the system. It supports functionality for students to submit review requests and instructors to respond, with proper role-based access control.
 
-## Endpoints
+## Overview
+Tech stack: Node.js, Express, PostgreSQL
 
-| Method | Endpoint               | Auth | Description                    |
-|--------|------------------------|------|--------------------------------|
-| GET    | `/review-requests`     | ❌   | List all review requests       |
-| GET    | `/review-requests/:id` | ❌   | Get request by ID              |
-| POST   | `/review-requests`     | ✅   | Submit new review request      |
-| POST   | `/review-responses`    | ✅   | Submit instructor's response   |
+Purpose: Handle the lifecycle of review requests and responses
 
-## ENV
+Access control: Secured via middleware (authorize.js) based on JWT tokens
 
-PORT=5006
-DB_URL=postgresql://postgres:postgres@db-service:5432/clearsky
-JWT_SECRET=my_jwt_secret
+## Folder Structure
+review-service/
+├── init/
+│   ├── 01-schema.sql        # SQL schema for tables used by the service
+│   └── 02-seed.sql          # Sample or test data
+├── src/
+│   ├── controllers/
+│   │   └── reviewController.js    # Business logic for reviews
+│   ├── middleware/
+│   │   └── authorize.js           # JWT-based role authorization
+│   ├── routes/
+│   │   └── reviewRoutes.js        # Defines API endpoints
+│   ├── db.js                      # PostgreSQL connection setup
+│   └── index.js                   # Entry point for the service
+├── .env                     # Environment-specific variables
+├── Dockerfile               # Container config
+├── package.json             # Project config and dependencies
+└── README.md                # You are here
 
-## Notes
+## Authentication & Roles
+JWT is expected in the Authorization header.
 
-- A student submits a review request for a specific grade.
-- An instructor can respond with a justification or grade change.
-- Works in coordination with `grades-service`.
+Middleware (authorize.js) checks roles:
+
+Students can create and view their own requests.
+
+Instructors can view and respond to assigned requests.
+
+Representatives may have elevated read-only access (if configured).
+
+## API Endpoints
+These are defined in reviewRoutes.js and handled by reviewController.js. Common routes include:
+
+POST /review/requests – create a new request (student)
+
+GET /review/requests/student/:studentId – get requests for a student
+
+GET /review/instructor – instructor’s pending review queue
+
+POST /review/responses – instructor submits response
+
+
 

@@ -1,23 +1,45 @@
 # Credits Service
 
-Manages credit balances for institutions.
+The Credits Service is a standalone microservice responsible for managing institutional credit balances. It supports operations such as querying current balance, purchasing credits, and viewing transaction history. Only institution representatives and administrators are allowed to perform these actions.
 
-## Endpoints
+## Overview
+Tech stack: Node.js, Express, PostgreSQL
+Purpose: Manage credit purchases, balances, and history per institution
+Access control: Enforced via authorize.js using JWT tokens
 
-| Method | Endpoint               | Auth | Description                      |
-|--------|------------------------|------|----------------------------------|
-| GET    | `/credits/:id`         | ❌   | View current credit balance      |
-| POST   | `/credits/:id/buy`     | ✅   | Purchase additional credits      |
-| POST   | `/credits/:id/use`     | ✅   | Consume one credit (e.g. per grade upload) |
+## Folder Structure
+credits-service/
+├── init/
+│   ├── 01-schema.sql            # SQL schema for credit-related tables
+│   └── 02-seed.sql              # Optional seed/test data
+├── src/
+│   ├── controllers/
+│   │   └── creditsController.js       # Core logic for each route
+│   ├── middleware/
+│   │   └── authorize.js               # JWT role-based access control
+│   ├── routes/
+│   │   └── creditsRoutes.js           # API route definitions
+│   ├── db.js                          # PostgreSQL connection setup
+│   └── index.js                       # Service entry point
+├── .env                               # Environment variables
+├── Dockerfile                         # Docker container definition
+├── package.json                       # Project config and dependencies
+└── README.md                          # You're here
 
-## ENV
 
-PORT=5008
-DB_URL=postgresql://postgres:postgres@db-service:5432/clearsky
-JWT_SECRET=my_jwt_secret
+## Authentication & Roles
+JWT tokens are required in the Authorization header. Access is restricted to:
 
-## Notes
+ADMIN
 
-- Used by `grades-service` to deduct credits per grade batch.
-- Institutions must have enough balance to post final grades.
-- Only authenticated users can buy or consume credits.
+INST_REP (Institution Representative)
+
+Other roles are denied access to these endpoints.
+
+## API Endpoints
+
+GET	/:institutionId/balance	Get credit balance for an institution	
+
+POST	/:institutionId/buy	Purchase additional credits	
+
+GET	/:institutionId/history	View credit transaction history	
