@@ -13,10 +13,32 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5010;
 
+<<<<<<< Updated upstream
 const { initRabbit } = require('./rabbitmq');
 
 // Middleware
 app.use(cors());
+=======
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://192.168.2.7:5173',
+  'http://147.102.1.55:5173'  // βάλε εδώ όποια IP έχει το μηχάνημά σου
+  // μπορείς να βάλεις και άλλες, π.χ. του εργαστηρίου
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
+
+>>>>>>> Stashed changes
 app.use(express.json());
 app.use(morgan('dev'));
 

@@ -1,55 +1,18 @@
-// import axios from 'axios';
-
-// // Helper function για να δημιουργούμε axios instances με token
-// const createAxiosInstance = (baseURL) => {
-//   const instance = axios.create({ baseURL });
-
-//   // ➕ Attach token
-//   instance.interceptors.request.use((config) => {
-//     const token = localStorage.getItem('token');
-//     if (token) {
-//       config.headers.Authorization = `Bearer ${token}`;
-//     }
-//     return config;
-//   });
-
-//   // ➕ Auto logout on 401
-//   instance.interceptors.response.use(
-//     (response) => response,
-//     (error) => {
-//       if (error.response?.status === 401) {
-//         console.warn('🔒 Token expired or unauthorized. Logging out...');
-
-//         localStorage.removeItem('token');
-//         localStorage.removeItem('user');
-//         window.location.href = '/login';
-//       }
-
-//       return Promise.reject(error);
-//     }
-//   );
-
-//   return instance;
-// };
-
-// // Δημιουργούμε instances για κάθε service
-
-
-
-
-// export const creditsAPI = createAxiosInstance(import.meta.env.VITE_CREDITS_API_URL);
-
-// export const orchestratorAPI = createAxiosInstance(import.meta.env.VITE_ORCHESTRATOR_API_URL);
-
-
-
 import axios from 'axios';
 
-// ✅ Helper function για δημιουργία axios instance με token
-const createAxiosInstance = (baseURL) => {
-  const instance = axios.create({ baseURL });
+// ✅ Δυναμικό backend URL βασισμένο στο hostname του browser
+const backendHost = window.location.hostname;
+const backendPort = '5010';
+const dynamicOrchestratorURL = `http://${backendHost}:${backendPort}`;
 
-  // ➕ Attach token (αν υπάρχει)
+console.log("🌐 Using orchestrator at", dynamicOrchestratorURL);
+
+const createAxiosInstance = (baseURL) => {
+  const instance = axios.create({
+    baseURL,
+    withCredentials: true
+  });
+
   instance.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -58,7 +21,6 @@ const createAxiosInstance = (baseURL) => {
     return config;
   });
 
-  // ➕ Auto logout αν έχουμε 401 απόκριση
   instance.interceptors.response.use(
     (response) => response,
     (error) => {
@@ -68,7 +30,6 @@ const createAxiosInstance = (baseURL) => {
         localStorage.removeItem('user');
         window.location.href = '/login';
       }
-
       return Promise.reject(error);
     }
   );
@@ -76,11 +37,10 @@ const createAxiosInstance = (baseURL) => {
   return instance;
 };
 
-// ✅ Δημιουργία axios instances για κάθε μικροϋπηρεσία
-//export const authAPI = createAxiosInstance(import.meta.env.VITE_AUTH_API_URL);
-export const authAPI = createAxiosInstance(import.meta.env.VITE_ORCHESTRATOR_API_URL);
-export const orchestratorAPI = createAxiosInstance(import.meta.env.VITE_ORCHESTRATOR_API_URL);
-export const creditsAPI = createAxiosInstance(import.meta.env.VITE_CREDITS_API_URL);
-export const reviewAPI = createAxiosInstance(import.meta.env.VITE_REVIEW_API_URL);
-export const gradesAPI = createAxiosInstance(import.meta.env.VITE_GRADES_API_URL);
-export const institutionAPI = createAxiosInstance(import.meta.env.VITE_INSTITUTION_API_URL);
+// ✅ Όλα τα instances μιλάνε με τον orchestrator
+export const orchestratorAPI = createAxiosInstance(dynamicOrchestratorURL);
+export const authAPI = createAxiosInstance(dynamicOrchestratorURL);
+export const creditsAPI = createAxiosInstance(dynamicOrchestratorURL);
+export const reviewAPI = createAxiosInstance(dynamicOrchestratorURL);
+export const gradesAPI = createAxiosInstance(dynamicOrchestratorURL);
+export const institutionAPI = createAxiosInstance(dynamicOrchestratorURL);
