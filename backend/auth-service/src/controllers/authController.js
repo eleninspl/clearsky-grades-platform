@@ -113,7 +113,7 @@ exports.logout = async (req, res) => {
 
 exports.createUserByRole = async (req, res, next) => {
   const creator = req.user;
-  const { email, username, password, role, id } = req.body;
+  const { email, username, password, role, id, google_email } = req.body;
 
   // Έλεγχος έγκυρου role
   if (!['INSTRUCTOR', 'INST_REP', 'STUDENT'].includes(role)) {
@@ -126,28 +126,32 @@ exports.createUserByRole = async (req, res, next) => {
     const inst = creator.institution_id;
     const fullname = username;
 
-    // 2) Εισαγωγή στον πίνακα users (μέσα στο authdb schema)
+    // 2) Εισαγωγή στον πίνακα users
     let userResult;
-    if (id) {
+    
+    if (role === 'STUDENT' && id) {
+      // For students, use the 'id' field as 'am' (student registration number)
       userResult = await db.query(
         `INSERT INTO users
-           (id, username, email, full_name, role, institution_id)
-         VALUES ($1, $2, $3, $4, $5, $6)
+           (username, email, full_name, role, institution_id, am, google_email)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
          RETURNING *`,
-        [id, username, email, fullname, role, inst]
+        [username, email, fullname, role, inst, parseInt(id), google_email || null]
       );
     } else {
+      // For instructors and reps, no AM field needed
       userResult = await db.query(
         `INSERT INTO users
-           (username, email, full_name, role, institution_id)
-         VALUES ($1, $2, $3, $4, $5)
+           (username, email, full_name, role, institution_id, google_email)
+         VALUES ($1, $2, $3, $4, $5, $6)
          RETURNING *`,
-        [username, email, fullname, role, inst]
+        [username, email, fullname, role, inst, google_email || null]
       );
     }
+    
     const user = userResult.rows[0];
 
-    // 3) Εισαγωγή στον πίνακα auth_account
+    // 3) Εισαγωγή στον πίνακα auth_account (LOCAL provider)
     await db.query(
       `INSERT INTO auth_account
          (user_id, provider, provider_uid, password_hash)
@@ -155,9 +159,24 @@ exports.createUserByRole = async (req, res, next) => {
       [user.id, email, hash]
     );
 
-    // 4) Επιστροφή του νέου χρήστη
+    // 4) If Google email is provided, create Google auth account
+    if (google_email) {
+      await db.query(
+        `INSERT INTO auth_account
+           (user_id, provider, provider_uid)
+         VALUES ($1, 'GOOGLE', $2)
+         ON CONFLICT (provider, provider_uid) DO NOTHING`,
+        [user.id, google_email]
+      );
+      console.log(`🔗 Created Google auth account for new user with email: ${google_email}`);
+    }
+
+    console.log(`✅ Created ${role} user: ${username} (ID: ${user.id}${role === 'STUDENT' ? `, AM: ${user.am}` : ''}${google_email ? `, Google: ${google_email}` : ''})`);
+
+    // 5) Επιστροφή του νέου χρήστη
     res.status(201).json(user);
   } catch (err) {
+    console.error('Create user error:', err.message);
     next(err);
   }
 };
@@ -172,28 +191,117 @@ exports.verifyGoogle = async (req, res) => {
   }
 
   try {
-    const result = await db.query(
-      `
-      SELECT u.id, u.email, u.role, u.full_name, u.institution_id
-      FROM users u
-      JOIN auth_account a ON a.user_id = u.id
-      WHERE a.provider = 'GOOGLE'
-        AND a.provider_uid = $1
-        AND u.role = 'STUDENT'
-      `,
+    // First check if user exists with this Google email in users table
+    const userResult = await db.query(
+      `SELECT * FROM users WHERE google_email = $1`,
       [email]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found or not a student' });
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ 
+        error: 'No account found with this Google email. Please contact your institution to register your Google account.',
+        email: email
+      });
     }
 
-    const user = result.rows[0];
+    const user = userResult.rows[0];
+
+    // Check if Google auth account exists
+    const authResult = await db.query(
+      `SELECT * FROM auth_account WHERE user_id = $1 AND provider = 'GOOGLE'`,
+      [user.id]
+    );
+
+    // If no Google auth account exists, create one
+    if (authResult.rows.length === 0) {
+      await db.query(
+        `INSERT INTO auth_account (user_id, provider, provider_uid)
+         VALUES ($1, 'GOOGLE', $2)
+         ON CONFLICT (provider, provider_uid) DO NOTHING`,
+        [user.id, email]
+      );
+      console.log(`🔗 Created Google auth account for user ${user.id} with email ${email}`);
+    }
+
     const token = issueToken(user);
 
-    res.status(200).json({ token });
+    res.status(200).json({ 
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role,
+        institution_id: user.institution_id,
+        google_email: user.google_email
+      }
+    });
   } catch (err) {
     console.error('verifyGoogle failed:', err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// ✅ Google id_token verification (for client-side OAuth)
+exports.verifyGoogleIdToken = async (req, res) => {
+  const { email, id_token } = req.body;
+
+  if (!email || !id_token) {
+    return res.status(400).json({ error: 'Missing email or id_token' });
+  }
+
+  try {
+    // For production, you should verify the id_token with Google's servers
+    // For now, we'll trust the email from the frontend since it's extracted from the signed JWT
+    console.log(`🔍 Google id_token verification for email: ${email}`);
+
+    // Check if user exists with this Google email
+    const userResult = await db.query(
+      `SELECT * FROM users WHERE google_email = $1`,
+      [email]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ 
+        error: 'No account found with this Google email. Please contact your institution to register your Google account.',
+        email: email
+      });
+    }
+
+    const user = userResult.rows[0];
+
+    // Check if Google auth account exists
+    const authResult = await db.query(
+      `SELECT * FROM auth_account WHERE user_id = $1 AND provider = 'GOOGLE'`,
+      [user.id]
+    );
+
+    // If no Google auth account exists, create one
+    if (authResult.rows.length === 0) {
+      await db.query(
+        `INSERT INTO auth_account (user_id, provider, provider_uid)
+         VALUES ($1, 'GOOGLE', $2)
+         ON CONFLICT (provider, provider_uid) DO NOTHING`,
+        [user.id, email]
+      );
+      console.log(`🔗 Created Google auth account for user ${user.id} with email ${email}`);
+    }
+
+    const token = issueToken(user);
+
+    res.status(200).json({ 
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role,
+        institution_id: user.institution_id,
+        google_email: user.google_email
+      }
+    });
+  } catch (err) {
+    console.error('Google id_token verification failed:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

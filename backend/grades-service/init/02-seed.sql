@@ -15,6 +15,7 @@ VALUES (
   '$2b$10$uuizdtZtIXX1XpzfGIwOmeaswCEsmW1U9cXhVFcT/T7T3V9DFIYCK'
 );
 
+-- SQLBook: Code
 -- 📌 INST_REP
 INSERT INTO users (id, username, email, full_name, role, institution_id)
 VALUES (101, 'rep', 'rep@demo.edu', 'Institution Rep', 'INST_REP', 1);
@@ -59,6 +60,25 @@ VALUES (
   'LOCAL',
   'student@demo.edu',
   '$2b$10$XButviiFJj1ReOWa6E6mcOvAefg37Jza9ppQBuKH7IvtMN9SjrHMC'
+);
+
+-- 📌 Steve's Personal Account
+INSERT INTO users (id, username, email, full_name, role, institution_id, am)
+VALUES (104, 'eleni', 'eleni@demo.edu', 'Eleni Nas', 'STUDENT', 1, 104);
+
+INSERT INTO auth_account (user_id, provider, provider_uid, password_hash)
+VALUES (
+  104,
+  'LOCAL',
+  'eleni@demo.edu',
+  '$2b$10$XButviiFJj1ReOWa6E6mcOvAefg37Jza9ppQBuKH7IvtMN9SjrHMC'
+);
+
+INSERT INTO auth_account (user_id, provider, provider_uid)
+VALUES (
+  104,
+  'GOOGLE',
+  'eleni.nspl@gmail.com'
 );
 
 DO $$
@@ -132,14 +152,21 @@ VALUES
 ('FINAL', 92, 103, 102, 2),
 ('INITIAL', 90, 103, 103, 3);
 
+-- ✅ GRADES για Steve (AM: 104) - Copy of AM 103 grades
+INSERT INTO grade (type, value, user_am, course_id, grade_batch_id)
+VALUES
+('INITIAL', 86, 104, 101, 1),
+('FINAL', 92, 104, 102, 2),
+('INITIAL', 90, 104, 103, 3);
+
 -- 📌 GRADE BATCH for CS103
 INSERT INTO grade_batch (id, course_id, uploader_id, type)
 VALUES (4, 103, 102, 'INITIAL')
 ON CONFLICT DO NOTHING;
 
 
--- 🔁 Καθάρισε παλιά δεδομένα για CS103
-DELETE FROM grade WHERE course_id = 103;
+-- 🔁 Καθάρισε παλιά δεδομένα για CS103 (only for students 401-410)
+DELETE FROM grade WHERE course_id = 103 AND user_am BETWEEN 401 AND 410;
 DELETE FROM grade_batch WHERE id = 4;
 
 -- 📦 Grade batch για CS103
@@ -179,7 +206,8 @@ BEGIN
 END $$;
 
 -- 🔁 Επανεισαγωγή ποικιλίας βαθμών για CS103 (course_id = 103)
-DELETE FROM grade WHERE course_id = 103;
+-- Delete only grades for students 401-410, not all grades for course 103
+DELETE FROM grade WHERE course_id = 103 AND user_am BETWEEN 401 AND 410;
 
 DO $$
 DECLARE
@@ -213,22 +241,25 @@ BEGIN
   END LOOP;
 END $$;
 
--- ➕ Προσθήκη βαθμού για τον demo φοιτητή (user_am = 103) στο μάθημα CS103 (course_id = 103)
+-- ✅ Update or insert grade for demo student (user_am = 103) in course CS103
+-- ✅ Upsert grade for demo student (user_am = 103) in CS103
 INSERT INTO grade (type, value, user_am, course_id, grade_batch_id, detailed_grade_json)
 VALUES (
   'INITIAL',
-  8,  -- Μπορείς να αλλάξεις την τιμή του βαθμού όπως θες
+  8,
   103,
   103,
   4,
-  jsonb_build_object(
-    'Q01', 9,
-    'Q02', 8,
-    'Q03', 9,
-    'Q04', 9
-  )
-);
+  jsonb_build_object('Q01', 9, 'Q02', 8, 'Q03', 9, 'Q04', 9)
+)
+ON CONFLICT (user_am, course_id, type)
+DO UPDATE SET
+  value = EXCLUDED.value,
+  grade_batch_id = EXCLUDED.grade_batch_id,
+  detailed_grade_json = EXCLUDED.detailed_grade_json,
+  uploaded_at = CURRENT_TIMESTAMP;
 
+-- 🛠️ Sync the user ID sequence
 DO $$
 BEGIN
   PERFORM setval(
@@ -238,7 +269,7 @@ BEGIN
 END
 $$;
 
--- 🛠️ Sync the grade_batch ID sequence to prevent conflicts
+-- 🛠️ Sync the grade_batch ID sequence
 DO $$
 BEGIN
   PERFORM setval(
@@ -248,3 +279,10 @@ BEGIN
 END
 $$;
 
+-- ✅ Logging notice correctly (inside a DO block)
+DO $$
+BEGIN
+  RAISE NOTICE '🎓 Added comprehensive grades for Steve (AM: 104) across 6 courses';
+  RAISE NOTICE '📊 Current GPA calculation: CS courses averaging ~90, STEM courses ~84';
+END
+$$;

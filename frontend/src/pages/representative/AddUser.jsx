@@ -28,17 +28,31 @@ function AddUser() {
       role: type.toUpperCase(),
     };
 
-    // ✅ Only include ID if role is STUDENT
+    // ✅ Only include ID if role is STUDENT (this becomes the AM field)
     if (type === 'student') {
-      payload.id = id;
+      payload.id = id; // This will be used as the AM (student registration number)
+      
+      // Include Google email if provided
+      if (googleEmail.trim()) {
+        payload.google_email = googleEmail.trim();
+      }
     }
 
     try {
       await createUserByRole(payload);
+      alert(`${type} user created successfully!`);
+      
+      // Reset form
+      setUsername('');
+      setEmail('');
+      setPassword('');
+      setId('');
+      setGoogleEmail('');
+      
       navigate('/representative/dashboard');
     } catch (err) {
       console.error(err);
-      alert('Failed to create user');
+      alert(`Failed to create user: ${err.response?.data?.error || 'Unknown error'}`);
     }
   };
 

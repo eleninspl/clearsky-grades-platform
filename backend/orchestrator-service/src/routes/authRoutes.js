@@ -2,17 +2,18 @@ const express = require('express');
 const router = express.Router();
 const ctrl = require('../controllers/authController');
 
-const { handleGoogleLogin } = require('../controllers/authController');
-
-// ➕ Login
+// ➕ Authentication routes
 router.post('/login', ctrl.login);
 router.post('/signup', ctrl.signup);
 router.post('/logout', ctrl.logout);
-router.post('/google', handleGoogleLogin);
 
+// ➕ Google OAuth routes
+router.post('/verify-google', ctrl.verifyGoogle);
+router.post('/verify-google-token', ctrl.verifyGoogleToken);
 router.get('/google', ctrl.googleRedirect);
 router.get('/google/callback', ctrl.googleCallback);
-router.post('/users', ctrl.createUserByRole);  // Προστατευμένο
 
+// ➕ User management
+router.post('/users', ctrl.createUserByRole);  // Protected route
 
 module.exports = router;

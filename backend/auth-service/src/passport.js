@@ -51,36 +51,55 @@ passport.use(
     },
     async (_accessToken, _refreshToken, profile, done) => {
       try {
-        const providerUid = profile.id;
-        const email = profile.emails[0].value;
+        const googleEmail = profile.emails[0].value;
+        const googleId = profile.id;
+        const displayName = profile.displayName;
 
-        const { rows } = await db.query(
-          `SELECT * FROM auth_account WHERE provider = 'GOOGLE' AND provider_uid = $1`,
-          [providerUid]
+        console.log(`🔍 Google OAuth attempt for email: ${googleEmail}`);
+
+        // First, check if user exists with this Google email in auth_account
+        let { rows } = await db.query(
+          `SELECT aa.*, u.* FROM auth_account aa 
+           JOIN users u ON aa.user_id = u.id 
+           WHERE aa.provider = 'GOOGLE' AND aa.provider_uid = $1`,
+          [googleEmail]
         );
 
-        let user;
-        if (rows.length) {
-          user = await axios.get(`${USER_SERVICE}/users/${rows[0].user_id}`);
-        } else {
-          const createRes = await axios.post(`${USER_SERVICE}/users`, {
-            username: email,
-            email,
-            full_name: profile.displayName,
-            role: 'STUDENT',
-          });
-          user = createRes.data;
-
-          await db.query(
-            `INSERT INTO auth_account (user_id, provider, provider_uid)
-             VALUES ($1, 'GOOGLE', $2)`,
-            [user.id, providerUid]
-          );
+        if (rows.length > 0) {
+          console.log(`✅ Found existing Google user: ${googleEmail}`);
+          return done(null, rows[0]);
         }
 
-        return done(null, user.data || user);
+        // If not found by Google provider, check if user exists with this google_email in users table
+        const { rows: userRows } = await db.query(
+          `SELECT * FROM users WHERE google_email = $1`,
+          [googleEmail]
+        );
+
+        if (userRows.length > 0) {
+          const user = userRows[0];
+          console.log(`✅ Found user with matching google_email: ${googleEmail}, linking account`);
+          
+          // Create Google auth_account entry for this existing user
+          await db.query(
+            `INSERT INTO auth_account (user_id, provider, provider_uid)
+             VALUES ($1, 'GOOGLE', $2)
+             ON CONFLICT (provider, provider_uid) DO NOTHING`,
+            [user.id, googleEmail]
+          );
+
+          return done(null, user);
+        }
+
+        // If no existing user found, reject authentication
+        console.log(`❌ No user found with Google email: ${googleEmail}. User must be pre-registered.`);
+        return done(null, false, { 
+          message: `No account found for ${googleEmail}. Please contact your institution to register your Google account.` 
+        });
+
       } catch (err) {
-        done(err);
+        console.error('Google OAuth Error:', err);
+        return done(err);
       }
     }
   )

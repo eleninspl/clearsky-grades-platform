@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useAuth } from '../auth/AuthContext';
 
 import Login from '../auth/Login.jsx';
+import GoogleSuccess from '../auth/GoogleSuccess.jsx';
 import InstructorRoutes from '../routes/InstructorRoutes';
 import RepresentativeRoutes from '../routes/RepresentativeRoutes';
 import StudentRoutes from '../routes/StudentRoutes.jsx';
@@ -30,6 +31,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/auth/google/success" element={<GoogleSuccess />} />
 
         <Route
           path="/instructor/*"

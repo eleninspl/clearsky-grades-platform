@@ -8,16 +8,24 @@ export function AuthProvider({ children }) {
 
   // Load user from localStorage on initial render
   useEffect(() => {
+    const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    
+    if (token && storedUser) {
       try {
         const parsed = JSON.parse(storedUser);
         setUser(parsed);
       } catch (err) {
         console.error('Invalid user in storage');
         localStorage.removeItem('user');
+        localStorage.removeItem('token');
       }
+    } else if (token && !storedUser) {
+      // Token exists but no user data - clear token to force re-login
+      console.warn('Token found but no user data - clearing token');
+      localStorage.removeItem('token');
     }
+    
     setLoading(false);
   }, []);
 

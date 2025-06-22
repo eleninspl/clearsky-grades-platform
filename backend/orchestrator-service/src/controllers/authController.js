@@ -36,22 +36,55 @@ exports.logout = async (req, res) => {
   }
 };
 
+exports.verifyGoogle = async (req, res) => {
+  try {
+    const response = await axios.post(`${AUTH_SERVICE_URL}/auth/verify-google`, req.body);
+    res.json(response.data);
+  } catch (err) {
+    console.error('[Google verification error]', err.response?.data || err.message);
+    res.status(err.response?.status || 500).json({ error: err.response?.data?.error || 'Google verification failed' });
+  }
+};
+
+exports.verifyGoogleToken = async (req, res) => {
+  try {
+    const response = await axios.post(`${AUTH_SERVICE_URL}/auth/verify-google-token`, req.body);
+    res.json(response.data);
+  } catch (err) {
+    console.error('[Google token verification error]', err.response?.data || err.message);
+    res.status(err.response?.status || 500).json({ error: err.response?.data?.error || 'Google token verification failed' });
+  }
+};
+
 exports.googleRedirect = async (req, res) => {
-  // Απλώς redirect προς το auth service
-  const redirectUrl = `${process.env.AUTH_SERVICE_URL}/auth/google`;
+  // Redirect to auth service for Google OAuth
+  const redirectUrl = `${AUTH_SERVICE_URL}/auth/google`;
   res.redirect(redirectUrl);
 };
 
 exports.googleCallback = async (req, res) => {
   try {
-    const response = await axios.get(`${process.env.AUTH_SERVICE_URL}/auth/google/callback`, {
-      headers: { Cookie: req.headers.cookie },
+    // Forward the callback to the auth service
+    const callbackUrl = `${AUTH_SERVICE_URL}/auth/google/callback${req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''}`;
+    const response = await axios.get(callbackUrl, {
       maxRedirects: 0,
       validateStatus: status => status >= 200 && status < 400
     });
-    res.json(response.data);
+    
+    // If the auth service returns a redirect, follow it
+    if (response.status >= 300 && response.status < 400) {
+      res.redirect(response.headers.location);
+    } else {
+      res.json(response.data);
+    }
   } catch (err) {
-    res.status(err.response?.status || 500).json({ error: 'Google login failed' });
+    if (err.response?.status >= 300 && err.response?.status < 400) {
+      // Handle redirect from auth service
+      res.redirect(err.response.headers.location);
+    } else {
+      console.error('[Google callback error]', err.response?.data || err.message);
+      res.status(err.response?.status || 500).json({ error: 'Google callback failed' });
+    }
   }
 };
 
@@ -68,8 +101,6 @@ exports.createUserByRole = async (req, res) => {
     res.status(err.response?.status || 500).json({ error: 'User creation failed' });
   }
 };
-
-
 
 // src/controllers/authController.js
 const jwt = require('jsonwebtoken');
