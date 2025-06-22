@@ -18,8 +18,6 @@ exports.signup = async (req, res) => {
     const response = await axios.post(`${AUTH_SERVICE_URL}/auth/signup`, req.body);
     res.json(response.data);
 
-    // 🔁 Publish στο RabbitMQ
-    await publishUserCreated(response.data);
   } catch (err) {
     console.error('[Signup error]', err.response?.data || err.message);
     res.status(err.response?.status || 500).json({ error: err.response?.data?.message || 'Signup failed' });
@@ -75,7 +73,7 @@ exports.googleCallback = async (req, res) => {
       maxRedirects: 0,
       validateStatus: status => status >= 200 && status < 400
     });
-    
+
     // If the auth service returns a redirect, follow it
     if (response.status >= 300 && response.status < 400) {
       res.redirect(response.headers.location);
@@ -95,16 +93,43 @@ exports.googleCallback = async (req, res) => {
 
 exports.createUserByRole = async (req, res) => {
   try {
+    // 🔄 Δημιουργία χρήστη στο auth-service
     const response = await axios.post(`${AUTH_SERVICE_URL}/auth/users`, req.body, {
       headers: {
         Authorization: req.headers.authorization
       }
     });
 
-    res.status(201).json(response.data);
+    // 🎯 Λήψη του χρήστη από το response
+    const user = response.data.user || response.data;
 
-    // 🔁 Publish event για RabbitMQ
-    await publishUserCreated(response.data);
+    // 🔍 Logging για debugging
+    console.log('🔍 Full user response:', user);
+
+    const message = {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      username: user.username || `user_${user.id}`,
+      full_name: user.full_name || user.email.split('@')[0],
+      institution_id: user.institution_id || 1,
+      am: typeof user.am === 'number' ? user.am : null,
+    };
+
+    // ✅ Logging για RabbitMQ
+    console.log('📨 Publishing message to RabbitMQ:', message);
+
+    // ⚠️ Αν λείπουν βασικά πεδία, μην κάνεις publish
+    if (!message.userId || !message.email || !message.role) {
+      console.warn('⚠️ Incomplete user data for RabbitMQ message:', message);
+      return res.status(500).json({ error: 'Incomplete user data – not published' });
+    }
+
+    // 📤 Στείλε το μήνυμα στο RabbitMQ
+    await publishUserCreated(message);
+
+    // ✅ Επιστροφή χρήστη στον client
+    res.status(201).json(user);
 
   } catch (err) {
     console.error('[Create user error]', err.response?.data || err.message);

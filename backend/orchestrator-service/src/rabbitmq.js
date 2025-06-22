@@ -28,22 +28,16 @@ const initRabbit = async () => {
   }
 };
 
-const publishUserCreated = async (user) => {
+const publishUserCreated = async (message) => {
   if (!channel) {
     console.warn('⚠️ RabbitMQ channel not available');
     return;
   }
 
-  const message = {
-    userId: user.id || user.user?.id,
-    role: user.role || user.user?.role,
-    email: user.email || user.user?.email
-  };
-
   console.log('📨 Publishing message to RabbitMQ:', message);
 
   if (!message.userId || !message.email || !message.role) {
-    console.warn('⚠️ Incomplete user data for RabbitMQ message:', user);
+    console.warn('⚠️ Incomplete user data for RabbitMQ message:', message);
     return;
   }
 
