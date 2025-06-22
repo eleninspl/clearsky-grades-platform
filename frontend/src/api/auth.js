@@ -14,13 +14,14 @@ export const startGoogleLogin = () => {
   window.location.href = `${process.env.REACT_APP_API_URL}/auth/google`;
 };
 
-export const createUserByRole = async ({ email, username, password, role, id }) => {
+export const createUserByRole = async ({ email, username, password, role, id, google_email }) => {
   const res = await orchestratorAPI.post('/auth/users', {
     email,
     username,
     password,
     role,
     id,
+    google_email,
   });
   return res.data;
 };

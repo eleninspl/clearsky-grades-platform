@@ -104,33 +104,42 @@ exports.createUserByRole = async (req, res, next) => {
     const inst = creator.institution_id;
 
     let userResult;
+
     if (role === 'STUDENT' && id) {
+      console.log("📥 BODY RECEIVED:", req.body);
+
       userResult = await db.query(
-        `INSERT INTO users (username, email, full_name, role, institution_id, am, google_email)
+        `INSERT INTO users 
+           (username, email, full_name, role, institution_id, am, google_email)
          VALUES ($1, $2, $3, $4, $5, $6, $7)
          RETURNING *`,
         [username, email, fullname, role, inst, parseInt(id), google_email || null]
       );
     } else {
+      // Για INSTRUCTOR ή INST_REP: μην βάζεις καθόλου google_email
       userResult = await db.query(
-        `INSERT INTO users (username, email, full_name, role, institution_id, google_email)
-         VALUES ($1, $2, $3, $4, $5, $6)
+        `INSERT INTO users 
+           (username, email, full_name, role, institution_id)
+         VALUES ($1, $2, $3, $4, $5)
          RETURNING *`,
-        [username, email, fullname, role, inst, google_email || null]
+        [username, email, fullname, role, inst]
       );
     }
 
     const user = userResult.rows[0];
 
     await db.query(
-      `INSERT INTO auth_account (user_id, provider, provider_uid, password_hash)
+      `INSERT INTO auth_account 
+         (user_id, provider, provider_uid, password_hash)
        VALUES ($1, 'LOCAL', $2, $3)`,
       [user.id, email, hash]
     );
 
-    if (google_email) {
+    // Αν ο χρήστης είναι STUDENT και έχει google_email, σύνδεσέ τον με Google
+    if (role === 'STUDENT' && google_email) {
       await db.query(
-        `INSERT INTO auth_account (user_id, provider, provider_uid)
+        `INSERT INTO auth_account 
+           (user_id, provider, provider_uid)
          VALUES ($1, 'GOOGLE', $2)
          ON CONFLICT DO NOTHING`,
         [user.id, google_email]
@@ -145,6 +154,7 @@ exports.createUserByRole = async (req, res, next) => {
     next(err);
   }
 };
+
 
 // ── Verify Google login ──────
 exports.verifyGoogle = async (req, res) => {

@@ -79,6 +79,15 @@ passport.use(
         if (userRows.length > 0) {
           const user = userRows[0];
           console.log(`✅ Found user with matching google_email: ${googleEmail}, linking account`);
+
+                // ➕ Αν το google_email είναι null, ενημέρωσέ το
+        if (!user.google_email) {
+          await db.query(
+            `UPDATE users SET google_email = $1 WHERE id = $2`,
+            [googleEmail, user.id]
+          );
+          console.log(`✍️ Updated user ${user.id} with google_email = ${googleEmail}`);
+        }
           
           // Create Google auth_account entry for this existing user
           await db.query(
