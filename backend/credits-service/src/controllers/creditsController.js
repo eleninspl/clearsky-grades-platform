@@ -1,24 +1,29 @@
-const pool = require('../db'); // Βεβαιώσου ότι έχεις db connection (π.χ. με pg.Pool)
+const pool = require('../db'); 
 
-// GET /:institutionId/balance
-const getBalance = async (req, res) => {
+// ── Get institution balance ─────────────
+exports.getBalance = async (req, res) => {
   const { institutionId } = req.params;
+
   try {
     const result = await pool.query(
-      'SELECT credits_balance FROM credits_service.institution WHERE id = $1',
+      `SELECT credits_balance 
+       FROM credits_service.institution 
+       WHERE id = $1`,
       [institutionId]
     );
-    if (result.rows.length === 0) {
+
+    if (!result.rowCount) {
       return res.status(404).json({ error: 'Institution not found' });
     }
+
     res.json({ balance: result.rows[0].credits_balance });
   } catch (err) {
     res.status(500).json({ error: 'Database error', details: err.message });
   }
 };
 
-// POST /:institutionId/buy
-const buyCredits = async (req, res) => {
+// ── Purchase credits ───────────────────
+exports.buyCredits = async (req, res) => {
   const { institutionId } = req.params;
   const { amount } = req.body;
 
@@ -29,19 +34,21 @@ const buyCredits = async (req, res) => {
   try {
     await pool.query(
       `INSERT INTO credits_service.credit_transaction 
-        (institution_id, amount, tx_type) 
+         (institution_id, amount, tx_type) 
        VALUES ($1, $2, 'PURCHASE')`,
       [institutionId, amount]
     );
+
     res.status(201).json({ message: 'Credits purchased' });
   } catch (err) {
     res.status(500).json({ error: 'Database error', details: err.message });
   }
 };
 
-// GET /:institutionId/history
-const getHistory = async (req, res) => {
+// ── Transaction history ────────────────
+exports.getHistory = async (req, res) => {
   const { institutionId } = req.params;
+
   try {
     const result = await pool.query(
       `SELECT id, amount, tx_type, created_at 
@@ -53,6 +60,7 @@ const getHistory = async (req, res) => {
 
     const transactions = result.rows.map(tx => {
       let description = '';
+
       switch (tx.tx_type) {
         case 'PURCHASE':
           description = `Purchased ${tx.amount} credit(s)`;
@@ -64,21 +72,11 @@ const getHistory = async (req, res) => {
           description = 'Unknown transaction';
       }
 
-      return {
-        ...tx,
-        description
-      };
+      return { ...tx, description };
     });
 
     res.json(transactions);
   } catch (err) {
     res.status(500).json({ error: 'Database error', details: err.message });
   }
-};
-
-
-module.exports = {
-  getBalance,
-  buyCredits,
-  getHistory
 };

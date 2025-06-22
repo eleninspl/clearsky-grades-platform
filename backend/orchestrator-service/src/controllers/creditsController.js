@@ -3,6 +3,7 @@ const { publishCreditPurchased } = require('../rabbitmq');
 
 const CREDITS_SERVICE_URL = process.env.CREDITS_SERVICE_URL;
 
+// ── Helper: Forward request to Credits Service ──
 const forward = async (req, res, method, path, data = null, afterSuccess = null) => {
   try {
     const config = {
@@ -15,23 +16,27 @@ const forward = async (req, res, method, path, data = null, afterSuccess = null)
 
     const response = await axios(config);
 
-    // Εκτέλεσε post-success ενέργεια αν έχει δοθεί
     if (afterSuccess) {
       await afterSuccess(response.data, req);
     }
 
     res.status(response.status).json(response.data);
   } catch (err) {
-    console.error(`[Credits ${method.toUpperCase()} ${path}]`, err.response?.data || err.message);
-    res.status(err.response?.status || 500).json({
-      error: err.response?.data?.error || 'Credits service error',
-    });
+    const status = err.response?.status || 500;
+    const message = err.response?.data?.error || 'Credits service error';
+
+    console.error(`[Credits ${method.toUpperCase()} ${path}]`, message);
+    res.status(status).json({ error: message });
   }
 };
 
-// Controllers
-exports.getBalance = (req, res) => forward(req, res, 'get', `/${req.params.institutionId}/balance`);
+// ── Controller methods ─────────────
 
+// GET /:institutionId/balance
+exports.getBalance = (req, res) =>
+  forward(req, res, 'get', `/${req.params.institutionId}/balance`);
+
+// POST /:institutionId/buy
 exports.buyCredits = (req, res) =>
   forward(
     req,
@@ -40,7 +45,7 @@ exports.buyCredits = (req, res) =>
     `/${req.params.institutionId}/buy`,
     req.body,
     async (responseData, req) => {
-      // Κάνε publish στο RabbitMQ μετά την επιτυχή αγορά
+      // Publish credit purchase event
       await publishCreditPurchased({
         institutionId: req.params.institutionId,
         userId: req.body.userId,
@@ -51,4 +56,6 @@ exports.buyCredits = (req, res) =>
     }
   );
 
-exports.getHistory = (req, res) => forward(req, res, 'get', `/${req.params.institutionId}/history`);
+// GET /:institutionId/history
+exports.getHistory = (req, res) =>
+  forward(req, res, 'get', `/${req.params.institutionId}/history`);

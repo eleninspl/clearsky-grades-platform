@@ -6,10 +6,7 @@ const creditRoutes = require('./routes/creditsRoutes'); // ✅ Αυτό είνα
 
 const app = express();
 
-app.use(cors({
-  origin: 'http://localhost:5173',
-  // credentials: true // αν χρειαστεί
-}));
+app.use(cors());
 
 app.use(express.json());
 
