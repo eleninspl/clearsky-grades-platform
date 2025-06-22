@@ -13,13 +13,14 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5010;
 
+// ✅ Σωστό import RabbitMQ (modular)
 const { initRabbit } = require('./rabbitmq');
 
+// 🔐 Επιτρεπόμενα origins
 const allowedOrigins = [
   'http://localhost:5173',
   'http://192.168.2.7:5173',
-  'http://147.102.1.55:5173'  // βάλε εδώ όποια IP έχει το μηχάνημά σου
-  // μπορείς να βάλεις και άλλες, π.χ. του εργαστηρίου
+  'http://147.102.1.55:5173'
 ];
 
 app.use(cors({
@@ -33,23 +34,23 @@ app.use(cors({
   credentials: true
 }));
 
-
 app.use(express.json());
 app.use(morgan('dev'));
 
-// Routes
+// 📦 Routes
 app.use('/grades', gradesRoutes);
 app.use('/auth', authRoutes);
 app.use('/institutions', institutionRoutes);
 app.use('/review', reviewRoutes);
 app.use('/credits', creditsRoutes);
 
-// Test route (προαιρετικό)
+// 🔁 Health check route
 app.get('/', (req, res) => {
   res.send('🟢 Orchestrator service is running');
 });
 
+// 🚀 Server + RabbitMQ
 app.listen(PORT, async () => {
   console.log(`✅ Orchestrator listening on port ${PORT}`);
-  await initRabbit(); // 🔁 Init RabbitMQ όταν ξεκινάει
+  await initRabbit(); // 🟢 Init RabbitMQ σύνδεση
 });
