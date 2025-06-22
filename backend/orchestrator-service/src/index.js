@@ -13,12 +13,8 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5010;
 
-<<<<<<< Updated upstream
 const { initRabbit } = require('./rabbitmq');
 
-// Middleware
-app.use(cors());
-=======
 const allowedOrigins = [
   'http://localhost:5173',
   'http://192.168.2.7:5173',
@@ -38,7 +34,6 @@ app.use(cors({
 }));
 
 
->>>>>>> Stashed changes
 app.use(express.json());
 app.use(morgan('dev'));
 
