@@ -23,7 +23,7 @@ function CourseTable({
             </thead>
             <tbody>
                 {Object.values(groupedByCourse).map(({ course, initial, final }) => {
-                    const gradingStatus = (course.review_state || 'void').toLowerCase();
+                    const gradingStatus = (course.review_state).toLowerCase();
                     const isSubmitted = initial && reviewRequests?.some(r => r.grade_id === initial.grade_id);
                     const hasReviewRequest = isSubmitted;
 
@@ -34,6 +34,8 @@ function CourseTable({
                             <td>{gradingStatus}</td>
                             <td className="student-courses-actions">
                                 <button
+                                    disabled={gradingStatus === 'void'}
+                                    title={gradingStatus === 'void' ? 'This course has no active grading information.' : ''}
                                     onClick={() => {
                                         setActiveGradeCourse(
                                             activeGradeCourse === course.course_title ? null : course.course_title
@@ -45,8 +47,9 @@ function CourseTable({
                                     View my grades
                                 </button>
 
+
                                 <button
-                                    disabled={!initial || hasReviewRequest || loadingReviews || gradingStatus === 'closed'}
+                                    disabled={ hasReviewRequest || loadingReviews || gradingStatus === 'void' || gradingStatus === 'closed'}
                                     title={
                                         loadingReviews
                                             ? 'Loading review request status...'

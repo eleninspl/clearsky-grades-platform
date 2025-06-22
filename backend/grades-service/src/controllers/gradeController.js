@@ -95,7 +95,7 @@ exports.handleUpload = async (req, res) => {
     if (!courseMatch) throw new Error(`❌ Μη έγκυρη μορφή στο "Τμήμα Τάξης": ${rows[0]['Τμήμα Τάξης']}. Αναμένεται format όπως: "Μάθημα (1234)"`);
     const course_id = parseInt(courseMatch[1]);
 
-    // 🔒 Check if the uploader is the instructor of the course
+    // 🔒 Επιβεβαίωση instructor
     const clientAuthCheck = await pool.connect();
     try {
       await validateInstructorOwnership(clientAuthCheck, course_id, uploader_id);
@@ -103,7 +103,7 @@ exports.handleUpload = async (req, res) => {
       clientAuthCheck.release();
     }
 
-    // Credit check for INITIAL batch
+    // 🔎 Credit check μόνο για INITIAL
     if (batch_type === 'INITIAL') {
       const clientCheck = await pool.connect();
       try {
@@ -140,6 +140,18 @@ exports.handleUpload = async (req, res) => {
 
     const valid_course_id = await getCourseIdAndValidateState(client, rows[0]['Τμήμα Τάξης'], batch_type);
 
+    // ✅ Ανάκτηση institution_id
+    const instRes = await client.query(
+      'SELECT institution_id FROM course WHERE id = $1',
+      [valid_course_id]
+    );
+
+    if (instRes.rowCount === 0) {
+      throw new Error(`❌ Δεν βρέθηκε institution για το course ${valid_course_id}`);
+    }
+
+    const institution_id = instRes.rows[0].institution_id;
+
     const grade_batch_id = await findOrCreateBatch(
       client, valid_course_id, uploader_id, batch_type, req.file.originalname, uploaded_at, academic_year
     );
@@ -166,6 +178,7 @@ exports.handleUpload = async (req, res) => {
 
     return res.status(200).json({
       message: '✅ Οι βαθμοί ανέβηκαν επιτυχώς.',
+      institution_id, // ✅ τώρα ορισμένο
       summary: {
         total: rows.length,
         successes: successes.length,
@@ -185,6 +198,7 @@ exports.handleUpload = async (req, res) => {
     });
   }
 };
+
 
 // 🔍 Validate instructor ownership
 async function validateInstructorOwnership(client, course_id, uploader_id) {

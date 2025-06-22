@@ -13,7 +13,9 @@ exports.initConsumer = async () => {
       const conn = await amqp.connect(RABBITMQ_URL);
       const channel = await conn.createChannel();
 
-      // 🔔 Consumer: user_created
+      // ─────────────────────────────
+      // 👤 Consumer: user_created
+      // ─────────────────────────────
       await channel.assertQueue('user_created', { durable: true });
       console.log('🎧 Listening for user_created...');
 
@@ -44,14 +46,16 @@ exports.initConsumer = async () => {
         }
       });
 
-      // 🔔 Consumer: credit.purchased
-      await channel.assertQueue('credit.purchased', { durable: true });
-      console.log('🎧 Listening for credit.purchased...');
+      // ─────────────────────────────
+      // 💰 Consumer: credit_purchased
+      // ─────────────────────────────
+      await channel.assertQueue('credit_purchased', { durable: true });
+      console.log('🎧 Listening for credit_purchased...');
 
-      channel.consume('credit.purchased', async (msg) => {
+      channel.consume('credit_purchased', async (msg) => {
         if (!msg) return;
         const data = JSON.parse(msg.content.toString());
-        console.log('📥 credit.purchased:', data);
+        console.log('📥 credit_purchased:', data);
 
         try {
           const { institutionId, amount } = data;
@@ -65,18 +69,57 @@ exports.initConsumer = async () => {
           console.log(`✅ Institution ${institutionId} credited +${amount}`);
           channel.ack(msg);
         } catch (err) {
-          console.error('❌ Error in credit.purchased:', err);
+          console.error('❌ Error in credit_purchased:', err);
           channel.nack(msg, false, false);
         }
       });
 
-      break; // ✅ exit retry loop if connected
+      // ─────────────────────────────
+      // 📝 Consumer: grades_uploaded
+      // ─────────────────────────────
+      await channel.assertQueue('grades_uploaded', { durable: true });
+      console.log('🎧 Listening for grades_uploaded...');
+
+      channel.consume('grades_uploaded', async (msg) => {
+        if (!msg) return;
+        const data = JSON.parse(msg.content.toString());
+        console.log('📥 grades_uploaded:', data);
+
+        try {
+          const { institution_id } = data;
+          if (!institution_id) throw new Error('Missing institution_id');
+
+          // ⚠️ Use transaction and prevent automatic CONSUME trigger
+          await pool.query('BEGIN');
+          await pool.query(`SET LOCAL credits_service.skip_consume_trigger = 'on'`);
+
+          await pool.query(
+            `INSERT INTO credits_service.credit_transaction (
+              institution_id, amount, tx_type
+            ) VALUES ($1, -1, 'CONSUME')`,
+            [institution_id]
+          );
+
+          await pool.query('COMMIT');
+
+          console.log(`✅ Credit consumed for institution ${institution_id}`);
+          channel.ack(msg);
+        } catch (err) {
+          await pool.query('ROLLBACK');
+          console.error('❌ Error in grades_uploaded:', err);
+          channel.nack(msg, false, false);
+        }
+      });
+
+      break; // ✅ Βγαίνουμε από retry loop αν όλα πήγαν καλά
     } catch (err) {
       retries--;
-      console.error(`❌ RabbitMQ not ready. Retrying in 5s... (${retries} left)`);
+      console.error(`❌ RabbitMQ not ready. Retrying in 5s... (${retries} attempts left)`);
       await sleep(5000);
     }
   }
 
-  if (!retries) console.error('❌ Failed to connect to RabbitMQ');
+  if (retries === 0) {
+    console.error('❌ Failed to connect to RabbitMQ after multiple attempts.');
+  }
 };

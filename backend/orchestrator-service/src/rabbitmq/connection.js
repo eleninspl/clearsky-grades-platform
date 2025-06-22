@@ -13,7 +13,11 @@ const initRabbit = async () => {
     try {
       const connection = await amqp.connect(RABBITMQ_URL);
       channel = await connection.createChannel();
+
       await channel.assertQueue('user_created', { durable: true });
+      await channel.assertQueue('credit_purchased', { durable: true });
+      await channel.assertQueue('grades_uploaded', { durable: true }); 
+      
       connected = true;
       console.log('✅ Connected to RabbitMQ');
       break;

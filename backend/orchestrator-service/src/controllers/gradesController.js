@@ -2,6 +2,8 @@ const axios = require('axios');
 const fs = require('fs');
 const FormData = require('form-data');
 
+const { publishGradesUploaded } = require('../rabbitmq/publishers/gradesPublisher');
+
 const GRADES_SERVICE_URL = process.env.GRADES_SERVICE_URL || 'http://grades-service:5004';
 
 // 📊 Δημόσια στατιστικά
@@ -75,29 +77,52 @@ exports.getInstructorCourses = async (req, res) => {
 exports.handleUpload = async (req, res) => {
   const { type } = req.params;
 
+  // 📁 Δημιουργία φόρμας multipart για upload
+  const form = new FormData();
+  form.append('file', fs.createReadStream(req.file.path), req.file.originalname);
+
   try {
-    const form = new FormData();
-    form.append('file', fs.createReadStream(req.file.path), req.file.originalname);
-
-    const response = await axios.post(`${GRADES_SERVICE_URL}/grades/${type}`, form, {
-      headers: {
-        ...form.getHeaders(),
-        Authorization: req.headers.authorization
+    // 📡 Κάνε POST στο grades service
+    const response = await axios.post(
+      `${GRADES_SERVICE_URL}/grades/${type}`,
+      form,
+      {
+        headers: {
+          ...form.getHeaders(),
+          Authorization: req.headers.authorization
+        }
       }
-    });
+    );
 
-    res.json(response.data);
+    // 🔔 Αν υπάρξουν στοιχεία, στείλε στο RabbitMQ
+    const institution_id = response.data?.institution_id;
+
+    if (institution_id) {
+      await publishGradesUploaded({ institution_id });
+    } else {
+      console.warn('⚠️ Missing data for publishing grades_uploaded:', { institution_id });
+    }
+
+    // ✅ Επέστρεψε την απάντηση από το grades service στον client
+    res.status(response.status).json(response.data);
+
   } catch (err) {
     console.error('❌ Upload failed:', err.message);
-  
-    const backendError =
+
+    const statusCode = err.response?.status || 500;
+    const errorMessage =
       err.response?.data?.error ||
       err.response?.data?.message ||
-      err.message ||
       'Σφάλμα κατά την αποστολή βαθμών.';
-  
-    res.status(err.response?.status || 500).json({
-      error: backendError
+
+    res.status(statusCode).json({
+      error: errorMessage
     });
+
+  } finally {
+    // 🧹 Διαγραφή του προσωρινού αρχείου, ανεξαρτήτως επιτυχίας ή αποτυχίας
+    if (fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
   }
 };

@@ -1,7 +1,5 @@
 -- Credits Service – PostgreSQL schema
--- Final version with automatic CONSUME transaction on balance decrease
-
-BEGIN;
+-- Χωρίς trigger για αυτόματη κατανάλωση & χωρίς transaction block
 
 -- 0. Drop & recreate schema
 DROP SCHEMA IF EXISTS credits_service CASCADE;
@@ -77,52 +75,6 @@ CREATE TRIGGER tg_ct_aiud
 AFTER INSERT OR UPDATE OR DELETE ON credits_service.credit_transaction
 FOR EACH ROW EXECUTE FUNCTION credits_service.fn_sync_institution_balance();
 
--- 5. Trigger για αυτόματη δημιουργία κατανάλωσης όταν μειώνεται το υπόλοιπο
-CREATE OR REPLACE FUNCTION credits_service.fn_log_automatic_consume_tx() 
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
-DECLARE
-    diff INTEGER;
-BEGIN
-    -- Αν έχει ενεργοποιηθεί η σημαία προστασίας, μην κάνεις τίποτα
-    IF current_setting('credits_service.skip_consume_trigger', true) = 'on' THEN
-        RETURN NEW;
-    END IF;
-
-    -- Υπολογίζουμε μείωση
-    diff := OLD.credits_balance - NEW.credits_balance;
-
-    IF diff > 0 THEN
-        -- Θέτουμε session flag για αποφυγή recursion
-        PERFORM set_config('credits_service.skip_sync_trigger', 'on', true);
-
-        -- Καταχωρούμε αυτόματα την κατανάλωση
-        INSERT INTO credits_service.credit_transaction (
-            institution_id,
-            amount,
-            tx_type,
-            created_at
-        )
-        VALUES (
-            NEW.id,
-            -diff,
-            'CONSUME',
-            now()
-        );
-    END IF;
-
-    RETURN NEW;
-END;
-$$;
-
-
-CREATE TRIGGER tg_institution_balance_consume
-AFTER UPDATE ON credits_service.institution
-FOR EACH ROW
-WHEN (OLD.credits_balance > NEW.credits_balance)
-EXECUTE FUNCTION credits_service.fn_log_automatic_consume_tx();
-
--- 6. Index για ιστορικό συναλλαγών
+-- 5. Index για ιστορικό συναλλαγών
 CREATE INDEX idx_ct_inst_created_at 
   ON credits_service.credit_transaction (institution_id, created_at DESC);
-
-COMMIT;
