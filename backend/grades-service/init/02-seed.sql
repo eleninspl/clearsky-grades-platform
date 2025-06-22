@@ -1,7 +1,7 @@
 -- SQLBook: Code
 -- 📌 Institution
 INSERT INTO institution (id, name, email, credits_balance)
-VALUES (1, 'Demo Institution', 'demo@demo.edu', 10);
+VALUES (1, 'Demo Institution', 'demo@demo.edu', 5);
 
 -- SQLBook: Code
 INSERT INTO users (id, username, email, full_name, role)
@@ -286,3 +286,188 @@ BEGIN
   RAISE NOTICE '📊 Current GPA calculation: CS courses averaging ~90, STEM courses ~84';
 END
 $$;
+
+-- 🔁 Καθάρισε παλιά δεδομένα για CS102 (only for students 401-410)
+DELETE FROM grade WHERE course_id = 102 AND user_am BETWEEN 401 AND 410;
+DELETE FROM grade_batch WHERE id = 2;
+
+-- 📦 Grade batch για CS102 (αντικαθιστά CS103)
+INSERT INTO grade_batch (id, course_id, uploader_id, type)
+VALUES (2, 102, 102, 'INITIAL')
+ON CONFLICT DO NOTHING;
+
+-- 👤 Δημιουργία φοιτητών με user_am 401–410 (αν δεν υπάρχουν ήδη)
+DO $$
+DECLARE
+  i INT;
+BEGIN
+  FOR i IN 1..10 LOOP
+    INSERT INTO users (id, username, email, full_name, role, institution_id, am)
+    VALUES (
+      300 + i, -- id
+      'student' || i,
+      'student' || i || '@demo.edu',
+      'Student ' || i,
+      'STUDENT',
+      1,
+      400 + i  -- am
+    )
+    ON CONFLICT DO NOTHING;
+
+    INSERT INTO auth_account (user_id, provider, provider_uid, password_hash)
+    VALUES (
+      300 + i,
+      'LOCAL',
+      'student' || i || '@demo.edu',
+      '$2b$10$XButviiFJj1ReOWa6E6mcOvAefg37Jza9ppQBuKH7IvtMN9SjrHMC'
+    )
+    ON CONFLICT DO NOTHING;
+
+    RAISE NOTICE '👤 Created user % with AM %', 300 + i, 400 + i;
+  END LOOP;
+END $$;
+
+-- 🔁 Επανεισαγωγή ποικιλίας βαθμών για CS102 (course_id = 102)
+DELETE FROM grade WHERE course_id = 102 AND user_am BETWEEN 401 AND 410;
+
+DO $$
+DECLARE
+  student_ams INT[] := ARRAY[401,402,403,404,405,406,407,408,409,410];
+  values_list INT[] := ARRAY[9, 4, 7, 2, 8, 6, 5, 10, 3, 7];
+  q1 INT[] := ARRAY[9, 4, 7, 2, 8, 5, 6,10, 3, 6];
+  q2 INT[] := ARRAY[9, 3, 8, 1, 9, 6, 5, 9, 2, 7];
+  q3 INT[] := ARRAY[10, 4, 6, 3, 8, 7, 5,10, 3, 8];
+  q4 INT[] := ARRAY[8, 5, 7, 2, 8, 6, 4,10, 4, 7];
+
+
+  i INT;
+BEGIN
+  FOR i IN 1..10 LOOP
+    INSERT INTO grade (
+      type, value, user_am, course_id, grade_batch_id, detailed_grade_json
+    )
+    VALUES (
+      'INITIAL',
+      values_list[i],
+      student_ams[i],
+      102,
+      2,
+      jsonb_build_object(
+        'Q01', q1[i],
+        'Q02', q2[i],
+        'Q03', q3[i],
+        'Q04', q4[i]
+      )
+    );
+
+    RAISE NOTICE '✅ Inserted grade % for student %', values_list[i], student_ams[i];
+  END LOOP;
+END $$;
+
+-- ✅ Upsert grade for demo student (user_am = 103) in CS102
+INSERT INTO grade (type, value, user_am, course_id, grade_batch_id, detailed_grade_json)
+VALUES (
+  'INITIAL',
+  10,
+  103,
+  102,
+  2,
+  jsonb_build_object('Q01', 9, 'Q02', 8, 'Q03', 9, 'Q04', 9)
+)
+ON CONFLICT (user_am, course_id, type)
+DO UPDATE SET
+  value = EXCLUDED.value,
+  grade_batch_id = EXCLUDED.grade_batch_id,
+  detailed_grade_json = EXCLUDED.detailed_grade_json,
+  uploaded_at = CURRENT_TIMESTAMP;
+-- 🔁 Καθάρισε παλιά δεδομένα για CS101 (only for students 401-410)
+DELETE FROM grade WHERE course_id = 101 AND user_am BETWEEN 401 AND 410;
+DELETE FROM grade_batch WHERE id = 1;
+
+-- 📦 Grade batch για CS101
+INSERT INTO grade_batch (id, course_id, uploader_id, type)
+VALUES (1, 101, 102, 'INITIAL')
+ON CONFLICT DO NOTHING;
+
+-- 👤 Δημιουργία φοιτητών με user_am 401–410 (αν δεν υπάρχουν ήδη)
+DO $$
+DECLARE
+  i INT;
+BEGIN
+  FOR i IN 1..10 LOOP
+    INSERT INTO users (id, username, email, full_name, role, institution_id, am)
+    VALUES (
+      300 + i, -- id
+      'student' || i,
+      'student' || i || '@demo.edu',
+      'Student ' || i,
+      'STUDENT',
+      1,
+      400 + i  -- am
+    )
+    ON CONFLICT DO NOTHING;
+
+    INSERT INTO auth_account (user_id, provider, provider_uid, password_hash)
+    VALUES (
+      300 + i,
+      'LOCAL',
+      'student' || i || '@demo.edu',
+      '$2b$10$XButviiFJj1ReOWa6E6mcOvAefg37Jza9ppQBuKH7IvtMN9SjrHMC'
+    )
+    ON CONFLICT DO NOTHING;
+
+    RAISE NOTICE '👤 Created user % with AM %', 300 + i, 400 + i;
+  END LOOP;
+END $$;
+
+-- 🔁 Επανεισαγωγή ποικιλίας βαθμών για CS101 (course_id = 101)
+DO $$
+DECLARE
+  student_ams INT[] := ARRAY[401,402,403,404,405,406,407,408,409,410];
+  values_list INT[] := ARRAY[8, 6, 3, 7, 5, 9, 2, 10, 4, 7];
+  q1 INT[] := ARRAY[8, 5, 2, 7, 5, 9, 2,10, 4, 6];
+  q2 INT[] := ARRAY[7, 6, 3, 6, 4, 9, 1, 9, 5, 8];
+  q3 INT[] := ARRAY[9, 6, 4, 8, 6,10, 3,10, 4, 7];
+  q4 INT[] := ARRAY[8, 7, 3, 7, 5, 8, 2,10, 3, 7];
+
+
+  i INT;
+BEGIN
+  FOR i IN 1..10 LOOP
+    INSERT INTO grade (
+      type, value, user_am, course_id, grade_batch_id, detailed_grade_json
+    )
+    VALUES (
+      'INITIAL',
+      values_list[i],
+      student_ams[i],
+      101,
+      1,
+      jsonb_build_object(
+        'Q01', q1[i],
+        'Q02', q2[i],
+        'Q03', q3[i],
+        'Q04', q4[i]
+      )
+    );
+
+    RAISE NOTICE '✅ Inserted grade % for student %', values_list[i], student_ams[i];
+  END LOOP;
+END $$;
+
+-- ✅ Upsert grade for demo student (user_am = 103) in CS101
+INSERT INTO grade (type, value, user_am, course_id, grade_batch_id, detailed_grade_json)
+VALUES (
+  'INITIAL',
+  9,
+  103,
+  101,
+  1,
+  jsonb_build_object('Q01', 9, 'Q02', 8, 'Q03', 9, 'Q04', 10)
+)
+ON CONFLICT (user_am, course_id, type)
+DO UPDATE SET
+  value = EXCLUDED.value,
+  grade_batch_id = EXCLUDED.grade_batch_id,
+  detailed_grade_json = EXCLUDED.detailed_grade_json,
+  uploaded_at = CURRENT_TIMESTAMP;

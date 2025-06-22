@@ -134,7 +134,15 @@ exports.handleUpload = async (req, res) => {
   const uploader_id = req.user.sub;
   const filePath = req.file.path;
   const batch_type = req.params.type?.toUpperCase() || 'INITIAL';
-  const expectedColumns = [/* same as before */];
+  const expectedColumns = [
+    'Αριθμός Μητρώου',
+    'Ονοματεπώνυμο',
+    'Ακαδημαϊκό E-mail',
+    'Βαθμολογία',
+    'Τμήμα Τάξης',
+    'Περίοδος δήλωσης',
+    'Q01', 'Q02', 'Q03', 'Q04', 'Q05', 'Q06', 'Q07', 'Q08', 'Q09', 'Q10'
+  ];
 
   const errors = [];
   const successes = [];
@@ -142,33 +150,72 @@ exports.handleUpload = async (req, res) => {
   try {
     const { sheet, rows } = validateExcelFile(filePath, expectedColumns);
 
-    if (rows.length === 0) throw new Error('Excel file contains no student rows');
+    if (rows.length === 0) throw new Error('❌ Το αρχείο Excel δεν περιέχει εγγραφές φοιτητών.');
 
-    const client = await pool.connect();
     const uploaded_at = new Date();
     const academic_year = uploaded_at.getFullYear();
 
+    // Εξαγωγή course_id από το πεδίο "Τμήμα Τάξης"
+    const courseRegex = /\((\d+)\)/;
+    const courseMatch = rows[0]['Τμήμα Τάξης'].match(courseRegex);
+    if (!courseMatch) throw new Error(`❌ Μη έγκυρη μορφή στο "Τμήμα Τάξης": ${rows[0]['Τμήμα Τάξης']}. Αναμένεται format όπως: "Μάθημα (1234)"`);
+    const course_id = parseInt(courseMatch[1]);
+
+    // Έλεγχος αν υπάρχουν διαθέσιμα credits για INITIAL batch
+    if (batch_type === 'INITIAL') {
+      const clientCheck = await pool.connect();
+      try {
+        // Έχει ήδη ανέβει αρχικός βαθμός για αυτό το μάθημα τη φετινή χρονιά;
+        const exists = await clientCheck.query(`
+          SELECT 1 FROM grade_batch
+          WHERE course_id = $1 AND type = 'INITIAL' AND academic_year = $2
+          LIMIT 1
+        `, [course_id, academic_year]);
+
+        if (exists.rowCount === 0) {
+          // Δεν υπάρχει, πρέπει να ελέγξουμε τα credits του institution του μαθήματος
+          const creditCheck = await clientCheck.query(`
+            SELECT i.credits_balance, i.name
+            FROM course c
+            JOIN institution i ON c.institution_id = i.id
+            WHERE c.id = $1
+          `, [course_id]);
+
+          if (creditCheck.rowCount === 0) {
+            throw new Error(`❌ Το μάθημα με ID ${course_id} δεν σχετίζεται με κάποιο ίδρυμα.`);
+          }
+
+          const { credits_balance, name } = creditCheck.rows[0];
+          if (credits_balance <= 0) {
+            throw new Error(`❌ Το ίδρυμα "${name}" δεν έχει διαθέσιμα credits για καταχώριση αρχικών βαθμών.`);
+          }
+        }
+      } finally {
+        clientCheck.release();
+      }
+    }
+
+    const client = await pool.connect();
     await client.query('BEGIN');
 
-    const courseText = rows[0]['Τμήμα Τάξης'];
-    const course_id = await getCourseIdAndValidateState(client, courseText, batch_type);
+    const valid_course_id = await getCourseIdAndValidateState(client, rows[0]['Τμήμα Τάξης'], batch_type);
 
     const grade_batch_id = await findOrCreateBatch(
-      client, course_id, uploader_id, batch_type, req.file.originalname, uploaded_at, academic_year
+      client, valid_course_id, uploader_id, batch_type, req.file.originalname, uploaded_at, academic_year
     );
 
-    await updateReviewState(client, course_id, batch_type);
+    await updateReviewState(client, valid_course_id, batch_type);
 
     for (const [index, row] of rows.entries()) {
-      const rowNumber = index + 3; // accounting for headers
+      const rowNumber = index + 3; // includes 2-line header + 0-based index
       try {
-        await processRow(client, row, index, course_id, grade_batch_id, batch_type);
+        await processRow(client, row, index, valid_course_id, grade_batch_id, batch_type);
         successes.push({ am: row['Αριθμός Μητρώου'], row: rowNumber });
       } catch (err) {
         errors.push({
           row: rowNumber,
-          am: row['Αριθμός Μητρώου'],
-          message: err.message,
+          am: row['Αριθμός Μητρώου'] || 'Άγνωστο',
+          message: `❌ Σφάλμα στη γραμμή ${rowNumber}: ${err.message}`,
         });
       }
     }
@@ -178,7 +225,7 @@ exports.handleUpload = async (req, res) => {
     fs.unlinkSync(filePath);
 
     return res.status(200).json({
-      message: 'Grades uploaded with some feedback',
+      message: '✅ Οι βαθμοί ανέβηκαν επιτυχώς.',
       summary: {
         total: rows.length,
         successes: successes.length,
@@ -192,16 +239,12 @@ exports.handleUpload = async (req, res) => {
     console.error('❌ Upload failed:', err.stack || err.message || err);
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     return res.status(400).json({
-      error: err.message,
+      error: `❌ Η αποστολή απέτυχε: ${err.message}`,
+      instructions: "⚠️ Ελέγξτε προσεκτικά τη μορφή και το περιεχόμενο του Excel και προσπαθήστε ξανά.",
       errors
     });
   }
 };
-
-
-// -----------------------------------------
-// 🔧 Helper Functions Below
-// -----------------------------------------
 
 function validateExcelFile(filePath, expectedColumns) {
   const workbook = XLSX.readFile(filePath);
@@ -211,7 +254,7 @@ function validateExcelFile(filePath, expectedColumns) {
 
   if (missingColumns.length > 0) {
     fs.unlinkSync(filePath);
-    throw new Error(`Wrong file format. Missing columns: ${missingColumns.join(', ')}`);
+    throw new Error(`❌ Το αρχείο δεν έχει τη σωστή μορφή. Λείπουν στήλες: ${missingColumns.join(', ')}`);
   }
 
   const rows = XLSX.utils.sheet_to_json(sheet, { range: 2 });
@@ -222,7 +265,7 @@ function validateExcelFile(filePath, expectedColumns) {
 async function getCourseIdAndValidateState(client, courseText, batch_type) {
   const courseRegex = /\((\d+)\)/;
   const courseMatch = courseText.match(courseRegex);
-  if (!courseMatch) throw new Error(`Invalid course format: ${courseText}`);
+  if (!courseMatch) throw new Error(`❌ Μη έγκυρη μορφή στο "Τμήμα Τάξης": ${courseText}. Περιμένεται format όπως: "Μάθημα (1234)"`);
 
   const course_id = parseInt(courseMatch[1]);
 
@@ -231,16 +274,21 @@ async function getCourseIdAndValidateState(client, courseText, batch_type) {
     [course_id]
   );
 
-  if (result.rowCount === 0) throw new Error(`Course with ID ${course_id} not found`);
+  if (result.rowCount === 0) throw new Error(`❌ Το μάθημα με ID ${course_id} δεν βρέθηκε στη βάση δεδομένων.`);
 
   const currentState = result.rows[0].review_state;
 
   if (batch_type === 'INITIAL' && currentState !== 'VOID') {
-    throw new Error(`Initial grades require VOID state (currently: ${currentState})`);
+    throw new Error(`❌ Δεν επιτρέπεται υποβολή αρχικών βαθμών. Το μάθημα βρίσκεται σε κατάσταση: ${currentState}. Αναμένεται: VOID.`);
   }
 
-  if (batch_type === 'FINAL' && currentState !== 'OPEN') {
-    throw new Error(`Final grades require OPEN state (currently: ${currentState})`);
+  if (batch_type === 'FINAL') {
+    if (currentState === 'VOID') {
+      throw new Error(`❌ Δεν μπορείτε να υποβάλετε τελικούς βαθμούς χωρίς προηγούμενους αρχικούς. Κατάσταση μαθήματος: VOID.`);
+    }
+    if (currentState !== 'OPEN') {
+      throw new Error(`❌ Οι τελικοί βαθμοί απαιτούν κατάσταση μαθήματος: OPEN. Τρέχουσα: ${currentState}.`);
+    }
   }
 
   return course_id;
@@ -276,11 +324,12 @@ async function processRow(client, row, index, course_id, grade_batch_id, batch_t
   const full_name = row['Ονοματεπώνυμο'];
   const email = row['Ακαδημαϊκό E-mail'];
   const grade = parseInt(row['Βαθμολογία']);
+  const rowNumber = index + 3;
 
-  if (!am || isNaN(am)) throw new Error('Missing or invalid Αριθμός Μητρώου (student ID)');
-  if (isNaN(grade)) throw new Error(`Missing or invalid grade for AM ${am}`);
-  if (!email) throw new Error(`Missing email for AM ${am}`);
-  if (!full_name) throw new Error(`Missing full name for AM ${am}`);
+  if (!am || isNaN(am)) throw new Error(`Λείπει ή δεν είναι έγκυρος ο Αριθμός Μητρώου (AM) στη γραμμή ${rowNumber}`);
+  if (!full_name) throw new Error(`Λείπει το ονοματεπώνυμο για τον AM ${am} στη γραμμή ${rowNumber}`);
+  if (!email) throw new Error(`Λείπει το email για τον AM ${am} στη γραμμή ${rowNumber}`);
+  if (isNaN(grade)) throw new Error(`Μη έγκυρη βαθμολογία για τον AM ${am} στη γραμμή ${rowNumber}`);
 
   let user_id;
   const existingUser = await client.query('SELECT id FROM users WHERE am = $1', [am]);
@@ -327,7 +376,6 @@ async function processRow(client, row, index, course_id, grade_batch_id, batch_t
     );
   }
 }
-
 
 // 🔢 Ολική κατανομή βαθμών
 exports.getTotalDistribution = async (req, res) => {

@@ -41,6 +41,9 @@ exports.getQuestionDistribution = async (req, res) => {
 // Υφιστάμενες συναρτήσεις
 exports.getStudentGrades = async (req, res) => {
   const { studentId } = req.params;
+  // Debug log
+  console.log(`[DEBUG] getStudentGrades called for studentId: ${studentId}, headers:`, req.headers);
+
   try {
     const gradesRes = await axios.get(`${GRADES_SERVICE_URL}/grades/student/${studentId}`, {
       headers: {
@@ -86,6 +89,15 @@ exports.handleUpload = async (req, res) => {
     res.json(response.data);
   } catch (err) {
     console.error('❌ Upload failed:', err.message);
-    res.status(500).json({ error: 'Failed to upload file' });
+  
+    const backendError =
+      err.response?.data?.error ||
+      err.response?.data?.message ||
+      err.message ||
+      'Σφάλμα κατά την αποστολή βαθμών.';
+  
+    res.status(err.response?.status || 500).json({
+      error: backendError
+    });
   }
 };

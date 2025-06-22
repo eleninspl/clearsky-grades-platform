@@ -1,18 +1,17 @@
 // PostGrades.jsx
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef } from 'react';
 import './PostGrades.css'; // You can unify styling
 import Navbar from './InstNavbar.jsx';
 import { uploadGradesFile } from '../../api/grades';
 
 function PostGrades({ type }) {
-  const navigate = useNavigate();
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState('');
+  const fileInputRef = useRef(null);
 
   const isFinal = type === 'final';
   const title = isFinal ? 'FINAL GRADES POSTING' : 'INITIAL GRADES POSTING';
-  const buttonLabel = isFinal ? 'submit FINAL grades' : 'submit initial grades';
+  const buttonLabel = isFinal ? 'submit FINAL grades' : 'submit INITIAL grades';
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -23,19 +22,29 @@ function PostGrades({ type }) {
       setMessage('Please select a file.');
       return;
     }
-
+  
     try {
       setMessage('Uploading...');
       const res = await uploadGradesFile(file, type);
       setMessage('✅ Upload successful: ' + res.message);
     } catch (err) {
-      setMessage('❌ Upload failed: ' + (err.response?.data?.error || err.message));
+      console.error('⛔️ Detailed error:', err);
+  
+      const realMessage =
+        err?.error ||
+        err?.response?.data?.error ||
+        err?.message ||
+        'Παρουσιάστηκε άγνωστο σφάλμα.';
+  
+      setMessage(` ${realMessage}`);
+    } finally {
+      setFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = null;
+      }
     }
   };
-
-  const handleConfirm = () => {
-    navigate('/instructor/dashboard');
-  };
+  
 
   return (
     <div className="grades-container">
@@ -46,7 +55,13 @@ function PostGrades({ type }) {
         <section className="grades-section">
           <div className="grades-section-title">{title}</div>
           <div className="grades-upload-row">
-            <input type="file" className="grades-file-input" onChange={handleFileChange} />
+            <input
+              type="file"
+              className="grades-file-input"
+              onChange={handleFileChange}
+              ref={fileInputRef}
+            />
+
             <button className="grades-btn" onClick={handleUpload}>{buttonLabel}</button>
           </div>
         </section>

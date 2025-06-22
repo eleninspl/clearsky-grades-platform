@@ -23,7 +23,7 @@ function CourseTable({
             </thead>
             <tbody>
                 {Object.values(groupedByCourse).map(({ course, initial, final }) => {
-                    const gradingStatus = final ? 'closed' : initial ? 'open' : 'N/A';
+                    const gradingStatus = (course.review_state || 'void').toLowerCase();
                     const isSubmitted = initial && reviewRequests?.some(r => r.grade_id === initial.grade_id);
                     const hasReviewRequest = isSubmitted;
 
@@ -46,7 +46,7 @@ function CourseTable({
                                 </button>
 
                                 <button
-                                    disabled={!initial || hasReviewRequest || loadingReviews}
+                                    disabled={!initial || hasReviewRequest || loadingReviews || gradingStatus === 'closed'}
                                     title={
                                         loadingReviews
                                             ? 'Loading review request status...'
@@ -54,7 +54,9 @@ function CourseTable({
                                                 ? 'You can only request a review if an INITIAL grade exists.'
                                                 : hasReviewRequest
                                                     ? 'You have already submitted a review request for this grade.'
-                                                    : ''
+                                                    : gradingStatus === 'closed'
+                                                        ? 'The grading for this course is finalized. You cannot request a review.'
+                                                        : ''
                                     }
                                     onClick={() => {
                                         setActiveReviewCourse(
