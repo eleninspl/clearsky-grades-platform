@@ -39,15 +39,6 @@ ADMIN: Read access to all grades and statistics
 
 ## API Endpoints
 
-GET	/grade	Get all grades	
-
-GET	/grade/:id	Get a grade by ID	
-
-POST	/grade	Create a new grade	
-
-PUT	/grade/:id	Update a grade	
-
-DELETE	/grade/:id	Delete a grade	
 
 GET	/student/:id	Get grades of a specific student
 

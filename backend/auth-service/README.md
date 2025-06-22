@@ -39,9 +39,8 @@ JWT tokens are issued on login or OAuth success and must be passed in the Author
 ## API Endpoints
 Defined in authRoutes.js and implemented in authController.js.
 
-Method	Endpoint	
+## Method	Endpoint	
 
-POST	/signup	Register a user via local email/password	
 
 POST	/login	Login and receive a JWT	
 
@@ -54,7 +53,5 @@ POST	/verify-google-token	Verify Google ID token (client-side flow)
 GET	/google	Start Google OAuth (server-side flow)	
 
 GET	/google/callback	Handle Google OAuth redirect and token issuance	
-
-GET	/users/:id	Get user info by ID	 (token logic may apply)
 
 POST	/users	Create a user with a specific role	

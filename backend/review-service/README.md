@@ -54,5 +54,7 @@ GET /review/instructor – instructor’s pending review queue
 
 POST /review/responses – instructor submits response
 
+GET review/status - get review status for student
+
 
 
