@@ -74,43 +74,6 @@ exports.initConsumer = async () => {
         }
       });
 
-      // ─────────────────────────────
-      // 📝 Consumer: grades_uploaded
-      // ─────────────────────────────
-      await channel.assertQueue('grades_uploaded', { durable: true });
-      console.log('🎧 Listening for grades_uploaded...');
-
-      channel.consume('grades_uploaded', async (msg) => {
-        if (!msg) return;
-        const data = JSON.parse(msg.content.toString());
-        console.log('📥 grades_uploaded:', data);
-
-        try {
-          const { institution_id } = data;
-          if (!institution_id) throw new Error('Missing institution_id');
-
-          // ⚠️ Use transaction and prevent automatic CONSUME trigger
-          await pool.query('BEGIN');
-          await pool.query(`SET LOCAL credits_service.skip_consume_trigger = 'on'`);
-
-          await pool.query(
-            `INSERT INTO credits_service.credit_transaction (
-              institution_id, amount, tx_type
-            ) VALUES ($1, -1, 'CONSUME')`,
-            [institution_id]
-          );
-
-          await pool.query('COMMIT');
-
-          console.log(`✅ Credit consumed for institution ${institution_id}`);
-          channel.ack(msg);
-        } catch (err) {
-          await pool.query('ROLLBACK');
-          console.error('❌ Error in grades_uploaded:', err);
-          channel.nack(msg, false, false);
-        }
-      });
-
       break; // ✅ Βγαίνουμε από retry loop αν όλα πήγαν καλά
     } catch (err) {
       retries--;

@@ -34,9 +34,6 @@ JWT is expected in the Authorization header.
 
 Middleware in authorize.js checks the user's role:
 
-Representatives can fully manage institutions (CRUD and credit changes)
-
-Instructors and Students are denied access to these endpoints
 
 ## API Endpoints
 Defined in institutionRoutes.js and implemented in institutionController.js. Key routes:
@@ -45,15 +42,4 @@ GET	/stats	Get institution statistics
 
 GET	/stats/course-list	Get course list with instructors	
 
-GET	/	Get all institutions	
-
-GET	/:id	Get a single institution by ID	
-
-POST	/	Create a new institution	
-
-PUT	/:id	Update institution name/email	
-
-DELETE	/:id	Delete an institution	
-
-PATCH	/:id/credits	Adjust an institution’s credit balance
 

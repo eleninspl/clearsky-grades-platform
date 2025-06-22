@@ -4,7 +4,6 @@ const db = require('../db');
 const passport = require('../passport');
 const axios = require('axios');
 
-const USER_SERVICE = process.env.USER_SERVICE_URL;
 
 // ── Token helper ─────────────
 function issueToken(user) {
@@ -20,38 +19,6 @@ function issueToken(user) {
   );
 }
 
-// ── Signup (STUDENT only) ────
-exports.signup = async (req, res, next) => {
-  const { email, password, fullName } = req.body;
-
-  try {
-    const exists = await db.query(
-      `SELECT 1 FROM auth_account WHERE provider='LOCAL' AND provider_uid=$1`,
-      [email]
-    );
-    if (exists.rowCount) return res.status(409).json({ message: 'Exists' });
-
-    const userRes = await axios.post(`${USER_SERVICE}/users`, {
-      username: email,
-      email,
-      full_name: fullName,
-      role: 'STUDENT',
-    });
-
-    const user = userRes.data;
-    const hash = await bcrypt.hash(password, 10);
-
-    await db.query(
-      `INSERT INTO auth_account (user_id, provider, provider_uid, password_hash)
-       VALUES ($1, 'LOCAL', $2, $3)`,
-      [user.id, email, hash]
-    );
-
-    res.json({ token: issueToken(user) });
-  } catch (err) {
-    next(err);
-  }
-};
 
 // ── Login ────────────────────
 exports.login = [
