@@ -140,7 +140,6 @@ exports.handleUpload = async (req, res) => {
     const workbook = XLSX.readFile(filePath);
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-    // ✅ Minimal change: validate format
     const expectedColumns = [
       'Αριθμός Μητρώου', 'Ονοματεπώνυμο', 'Ακαδημαϊκό E-mail',
       'Περίοδος δήλωσης', 'Τμήμα Τάξης', 'Κλίμακα βαθμολόγησης',
@@ -160,7 +159,7 @@ exports.handleUpload = async (req, res) => {
 
     const rows = XLSX.utils.sheet_to_json(sheet, { range: 2 });
     console.log(`📊 Parsed ${rows.length} rows from Excel`);
-    console.log('👀 Last parsed row:', rows[rows.length - 1]);
+    if (rows.length === 0) throw new Error('Excel file contains no student rows');
 
     const client = await pool.connect();
     const courseRegex = /\((\d+)\)/;
@@ -169,50 +168,83 @@ exports.handleUpload = async (req, res) => {
 
     await client.query('BEGIN');
 
-    for (const row of rows) {
-      const am = parseInt(row['Αριθμός Μητρώου']);
-      const full_name = row['Ονοματεπώνυμο'];
-      const email = row['Ακαδημαϊκό E-mail'];
-      const grade = parseInt(row['Βαθμολογία']);
-      const courseText = row['Τμήμα Τάξης'];
-      const period = row['Περίοδος δήλωσης'];
+    // Use first row to determine course_id and validate review_state
+    const firstRow = rows[0];
+    const courseText = firstRow['Τμήμα Τάξης'];
+    const courseMatch = courseText.match(courseRegex);
+    if (!courseMatch) throw new Error(`Invalid course format in row 1: ${courseText}`);
 
-      if (!am || isNaN(grade) || !courseText || !period) {
-        console.warn(`⚠️ Skipping row due to missing fields:`, row);
-        continue;
-      }
+    const course_id = parseInt(courseMatch[1]);
 
-      const courseMatch = courseText.match(courseRegex);
-      if (!courseMatch) {
-        console.warn(`⚠️ Skipping row due to invalid courseText:`, courseText);
-        continue;
-      }
+    const reviewStateResult = await client.query(
+      `SELECT review_state FROM course WHERE id = $1`,
+      [course_id]
+    );
 
-      const course_id = parseInt(courseMatch[1]);
+    if (reviewStateResult.rowCount === 0) {
+      throw new Error(`Course with ID ${course_id} not found`);
+    }
 
-      let grade_batch_id;
-      const batchResult = await client.query(
-        `SELECT id FROM grade_batch WHERE course_id = $1 AND academic_year = $2 AND type = $3`,
-        [course_id, academic_year, batch_type]
+    const currentState = reviewStateResult.rows[0].review_state;
+
+    if (batch_type === 'INITIAL' && currentState !== 'VOID') {
+      throw new Error(`Initial grades can only be uploaded when review_state is VOID (currently: ${currentState})`);
+    }
+
+    if (batch_type === 'FINAL' && currentState !== 'OPEN') {
+      throw new Error(`Final grades can only be uploaded when review_state is OPEN (currently: ${currentState})`);
+    }
+
+    // Find or create grade batch
+    let grade_batch_id;
+    const batchResult = await client.query(
+      `SELECT id FROM grade_batch WHERE course_id = $1 AND academic_year = $2 AND type = $3`,
+      [course_id, academic_year, batch_type]
+    );
+
+    if (batchResult.rowCount > 0) {
+      grade_batch_id = batchResult.rows[0].id;
+    } else {
+      const newBatch = await client.query(
+        `INSERT INTO grade_batch (
+          course_id, uploader_id, type, original_file, uploaded_at
+        ) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+        [course_id, uploader_id, batch_type, req.file.originalname, uploaded_at]
       );
+      grade_batch_id = newBatch.rows[0].id;
+    }
 
-      if (batchResult.rowCount > 0) {
-        grade_batch_id = batchResult.rows[0].id;
-      } else {
-        const newBatch = await client.query(
-          `INSERT INTO grade_batch (
-            course_id, uploader_id, type, original_file, uploaded_at
-          ) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-          [course_id, uploader_id, batch_type, req.file.originalname, uploaded_at]
-        );
-        grade_batch_id = newBatch.rows[0].id;
-      }
+    // Update course.review_state
+    if (['INITIAL', 'FINAL'].includes(batch_type)) {
+      const new_state = batch_type === 'INITIAL' ? 'OPEN' : 'CLOSED';
+      await client.query(
+        `UPDATE course SET review_state = $1 WHERE id = $2`,
+        [new_state, course_id]
+      );
+    }
 
-      let user_id;
-      const findUser = await client.query('SELECT id FROM users WHERE am = $1', [am]);
+    // Process rows
+    for (const [index, row] of rows.entries()) {
+      try {
+        const am = parseInt(row['Αριθμός Μητρώου']);
+        const full_name = row['Ονοματεπώνυμο'];
+        const email = row['Ακαδημαϊκό E-mail'];
+        const grade = parseInt(row['Βαθμολογία']);
 
-      if (findUser.rowCount === 0) {
-        try {
+        if (!am || isNaN(grade)) {
+          console.warn(`⚠️ Row ${index + 3}: Skipped due to missing AM or invalid grade.`);
+          continue;
+        }
+
+        if (!email || !full_name) {
+          throw new Error(`Row ${index + 3}: Missing email or full_name for AM ${am}`);
+        }
+
+        // Handle user
+        let user_id;
+        const findUser = await client.query('SELECT id FROM users WHERE am = $1', [am]);
+
+        if (findUser.rowCount === 0) {
           const insertUser = await client.query(
             `INSERT INTO users (
               username, email, full_name, role, external_id, am, institution_id
@@ -222,32 +254,25 @@ exports.handleUpload = async (req, res) => {
 
           user_id = insertUser.rows[0].id;
 
-          const provider_uid = email;
-          const password_hash = '$2b$10$XButviiFJj1ReOWa6E6mcOvAefg37Jza9ppQBuKH7IvtMN9SjrHMC';
-
           await client.query(
             `INSERT INTO auth_account (
               user_id, provider, provider_uid, password_hash
             ) VALUES ($1, 'LOCAL', $2, $3)`,
-            [user_id, provider_uid, password_hash]
+            [user_id, email, '$2b$10$XButviiFJj1ReOWa6E6mcOvAefg37Jza9ppQBuKH7IvtMN9SjrHMC']
           );
 
-          console.log(`✅ Created user ${am} and auth_account: ${provider_uid}`);
-        } catch (insertError) {
-          console.error(`❌ Failed to insert user/auth_account for AM ${am}:`, insertError);
-          continue;
+          console.log(`✅ Created user ${am}`);
+        } else {
+          user_id = findUser.rows[0].id;
         }
-      } else {
-        user_id = findUser.rows[0].id;
-      }
 
-      const detailed = {};
-      for (let i = 1; i <= 10; i++) {
-        const q = `Q${i.toString().padStart(2, '0')}`;
-        detailed[q] = row[q] ?? null;
-      }
+        // Detailed grade JSON
+        const detailed = {};
+        for (let i = 1; i <= 10; i++) {
+          const q = `Q${i.toString().padStart(2, '0')}`;
+          detailed[q] = row[q] ?? null;
+        }
 
-      try {
         const existingGrade = await client.query(
           `SELECT id FROM grade WHERE user_am = $1 AND course_id = $2 AND grade_batch_id = $3`,
           [am, course_id, grade_batch_id]
@@ -270,24 +295,21 @@ exports.handleUpload = async (req, res) => {
           );
           console.log(`✅ Inserted new grade for AM ${am}`);
         }
-      } catch (gradeError) {
-        console.error(`❌ Failed to insert/update grade for AM ${am}:`, gradeError);
+      } catch (rowErr) {
+        console.error(`❌ Error in row ${index + 3} (AM: ${row['Αριθμός Μητρώου']}): ${rowErr.message}`);
+        continue;
       }
     }
 
     await client.query('COMMIT');
     client.release();
     fs.unlinkSync(filePath);
-    res.status(200).json({ message: 'Grades uploaded successfully' });
+    return res.status(200).json({ message: 'Grades uploaded successfully' });
 
   } catch (err) {
-    console.error('❌ Unexpected error during upload:', err);
+    console.error('❌ Upload failed:', err.stack || err.message || err);
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-
-    // ✅ Minimal change: send full message
-    res.status(500).json({
-      error: err.message || 'Unexpected error during upload'
-    });
+    return res.status(400).json({ error: err.message });
   }
 };
 
