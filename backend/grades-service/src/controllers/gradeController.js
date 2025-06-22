@@ -45,8 +45,6 @@ exports.getGradesByStudent = async (req, res) => {
       WHERE g.user_am = $1
       ORDER BY g.course_id, g.type
     `, [id]);
-    
-
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching grades for student:', err);
