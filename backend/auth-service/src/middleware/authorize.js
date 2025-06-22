@@ -1,14 +1,5 @@
-// middleware/authorize.js
-// ─────────────────────────────────────────────────────────
-// Χρήση:  authorize( [allowRoles], [allowInstitutions] )
-//
-//   allowRoles         : π.χ. ['ADMIN','INST_REP']   (προαιρετικό)
-//   allowInstitutions  : π.χ. [1, 3]                (προαιρετικό)
-//                       id-αριθμοί από τον πίνακα institution
-//
-// Αν δεν περάσεις δεύτερο argument, ελέγχεται μόνο ο ρόλος.
 const jwt = require('jsonwebtoken');
-const db = require('../utils/db');
+const db = require('../db');
 
 module.exports = (roles = [], instIds = null) => async (req, res, next) => {
   const hdr = req.headers.authorization;

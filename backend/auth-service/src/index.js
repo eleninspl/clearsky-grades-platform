@@ -10,8 +10,7 @@ app.use(express.json());
 app.use(require('passport').initialize());
 
 const verifyRoutes = require('./routes/verify');
-app.use('/', verifyRoutes); // ή app.use('/auth', verifyRoutes);
-// ───────────────────────────────────────────για να δουλεύει το verify token
+app.use('/', verifyRoutes);
 
 // Healthcheck
 app.get('/', (req, res) => {

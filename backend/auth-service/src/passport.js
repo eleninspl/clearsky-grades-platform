@@ -2,7 +2,7 @@ const passport = require('passport');
 const { Strategy: LocalStrategy } = require('passport-local');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const bcrypt = require('bcrypt');
-const db = require('./utils/db');
+const db = require('./db');
 const axios = require('axios');
 
 const USER_SERVICE = process.env.USER_SERVICE_URL;

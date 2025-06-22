@@ -155,17 +155,23 @@ exports.handleUpload = async (req, res) => {
     const uploaded_at = new Date();
     const academic_year = uploaded_at.getFullYear();
 
-    // Εξαγωγή course_id από το πεδίο "Τμήμα Τάξης"
     const courseRegex = /\((\d+)\)/;
     const courseMatch = rows[0]['Τμήμα Τάξης'].match(courseRegex);
     if (!courseMatch) throw new Error(`❌ Μη έγκυρη μορφή στο "Τμήμα Τάξης": ${rows[0]['Τμήμα Τάξης']}. Αναμένεται format όπως: "Μάθημα (1234)"`);
     const course_id = parseInt(courseMatch[1]);
 
-    // Έλεγχος αν υπάρχουν διαθέσιμα credits για INITIAL batch
+    // 🔒 Check if the uploader is the instructor of the course
+    const clientAuthCheck = await pool.connect();
+    try {
+      await validateInstructorOwnership(clientAuthCheck, course_id, uploader_id);
+    } finally {
+      clientAuthCheck.release();
+    }
+
+    // Credit check for INITIAL batch
     if (batch_type === 'INITIAL') {
       const clientCheck = await pool.connect();
       try {
-        // Έχει ήδη ανέβει αρχικός βαθμός για αυτό το μάθημα τη φετινή χρονιά;
         const exists = await clientCheck.query(`
           SELECT 1 FROM grade_batch
           WHERE course_id = $1 AND type = 'INITIAL' AND academic_year = $2
@@ -173,7 +179,6 @@ exports.handleUpload = async (req, res) => {
         `, [course_id, academic_year]);
 
         if (exists.rowCount === 0) {
-          // Δεν υπάρχει, πρέπει να ελέγξουμε τα credits του institution του μαθήματος
           const creditCheck = await clientCheck.query(`
             SELECT i.credits_balance, i.name
             FROM course c
@@ -207,7 +212,7 @@ exports.handleUpload = async (req, res) => {
     await updateReviewState(client, valid_course_id, batch_type);
 
     for (const [index, row] of rows.entries()) {
-      const rowNumber = index + 3; // includes 2-line header + 0-based index
+      const rowNumber = index + 3;
       try {
         await processRow(client, row, index, valid_course_id, grade_batch_id, batch_type);
         successes.push({ am: row['Αριθμός Μητρώου'], row: rowNumber });
@@ -245,6 +250,24 @@ exports.handleUpload = async (req, res) => {
     });
   }
 };
+
+// 🔍 Validate instructor ownership
+async function validateInstructorOwnership(client, course_id, uploader_id) {
+  const result = await client.query(
+    `SELECT instructor_id FROM course WHERE id = $1`,
+    [course_id]
+  );
+
+  if (result.rowCount === 0) {
+    throw new Error(`❌ Το μάθημα με ID ${course_id} δεν βρέθηκε.`);
+  }
+
+  const instructor_id = result.rows[0].instructor_id;
+
+  if (instructor_id !== uploader_id) {
+    throw new Error(`❌ Δεν έχετε δικαίωμα να ανεβάσετε βαθμούς για αυτό το μάθημα (ID: ${course_id}).`);
+  }
+}
 
 function validateExcelFile(filePath, expectedColumns) {
   const workbook = XLSX.readFile(filePath);

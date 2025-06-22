@@ -115,16 +115,16 @@ $$;
 
 
 -- 📘 COURSES for instructor with id = 102
-INSERT INTO course (id, code, title, exam_period, description, instructor_id, institution_id)
+INSERT INTO course (id, code, title, exam_period, review_state, description, instructor_id, institution_id)
 VALUES 
-(101, 'CS101', 'Intro to Computer Science', 'Spring 2024', 'Introduction to computing, programming fundamentals, and problem-solving.', 102, 1),
-(102, 'CS102', 'Data Structures', 'Spring 2024', 'Covers arrays, linked lists, stacks, queues, trees, graphs, and algorithm analysis.', 102, 1),
-(103, 'CS103', 'Algorithms', 'Spring 2024', 'Covers sorting, searching, and algorithm design and analysis.', 102, 1),
-(201, 'PHY101', 'Physics I', 'Fall 2024', 'Covers classical mechanics, motion, energy, and basic thermodynamics.', 102, 1),
-(3206, 'CS3206', 'Software as a Service', 'Spring 2024', 'Focuses on software development lifecycle, agile methods, and system design.', 102, 1),
-(203, 'MATH101', 'Mathematics I', 'Fall 2024', 'Introduction to linear algebra, calculus, and mathematical reasoning.', 102, 1),
-(3205, 'CS3205', 'Software Engineering', 'Fall 2024', 'Auto-inserted course for upload test with ID 3205.', 102, 1),
-(3207, 'CS3207', 'Artificial Intelligence', 'Fall 2024', 'Auto-inserted course for AI instruction with ID 3207.', 102, 1)
+(101, 'CS101', 'Intro to Computer Science', 'Spring 2024', 'OPEN','Introduction to computing, programming fundamentals, and problem-solving.', 102, 1),
+(102, 'CS102', 'Data Structures', 'Spring 2024', 'OPEN', 'Covers arrays, linked lists, stacks, queues, trees, graphs, and algorithm analysis.', 102, 1),
+(103, 'CS103', 'Algorithms', 'Spring 2024', 'OPEN', 'Covers sorting, searching, and algorithm design and analysis.', 102, 1),
+(201, 'PHY101', 'Physics I', 'Fall 2024', 'VOID', 'Covers classical mechanics, motion, energy, and basic thermodynamics.', 102, 1),
+(3206, 'CS3206', 'Software as a Service', 'Spring 2024', 'VOID', 'Focuses on software development lifecycle, agile methods, and system design.', 102, 1),
+(203, 'MATH101', 'Mathematics I', 'Fall 2024', 'VOID','Introduction to linear algebra, calculus, and mathematical reasoning.', 102, 1),
+(3205, 'CS3205', 'Software Engineering', 'Fall 2024', 'VOID','Auto-inserted course for upload test with ID 3205.', 102, 1),
+(3207, 'CS3207', 'Artificial Intelligence', 'Fall 2024', 'VOID','Auto-inserted course for AI instruction with ID 3207.', 102, 1)
 ON CONFLICT DO NOTHING;
 
 -- 🧹 Delete previous grades for this student

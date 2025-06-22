@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const db = require('../utils/db');
+const db = require('../db');
 const passport = require('../passport');
 const axios = require('axios');
 
@@ -304,4 +304,37 @@ exports.verifyGoogleIdToken = async (req, res) => {
     console.error('Google id_token verification failed:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
+};
+
+
+exports.googleOAuthCallback = (req, res, next) => {
+  passport.authenticate('google', { session: false }, (err, user, info) => {
+    if (err) {
+      console.error('Google OAuth error:', err);
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=server_error`);
+    }
+
+    if (!user) {
+      const errorMessage = encodeURIComponent(info?.message || 'Authentication failed');
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed&message=${errorMessage}`);
+    }
+
+    try {
+      const token = jwt.sign(
+        { 
+          sub: user.id, 
+          full_name: user.full_name,
+          role: user.role, 
+          inst: user.institution_id 
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      res.redirect(`${process.env.FRONTEND_URL}/auth/google/success?token=${token}`);
+    } catch (tokenErr) {
+      console.error('Token generation error:', tokenErr);
+      res.redirect(`${process.env.FRONTEND_URL}/login?error=token_error`);
+    }
+  })(req, res, next);
 };
