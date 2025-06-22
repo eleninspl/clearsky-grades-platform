@@ -4,26 +4,6 @@ const pool = require('../db');
 // Validate enum-like input
 const isValidType = (type) => ['INITIAL', 'FINAL'].includes(type?.toUpperCase());
 
-exports.getAllGrades = async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM grade ORDER BY id');
-    res.json(result.rows);
-  } catch (err) {
-    res.status(500).json({ error: 'Database error' });
-  }
-};
-
-exports.getGradeById = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const result = await pool.query('SELECT * FROM grade WHERE id = $1', [id]);
-    if (result.rows.length === 0) return res.status(404).json({ error: 'Grade not found' });
-    res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: 'Database error' });
-  }
-};
-
 exports.getGradesByStudent = async (req, res) => {
   const { id } = req.params;
 
@@ -51,7 +31,6 @@ exports.getGradesByStudent = async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 };
-
 
 exports.getCoursesForInstructor = async (req, res) => {
   const { id } = req.params;
@@ -83,50 +62,6 @@ exports.getCoursesForInstructor = async (req, res) => {
   } catch (err) {
     console.error('❌ Error fetching instructor course data:', err);
     res.status(500).json({ error: 'Internal server error' });
-  }
-};
-
-
-exports.createGrade = async (req, res) => {
-  const { type, value, user_am, course_id, grade_batch_id } = req.body;
-
-  if (!type || value == null || !user_am || !course_id || !grade_batch_id) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  try {
-    const result = await pool.query(`
-      INSERT INTO grade (type, value, user_am, course_id, grade_batch_id)
-      VALUES ($1, $2, $3, $4, $5) RETURNING *
-    `, [type, value, user_am, course_id, grade_batch_id]);
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: 'Database error' });
-  }
-};
-
-exports.updateGrade = async (req, res) => {
-  const { id } = req.params;
-  const { value } = req.body;
-  try {
-    const result = await pool.query(`
-      UPDATE grade SET value = $1 WHERE id = $2 RETURNING *
-    `, [value, id]);
-    if (result.rows.length === 0) return res.status(404).json({ error: 'Grade not found' });
-    res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: 'Database error' });
-  }
-};
-
-exports.deleteGrade = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const result = await pool.query('DELETE FROM grade WHERE id = $1 RETURNING *', [id]);
-    if (result.rows.length === 0) return res.status(404).json({ error: 'Grade not found' });
-    res.json({ message: 'Grade deleted', grade: result.rows[0] });
-  } catch (err) {
-    res.status(500).json({ error: 'Database error' });
   }
 };
 
@@ -432,8 +367,6 @@ exports.getTotalDistribution = async (req, res) => {
   }
 };
 
-
-
 // 🔍 Κατανομή για συγκεκριμένη ερώτηση
 exports.getQuestionDistribution = async (req, res) => {
   const { courseId, type, question } = req.params;
@@ -469,7 +402,6 @@ exports.getQuestionDistribution = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch question distribution' });
   }
 };
-
 
 // 🔑 GET /statistics/questions/:courseId
 exports.getQuestionKeys = async (req, res) => {

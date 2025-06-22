@@ -3,23 +3,16 @@ const router = express.Router();
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 
-const {
-  getStudentGrades,
-  getInstructorCourses,
-  handleUpload,
-  getQuestionKeys,
-  getTotalDistribution,
-  getQuestionDistribution
-} = require('../controllers/gradesController');
+const gradesController = require('../controllers/gradesController');
 
-// Υπάρχουσες διαδρομές
-router.get('/student/:studentId', getStudentGrades);
-router.get('/instructor/:instructorId/courses', getInstructorCourses);
-router.post('/:type', upload.single('file'), handleUpload);
+// 📚 Βασικές διαδρομές
+router.get('/student/:studentId', gradesController.getStudentGrades); // fetch grades by student
+router.get('/instructor/:instructorId/courses', gradesController.getInstructorCourses); // fetch instructor courses
+router.post('/:type', upload.single('file'), gradesController.handleUpload); // upload grades file
 
-// 📊 Νέες διαδρομές για στατιστικά
-router.get('/questions/:courseId/:type', getQuestionKeys);
-router.get('/distribution/:courseId/:type', getTotalDistribution);
-router.get('/distribution/:courseId/:type/q/:question', getQuestionDistribution);
+// 📊 Στατιστικά βαθμολογιών
+router.get('/questions/:courseId/:type', gradesController.getQuestionKeys); // get question keys
+router.get('/distribution/:courseId/:type', gradesController.getTotalDistribution); // course distribution
+router.get('/distribution/:courseId/:type/q/:question', gradesController.getQuestionDistribution); // per-question stats
 
 module.exports = router;

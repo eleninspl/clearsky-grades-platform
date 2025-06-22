@@ -1,68 +1,5 @@
 const pool = require('../db');
 
-exports.getAllInstitutions = async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM institution ORDER BY id');
-    res.json(result.rows);
-  } catch (err) {
-    console.error('DB error:', err);
-    res.status(500).json({ error: 'Database error' });
-  }
-};
-
-exports.getInstitutionById = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const result = await pool.query('SELECT * FROM institution WHERE id = $1', [id]);
-    if (result.rows.length === 0) return res.status(404).json({ error: 'Institution not found' });
-    res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: 'Database error' });
-  }
-};
-
-exports.createInstitution = async (req, res) => {
-  const { name, email } = req.body;
-  try {
-    const result = await pool.query(
-      'INSERT INTO institution (name, email) VALUES ($1, $2) RETURNING *',
-      [name, email]
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: 'Database error' });
-  }
-};
-
-exports.updateInstitution = async (req, res) => {
-  const { id } = req.params;
-  const { name, email } = req.body;
-  try {
-    const result = await pool.query(
-      'UPDATE institution SET name = $1, email = $2 WHERE id = $3 RETURNING *',
-      [name, email, id]
-    );
-    if (result.rows.length === 0) return res.status(404).json({ error: 'Institution not found' });
-    res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: 'Database error' });
-  }
-};
-
-exports.deleteInstitution = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const result = await pool.query(
-      'DELETE FROM institution WHERE id = $1 RETURNING *',
-      [id]
-    );
-    if (result.rows.length === 0) return res.status(404).json({ error: 'Institution not found' });
-    res.json({ message: 'Institution deleted', institution: result.rows[0] });
-  } catch (err) {
-    res.status(500).json({ error: 'Database error' });
-  }
-};
-
 exports.getInstitutionStats = async (req, res) => {
   const creator = req.user;
   const inst = creator.inst;
@@ -120,23 +57,4 @@ exports.getCourseListWithInstructors = async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 };
-
-exports.updateCreditsBalance = async (req, res) => {
-  const { id } = req.params;
-  const { delta } = req.body;
-  if (typeof delta !== 'number') {
-    return res.status(400).json({ error: 'Missing or invalid delta' });
-  }
-  try {
-    const result = await pool.query(
-      'UPDATE institution SET credits_balance = credits_balance + $1 WHERE id = $2 RETURNING *',
-      [delta, id]
-    );
-    if (result.rows.length === 0) return res.status(404).json({ error: 'Institution not found' });
-    res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: 'Database error' });
-  }
-};
-
 
