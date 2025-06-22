@@ -1,0 +1,371 @@
+{
+  "info": {
+    "name": "Credits Service Tests",
+    "_postman_id": "d1f2e3c4-5678-9012-3456-abcdef789012",
+    "description": "1) Login as INST_REP → balance, buy, history → logout. 2) Login as INSTRUCTOR/STUDENT → forbidden → logout.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "authBaseUrl",    "value": "http://localhost:5001" },
+    { "key": "creditsBaseUrl",  "value": "http://localhost:5008" },
+    { "key": "institutionId",   "value": "1" },
+    { "key": "repEmail",        "value": "rep@demo.edu" },
+    { "key": "repPassword",     "value": "reppass" },
+    { "key": "instrEmail",      "value": "instructor@demo.edu" },
+    { "key": "instrPassword",   "value": "instructorpass" },
+    { "key": "studEmail",       "value": "student@demo.edu" },
+    { "key": "studPassword",    "value": "studentpass" },
+    { "key": "token",           "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Login as INST_REP",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{repEmail}}\",\n  \"password\": \"{{repPassword}}\"\n}"
+        },
+        "url": {
+          "raw": "{{authBaseUrl}}/auth/login",
+          "host": ["{{authBaseUrl}}"],
+          "path": ["auth","login"]
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": [
+          "pm.response.to.have.status(200);",
+          "const res = pm.response.json();",
+          "pm.expect(res).to.have.property('token');",
+          "pm.expect(res.user.role).to.eql('INST_REP');",
+          "pm.environment.set('token', res.token);"
+        ]
+      }]
+    },
+
+    {
+      "name": "2. GET Balance (REP)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{creditsBaseUrl}}/credits/{{institutionId}}/balance",
+          "host": ["{{creditsBaseUrl}}"],
+          "path": ["credits","{{institutionId}}","balance"]
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": [
+          "pm.response.to.have.status(200);",
+          "const body = pm.response.json();",
+          "pm.expect(body).to.have.property('balance');",
+          "pm.expect(body.balance).to.be.a('number');"
+        ]
+      }]
+    },
+
+    {
+      "name": "3. POST Buy Credits (REP)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"amount\": 5 }"
+        },
+        "url": {
+          "raw": "{{creditsBaseUrl}}/credits/{{institutionId}}/buy",
+          "host": ["{{creditsBaseUrl}}"],
+          "path": ["credits","{{institutionId}}","buy"]
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": [
+          "pm.response.to.have.status(201);",
+          "const b = pm.response.json();",
+          "pm.expect(b.message).to.eql('Credits purchased');"
+        ]
+      }]
+    },
+
+    {
+      "name": "4. GET History (REP)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{creditsBaseUrl}}/credits/{{institutionId}}/history",
+          "host": ["{{creditsBaseUrl}}"],
+          "path": ["credits","{{institutionId}}","history"]
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": [
+          "pm.response.to.have.status(200);",
+          "const arr = pm.response.json();",
+          "pm.expect(arr).to.be.an('array').and.to.have.length.above(0);",
+          "arr.forEach(tx => {",
+          "  pm.expect(tx).to.have.keys(['id','amount','tx_type','created_at','description']);",
+          "  pm.expect(tx.description).to.be.a('string');",
+          "});"
+        ]
+      }]
+    },
+
+    {
+      "name": "5. Logout INST_REP",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{authBaseUrl}}/auth/logout",
+          "host": ["{{authBaseUrl}}"],
+          "path": ["auth","logout"]
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": [
+          "pm.response.to.have.status(200);",
+          "pm.environment.unset('token');"
+        ]
+      }]
+    },
+
+    {
+      "name": "6. Login as INSTRUCTOR",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{instrEmail}}\",\n  \"password\": \"{{instrPassword}}\"\n}"
+        },
+        "url": {
+          "raw": "{{authBaseUrl}}/auth/login",
+          "host": ["{{authBaseUrl}}"],
+          "path": ["auth","login"]
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": [
+          "pm.response.to.have.status(200);",
+          "pm.environment.set('token', pm.response.json().token);"
+        ]
+      }]
+    },
+
+    {
+      "name": "7. GET Balance (INSTR) → 403",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{creditsBaseUrl}}/credits/{{institutionId}}/balance",
+          "host": ["{{creditsBaseUrl}}"],
+          "path": ["credits","{{institutionId}}","balance"]
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": ["pm.response.to.have.status(403);"]
+      }]
+    },
+
+    {
+      "name": "8. POST Buy Credits (INSTR) → 403",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"amount\": 1 }"
+        },
+        "url": {
+          "raw": "{{creditsBaseUrl}}/credits/{{institutionId}}/buy",
+          "host": ["{{creditsBaseUrl}}"],
+          "path": ["credits","{{institutionId}}","buy"]
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": ["pm.response.to.have.status(403);"]
+      }]
+    },
+
+    {
+      "name": "9. GET History (INSTR) → 403",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{creditsBaseUrl}}/credits/{{institutionId}}/history",
+          "host": ["{{creditsBaseUrl}}"],
+          "path": ["credits","{{institutionId}}","history"]
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": ["pm.response.to.have.status(403);"]
+      }]
+    },
+
+    {
+      "name": "10. Logout INSTRUCTOR",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{authBaseUrl}}/auth/logout",
+          "host": ["{{authBaseUrl}}"],
+          "path": ["auth","logout"]
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": [
+          "pm.response.to.have.status(200);",
+          "pm.environment.unset('token');"
+        ]
+      }]
+    },
+
+    {
+      "name": "11. Login as STUDENT",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{studEmail}}\",\n  \"password\": \"{{studPassword}}\"\n}"
+        },
+        "url": {
+          "raw": "{{authBaseUrl}}/auth/login",
+          "host": ["{{authBaseUrl}}"],
+          "path": ["auth","login"]
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": [
+          "pm.response.to.have.status(200);",
+          "pm.environment.set('token', pm.response.json().token);"
+        ]
+      }]
+    },
+
+    {
+      "name": "12. GET Balance (STUD) → 403",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{creditsBaseUrl}}/credits/{{institutionId}}/balance",
+          "host": ["{{creditsBaseUrl}}"],
+          "path": ["credits","{{institutionId}}","balance"]
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": ["pm.response.to.have.status(403);"]
+      }]
+    },
+
+    {
+      "name": "13. POST Buy Credits (STUD) → 403",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"amount\": 1 }"
+        },
+        "url": {
+          "raw": "{{creditsBaseUrl}}/credits/{{institutionId}}/buy",
+          "host": ["{{creditsBaseUrl}}"],
+          "path": ["credits","{{institutionId}}","buy"]
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": ["pm.response.to.have.status(403);"]
+      }]
+    },
+
+    {
+      "name": "14. GET History (STUD) → 403",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{creditsBaseUrl}}/credits/{{institutionId}}/history",
+          "host": ["{{creditsBaseUrl}}"],
+          "path": ["credits","{{institutionId}}","history"]
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": ["pm.response.to.have.status(403);"]
+      }]
+    },
+
+    {
+      "name": "15. Logout STUDENT",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{authBaseUrl}}/auth/logout",
+          "host": ["{{authBaseUrl}}"],
+          "path": ["auth","logout"]
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": [
+          "pm.response.to.have.status(200);",
+          "pm.environment.unset('token');"
+        ]
+      }]
+    }
+  ]
+}
