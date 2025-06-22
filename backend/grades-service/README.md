@@ -9,6 +9,7 @@ Access control: Handled via authorize.js middleware using JWT and user roles
 
 ## Folder Structure
 
+<pre><code>```text
 grades-service/
 ├── init/
 │   ├── 01-schema.sql          # SQL table definitions for grades
@@ -27,6 +28,7 @@ grades-service/
 ├── Dockerfile                       # Container definition
 ├── package.json                     # Dependencies and scripts
 └── README.md                        # You are here
+  ```</code></pre>
 
 ## Authentication & Roles
 All protected endpoints require a JWT in the Authorization header. Role enforcement is defined in authorize.js.
