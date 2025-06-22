@@ -109,7 +109,7 @@ function Notifications() {
                         setTimeout(() => setSuccessMsg(''), 3000);
                       }}
                     >
-                      upload reply
+                      Submit reply
                     </button>
                   </div>
                 </form>
