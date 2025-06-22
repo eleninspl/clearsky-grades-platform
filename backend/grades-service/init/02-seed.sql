@@ -1,7 +1,7 @@
 -- SQLBook: Code
 -- 📌 Institution
 INSERT INTO institution (id, name, email, credits_balance)
-VALUES (1, 'Demo Institution', 'demo@demo.edu', 10);
+VALUES (1, 'Demo Institution', 'demo@demo.edu', 5);
 
 -- SQLBook: Code
 INSERT INTO users (id, username, email, full_name, role)

@@ -152,25 +152,64 @@ exports.handleUpload = async (req, res) => {
 
     if (rows.length === 0) throw new Error('❌ Το αρχείο Excel δεν περιέχει εγγραφές φοιτητών.');
 
-    const client = await pool.connect();
     const uploaded_at = new Date();
     const academic_year = uploaded_at.getFullYear();
 
+    // Εξαγωγή course_id από το πεδίο "Τμήμα Τάξης"
+    const courseRegex = /\((\d+)\)/;
+    const courseMatch = rows[0]['Τμήμα Τάξης'].match(courseRegex);
+    if (!courseMatch) throw new Error(`❌ Μη έγκυρη μορφή στο "Τμήμα Τάξης": ${rows[0]['Τμήμα Τάξης']}. Αναμένεται format όπως: "Μάθημα (1234)"`);
+    const course_id = parseInt(courseMatch[1]);
+
+    // Έλεγχος αν υπάρχουν διαθέσιμα credits για INITIAL batch
+    if (batch_type === 'INITIAL') {
+      const clientCheck = await pool.connect();
+      try {
+        // Έχει ήδη ανέβει αρχικός βαθμός για αυτό το μάθημα τη φετινή χρονιά;
+        const exists = await clientCheck.query(`
+          SELECT 1 FROM grade_batch
+          WHERE course_id = $1 AND type = 'INITIAL' AND academic_year = $2
+          LIMIT 1
+        `, [course_id, academic_year]);
+
+        if (exists.rowCount === 0) {
+          // Δεν υπάρχει, πρέπει να ελέγξουμε τα credits του institution του μαθήματος
+          const creditCheck = await clientCheck.query(`
+            SELECT i.credits_balance, i.name
+            FROM course c
+            JOIN institution i ON c.institution_id = i.id
+            WHERE c.id = $1
+          `, [course_id]);
+
+          if (creditCheck.rowCount === 0) {
+            throw new Error(`❌ Το μάθημα με ID ${course_id} δεν σχετίζεται με κάποιο ίδρυμα.`);
+          }
+
+          const { credits_balance, name } = creditCheck.rows[0];
+          if (credits_balance <= 0) {
+            throw new Error(`❌ Το ίδρυμα "${name}" δεν έχει διαθέσιμα credits για καταχώριση αρχικών βαθμών.`);
+          }
+        }
+      } finally {
+        clientCheck.release();
+      }
+    }
+
+    const client = await pool.connect();
     await client.query('BEGIN');
 
-    const courseText = rows[0]['Τμήμα Τάξης'];
-    const course_id = await getCourseIdAndValidateState(client, courseText, batch_type);
+    const valid_course_id = await getCourseIdAndValidateState(client, rows[0]['Τμήμα Τάξης'], batch_type);
 
     const grade_batch_id = await findOrCreateBatch(
-      client, course_id, uploader_id, batch_type, req.file.originalname, uploaded_at, academic_year
+      client, valid_course_id, uploader_id, batch_type, req.file.originalname, uploaded_at, academic_year
     );
 
-    await updateReviewState(client, course_id, batch_type);
+    await updateReviewState(client, valid_course_id, batch_type);
 
     for (const [index, row] of rows.entries()) {
-      const rowNumber = index + 3; // accounting for headers
+      const rowNumber = index + 3; // includes 2-line header + 0-based index
       try {
-        await processRow(client, row, index, course_id, grade_batch_id, batch_type);
+        await processRow(client, row, index, valid_course_id, grade_batch_id, batch_type);
         successes.push({ am: row['Αριθμός Μητρώου'], row: rowNumber });
       } catch (err) {
         errors.push({
