@@ -1,0 +1,125 @@
+{
+  "info": {
+    "name": "Grades Service Tests",
+    "_postman_id": "grades-collection-5678",
+    "description": "Login⇒Grades routes⇒Logout, success & failure cases",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key":"authBaseUrl",     "value":"http://localhost:5001" },
+    { "key":"gradesBaseUrl",   "value":"http://localhost:5004" },
+    { "key":"repEmail",        "value":"rep@demo.edu" },
+    { "key":"repPassword",     "value":"reppass" },
+    { "key":"instrEmail",      "value":"instructor@demo.edu" },
+    { "key":"instrPassword",   "value":"instructorpass" },
+    { "key":"studEmail",       "value":"student@demo.edu" },
+    { "key":"studPassword",    "value":"studentpass" },
+    { "key":"token",           "value":"" },
+    { "key":"testUserAm",      "value":"103" },
+    { "key":"testBatchId",     "value":"1" },
+    { "key":"testCourseId",    "value":"101" }
+  ],
+  "item": [
+    {
+      "name":"1. Login as INST_REP",
+      "request":{
+        "method":"POST",
+        "header":[{ "key":"Content-Type","value":"application/json" }],
+        "body":{"mode":"raw","raw":"{\n  \"email\":\"{{repEmail}}\",\n  \"password\":\"{{repPassword}}\"\n}"},
+        "url":{"raw":"{{authBaseUrl}}/auth/login","host":["{{authBaseUrl}}"],"path":["auth","login"]}
+      },
+      "event":[{"listen":"test","script":[
+        "pm.response.to.have.status(200);",
+        "pm.environment.set('token',pm.response.json().token);"
+      ]}]
+    },
+    {
+      "name":"2. GET batch details → 200",
+      "request":{
+        "method":"GET",
+        "header":[{ "key":"Authorization","value":"Bearer {{token}}" }],
+        "url":{
+          "raw":"{{gradesBaseUrl}}/grades/batch/{{testBatchId}}",
+          "host":["{{gradesBaseUrl}}"],"path":["grades","batch","{{testBatchId}}"]
+        }
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(200);","pm.expect(pm.response.json().id).to.eql(parseInt(pm.environment.get('testBatchId')));"]}]
+    },
+    {
+      "name":"3. POST initial upload → 201",
+      "request":{
+        "method":"POST",
+        "header":[
+          { "key":"Content-Type","value":"multipart/form-data" },
+          { "key":"Authorization","value":"Bearer {{token}}" }
+        ],
+        "body":{"mode":"formdata","formdata":[
+          { "key":"file","type":"file","src":"/absolute/path/to/initial.csv" }
+        ]},
+        "url":{"raw":"{{gradesBaseUrl}}/grades/initial","host":["{{gradesBaseUrl}}"],"path":["grades","initial"]}
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(200);","pm.expect(pm.response.json().message).to.match(/parsed/i);"]}]
+    },
+    {
+      "name":"4. GET statistics → 200",
+      "request":{
+        "method":"GET",
+        "header":[{ "key":"Authorization","value":"Bearer {{token}}" }],
+        "url":{
+          "raw":"{{gradesBaseUrl}}/grades/statistics/{{testCourseId}}",
+          "host":["{{gradesBaseUrl}}"],"path":["grades","statistics","{{testCourseId}}"]
+        }
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(200);","pm.expect(pm.response.json()).to.have.keys(['mean','median','std_dev']);"]}]
+    },
+    {
+      "name":"5. GET user grades → 200",
+      "request":{
+        "method":"GET",
+        "header":[{ "key":"Authorization","value":"Bearer {{token}}" }],
+        "url":{
+          "raw":"{{gradesBaseUrl}}/grades/{{testUserAm}}",
+          "host":["{{gradesBaseUrl}}"],"path":["grades","{{testUserAm}}"]
+        }
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(200);","pm.expect(pm.response.json()).to.be.an('array');"]}]
+    },
+    {
+      "name":"6. Logout INST_REP",
+      "request":{
+        "method":"POST",
+        "header":[{"key":"Authorization","value":"Bearer {{token}}"}],
+        "url":{"raw":"{{authBaseUrl}}/auth/logout","host":["{{authBaseUrl}}"],"path":["auth","logout"]}
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(200);","pm.environment.unset('token');"]}]
+    },
+    {
+      "name":"7. Login as STUDENT",
+      "request":{
+        "method":"POST",
+        "header":[{ "key":"Content-Type","value":"application/json" }],
+        "body":{"mode":"raw","raw":"{\n  \"email\":\"{{studEmail}}\",\n  \"password\":\"{{studPassword}}\"\n}"},
+        "url":{"raw":"{{authBaseUrl}}/auth/login","host":["{{authBaseUrl}}"],"path":["auth","login"]}
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(200);","pm.environment.set('token',pm.response.json().token);"]}]
+    },
+    {
+      "name":"8. GET batch details (STUD) → 403",
+      "request":{
+        "method":"GET",
+        "header":[{"key":"Authorization","value":"Bearer {{token}}"}],
+        "url":{"raw":"{{gradesBaseUrl}}/grades/batch/{{testBatchId}}","host":["{{gradesBaseUrl}}"],"path":["grades","batch","{{testBatchId}}"]}
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(403);"]}]
+    },
+    {
+      "name":"9. Logout STUDENT",
+      "request":{
+        "method":"POST",
+        "header":[{"key":"Authorization","value":"Bearer {{token}}"}],
+        "url":{"raw":"{{authBaseUrl}}/auth/logout","host":["{{authBaseUrl}}"],"path":["auth","logout"]}
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(200);","pm.environment.unset('token');"]}]
+    }
+  ]
+}
