@@ -21,9 +21,9 @@ const forward = async (req, res, method, path, data = null) => {
   }
 };
 
-exports.createReviewRequest = (req, res) => forward(req, res, 'post', '/requests', req.body);
-exports.getAllReviewRequests = (req, res) => forward(req, res, 'get', '/requests');
 exports.getReviewRequestsByInstructor = (req, res) => forward(req, res, 'get', '/instructor');
-exports.createReviewResponse = (req, res) => forward(req, res, 'post', '/responses', req.body);
 exports.getReviewStatusForStudent = (req, res) => forward(req, res, 'get', '/status');
 exports.getReviewRequestsForStudent = (req, res) =>  forward(req, res, 'get', `/requests/student/${req.params.studentId}`);
+
+exports.createReviewRequest = (req, res) => forward(req, res, 'post', '/requests', req.body);
+exports.createReviewResponse = (req, res) => forward(req, res, 'post', '/responses', req.body);

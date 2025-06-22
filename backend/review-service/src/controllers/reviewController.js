@@ -40,19 +40,6 @@ exports.createReviewRequest = async (req, res) => {
   }
 };
 
-// Επιστροφή όλων των review requests (π.χ. admin/debug)
-exports.getAllReviewRequests = async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT * FROM review_request ORDER BY submitted_at DESC
-    `);
-    res.json(result.rows);
-  } catch (err) {
-    console.error('❌ Error getting all review requests:', err);
-    res.status(500).json({ error: 'Database error' });
-  }
-};
-
 // Επιστροφή review requests για συγκεκριμένο instructor
 exports.getReviewRequestsByInstructor = async (req, res) => {
   const { instructorId } = req.query;
