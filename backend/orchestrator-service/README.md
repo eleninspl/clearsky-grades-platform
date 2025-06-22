@@ -11,6 +11,8 @@ HTTP/REST — for synchronous routing to services
 Environment-based config — via .env
 
 ## Folder Structure
+
+<pre>
 orchestrator-service/
 ├── src/
 │   ├── controllers/            # Handles route logic
@@ -35,6 +37,7 @@ orchestrator-service/
 ├── Dockerfile                  # Container definition
 ├── package.json                # Project config
 └── README.md                   # You are here
+</pre>
 
 ## Responsibilities
 Acts as API Gateway for all frontend requests

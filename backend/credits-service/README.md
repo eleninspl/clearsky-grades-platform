@@ -8,6 +8,8 @@ Purpose: Manage credit purchases, balances, and history per institution
 Access control: Enforced via authorize.js using JWT tokens
 
 ## Folder Structure
+
+<pre>
 credits-service/
 ├── init/
 │   ├── 01-schema.sql            # SQL schema for credit-related tables
@@ -25,6 +27,7 @@ credits-service/
 ├── Dockerfile                         # Docker container definition
 ├── package.json                       # Project config and dependencies
 └── README.md                          # You're here
+</pre>
 
 
 ## Authentication & Roles

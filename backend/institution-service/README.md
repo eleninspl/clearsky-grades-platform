@@ -9,6 +9,7 @@ Access control: Secured via middleware (authorize.js) based on JWT tokens
 
 ## Folder Structure
 
+<pre>
 institution-service/
 ├── init/
 │   ├── 01-schema.sql          # SQL schema for institutions
@@ -26,6 +27,7 @@ institution-service/
 ├── Dockerfile                         # Docker build instructions
 ├── package.json                       # Dependencies and scripts
 └── README.md                          # You are here
+</pre>
 
 ## Authentication & Roles
 JWT is expected in the Authorization header.

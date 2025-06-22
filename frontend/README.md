@@ -7,6 +7,7 @@ Framework: Vite (React)
 
 ## Structure
 
+<pre>
 frontend/
 ├── pages/
 │   ├── representative/
@@ -20,6 +21,8 @@ frontend/
 ├── index.html
 ├── vite.config.js
 └── ...
+</pre>
+
 pages/
 Each subfolder under pages/ contains route-level components specific to one user role:
 

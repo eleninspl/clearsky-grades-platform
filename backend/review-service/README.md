@@ -11,6 +11,8 @@ Purpose: Handle the lifecycle of review requests and responses
 Access control: Secured via middleware (authorize.js) based on JWT tokens
 
 ## Folder Structure
+
+<pre>
 review-service/
 ├── init/
 │   ├── 01-schema.sql        # SQL schema for tables used by the service
@@ -28,6 +30,7 @@ review-service/
 ├── Dockerfile               # Container config
 ├── package.json             # Project config and dependencies
 └── README.md                # You are here
+</pre>
 
 ## Authentication & Roles
 JWT is expected in the Authorization header.
