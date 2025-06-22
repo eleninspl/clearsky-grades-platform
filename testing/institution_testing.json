@@ -1,0 +1,261 @@
+{
+  "info": {
+    "name": "Institution Service Tests",
+    "_postman_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+    "description": "Login as INST_REP → exercise all routes → logout → verify 403 for INSTRUCTOR/STUDENT",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "authBaseUrl",   "value": "http://localhost:5001" },
+    { "key": "instBaseUrl",   "value": "http://localhost:5003" },
+    { "key": "repEmail",      "value": "rep@demo.edu" },
+    { "key": "repPassword",   "value": "reppass" },
+    { "key": "instrEmail",    "value": "instructor@demo.edu" },
+    { "key": "instrPassword", "value": "instructorpass" },
+    { "key": "studEmail",     "value": "student@demo.edu" },
+    { "key": "studPassword",  "value": "studentpass" },
+    { "key": "token",         "value": "" },
+    { "key": "newInstName",   "value": "Postman Created Inst" },
+    { "key": "newInstEmail",  "value": "pm_inst@demo.edu" },
+    { "key": "newInstId",     "value": "" },
+    { "key": "deltaCredits",  "value": "5" }
+  ],
+  "item": [
+    {
+      "name": "1) Login as INST_REP",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{repEmail}}\",\n  \"password\": \"{{repPassword}}\"\n}"
+        },
+        "url": { "raw": "{{authBaseUrl}}/auth/login", "host": ["{{authBaseUrl}}"], "path": ["auth","login"] }
+      },
+      "event":[{"listen":"test","script":[
+        "pm.response.to.have.status(200);",
+        "pm.environment.set('token', pm.response.json().token);"
+      ]}]
+    },
+    {
+      "name": "2) GET /institutions/stats → 200",
+      "request": {
+        "method": "GET",
+        "header":[{"key":"Authorization","value":"Bearer {{token}}"}],
+        "url": { "raw": "{{instBaseUrl}}/institutions/stats", "host":["{{instBaseUrl}}"], "path":["institutions","stats"] }
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(200);"]}]
+    },
+    {
+      "name": "3) GET /institutions/stats/course-list → 200",
+      "request": {
+        "method": "GET",
+        "header":[{"key":"Authorization","value":"Bearer {{token}}"}],
+        "url": { "raw": "{{instBaseUrl}}/institutions/stats/course-list", "host":["{{instBaseUrl}}"], "path":["institutions","stats","course-list"] }
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(200);"]}]
+    },
+    {
+      "name": "4) GET /institutions → 200",
+      "request": {
+        "method": "GET",
+        "header":[{"key":"Authorization","value":"Bearer {{token}}"}],
+        "url": { "raw": "{{instBaseUrl}}/institutions", "host":["{{instBaseUrl}}"], "path":["institutions"] }
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(200);"]}]
+    },
+    {
+      "name": "5) GET /institutions/1 → 200",
+      "request": {
+        "method": "GET",
+        "header":[{"key":"Authorization","value":"Bearer {{token}}"}],
+        "url": { "raw": "{{instBaseUrl}}/institutions/1", "host":["{{instBaseUrl}}"], "path":["institutions","1"] }
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(200);"]}]
+    },
+    {
+      "name": "6) GET /institutions/9999 → 404",
+      "request": {
+        "method": "GET",
+        "header":[{"key":"Authorization","value":"Bearer {{token}}"}],
+        "url": { "raw": "{{instBaseUrl}}/institutions/9999", "host":["{{instBaseUrl}}"], "path":["institutions","9999"] }
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(404);"]}]
+    },
+    {
+      "name": "7) POST /institutions → 201",
+      "request": {
+        "method": "POST",
+        "header":[
+          {"key":"Content-Type","value":"application/json"},
+          {"key":"Authorization","value":"Bearer {{token}}"}
+        ],
+        "body":{
+          "mode":"raw",
+          "raw":"{\n  \"name\": \"{{newInstName}}\",\n  \"email\": \"{{newInstEmail}}\"\n}"
+        },
+        "url": { "raw": "{{instBaseUrl}}/institutions", "host":["{{instBaseUrl}}"], "path":["institutions"] }
+      },
+      "event":[{"listen":"test","script":[
+        "pm.response.to.have.status(201);",
+        "var json = pm.response.json();",
+        "pm.expect(json.id).to.be.a('number');",
+        "pm.environment.set('newInstId', json.id);"
+      ]}]
+    },
+    {
+      "name": "8) PUT /institutions/{{newInstId}} → 200",
+      "request": {
+        "method": "PUT",
+        "header":[
+          {"key":"Content-Type","value":"application/json"},
+          {"key":"Authorization","value":"Bearer {{token}}"}
+        ],
+        "body":{
+          "mode":"raw",
+          "raw":"{\n  \"name\": \"Updated by Postman\",\n  \"email\": \"updated_{{newInstEmail}}\"\n}"
+        },
+        "url": { "raw": "{{instBaseUrl}}/institutions/{{newInstId}}", "host":["{{instBaseUrl}}"], "path":["institutions","{{newInstId}}"] }
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(200);"]}]
+    },
+    {
+      "name": "9) PATCH /institutions/{{newInstId}}/credits → 200",
+      "request": {
+        "method": "PATCH",
+        "header":[
+          {"key":"Content-Type","value":"application/json"},
+          {"key":"Authorization","value":"Bearer {{token}}"}
+        ],
+        "body":{
+          "mode":"raw",
+          "raw":"{ \"delta\": {{deltaCredits}} }"
+        },
+        "url": { "raw": "{{instBaseUrl}}/institutions/{{newInstId}}/credits", "host":["{{instBaseUrl}}"], "path":["institutions","{{newInstId}}","credits"] }
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(200);"]}]
+    },
+    {
+      "name": "10) DELETE /institutions/{{newInstId}} → 200",
+      "request": {
+        "method": "DELETE",
+        "header":[{"key":"Authorization","value":"Bearer {{token}}"}],
+        "url": { "raw": "{{instBaseUrl}}/institutions/{{newInstId}}", "host":["{{instBaseUrl}}"], "path":["institutions","{{newInstId}}"] }
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(200);"]}]
+    },
+    {
+      "name": "11) GET /institutions/{{newInstId}} → 404",
+      "request": {
+        "method": "GET",
+        "header":[{"key":"Authorization","value":"Bearer {{token}}"}],
+        "url": { "raw": "{{instBaseUrl}}/institutions/{{newInstId}}", "host":["{{instBaseUrl}}"], "path":["institutions","{{newInstId}}"] }
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(404);"]}]
+    },
+    {
+      "name": "12) Logout INST_REP",
+      "request": {
+        "method": "POST",
+        "header":[{"key":"Authorization","value":"Bearer {{token}}"}],
+        "url": { "raw": "{{authBaseUrl}}/auth/logout", "host":["{{authBaseUrl}}"], "path":["auth","logout"] }
+      },
+      "event":[{"listen":"test","script":[
+        "pm.response.to.have.status(200);",
+        "pm.environment.unset('token');"
+      ]}]
+    },
+    {
+      "name": "13) Login as INSTRUCTOR",
+      "request": {
+        "method": "POST",
+        "header":[{"key":"Content-Type","value":"application/json"}],
+        "body":{
+          "mode":"raw",
+          "raw":"{\n  \"email\": \"{{instrEmail}}\",\n  \"password\": \"{{instrPassword}}\"\n}"
+        },
+        "url": { "raw": "{{authBaseUrl}}/auth/login", "host":["{{authBaseUrl}}"], "path":["auth","login"] }
+      },
+      "event":[{"listen":"test","script":[
+        "pm.response.to.have.status(200);",
+        "pm.environment.set('token', pm.response.json().token);"
+      ]}]
+    },
+    {
+      "name": "14) REP-only GET /stats → 403",
+      "request": {
+        "method": "GET",
+        "header":[{"key":"Authorization","value":"Bearer {{token}}"}],
+        "url": { "raw": "{{instBaseUrl}}/institutions/stats", "host":["{{instBaseUrl}}"], "path":["institutions","stats"] }
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(403);"]}]
+    },
+    {
+      "name": "15) Instructor GET / → 403",
+      "request": {
+        "method": "GET",
+        "header":[{"key":"Authorization","value":"Bearer {{token}}"}],
+        "url": { "raw": "{{instBaseUrl}}/institutions", "host":["{{instBaseUrl}}"], "path":["institutions"] }
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(403);"]}]
+    },
+    {
+      "name": "16) Logout INSTRUCTOR",
+      "request": {
+        "method": "POST",
+        "header":[{"key":"Authorization","value":"Bearer {{token}}"}],
+        "url": { "raw": "{{authBaseUrl}}/auth/logout", "host":["{{authBaseUrl}}"], "path":["auth","logout"] }
+      },
+      "event":[{"listen":"test","script":[
+        "pm.response.to.have.status(200);",
+        "pm.environment.unset('token');"
+      ]}]
+    },
+    {
+      "name": "17) Login as STUDENT",
+      "request": {
+        "method": "POST",
+        "header":[{"key":"Content-Type","value":"application/json"}],
+        "body":{
+          "mode":"raw",
+          "raw":"{\n  \"email\": \"{{studEmail}}\",\n  \"password\": \"{{studPassword}}\"\n}"
+        },
+        "url": { "raw": "{{authBaseUrl}}/auth/login", "host":["{{authBaseUrl}}"], "path":["auth","login"] }
+      },
+      "event":[{"listen":"test","script":[
+        "pm.response.to.have.status(200);",
+        "pm.environment.set('token', pm.response.json().token);"
+      ]}]
+    },
+    {
+      "name": "18) Student GET /stats → 403",
+      "request": {
+        "method": "GET",
+        "header":[{"key":"Authorization","value":"Bearer {{token}}"}],
+        "url": { "raw": "{{instBaseUrl}}/institutions/stats", "host":["{{instBaseUrl}}"], "path":["institutions","stats"] }
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(403);"]}]
+    },
+    {
+      "name": "19) Student GET / → 403",
+      "request": {
+        "method": "GET",
+        "header":[{"key":"Authorization","value":"Bearer {{token}}"}],
+        "url": { "raw": "{{instBaseUrl}}/institutions", "host":["{{instBaseUrl}}"], "path":["institutions"] }
+      },
+      "event":[{"listen":"test","script":["pm.response.to.have.status(403);"]}]
+    },
+    {
+      "name": "20) Logout STUDENT",
+      "request": {
+        "method": "POST",
+        "header":[{"key":"Authorization","value":"Bearer {{token}}"}],
+        "url": { "raw": "{{authBaseUrl}}/auth/logout", "host":["{{authBaseUrl}}"], "path":["auth","logout"] }
+      },
+      "event":[{"listen":"test","script":[
+        "pm.response.to.have.status(200);",
+        "pm.environment.unset('token');"
+      ]}]
+    }
+  ]
+}

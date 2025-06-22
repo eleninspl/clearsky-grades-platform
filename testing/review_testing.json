@@ -1,0 +1,369 @@
+{
+  "info": {
+    "name": "Review Service Tests",
+    "_postman_id": "a1b2c3d4-5678-1234-abcdefabcdef",
+    "description": "Comprehensive tests for review-service routes. Logs in, exercises each endpoint with success and failure, then logs out.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "authBaseUrl",  "value": "http://localhost:5001" },
+    { "key": "reviewBaseUrl","value": "http://localhost:5006" },
+    { "key": "studentEmail", "value": "student@demo.edu" },
+    { "key": "studentPass",  "value": "studentpass" },
+    { "key": "instrEmail",   "value": "instructor@demo.edu" },
+    { "key": "instrPass",    "value": "instructorpass" },
+    { "key": "repEmail",     "value": "rep@demo.edu" },
+    { "key": "repPass",      "value": "reppass" },
+    { "key": "gradeId",      "value": "9999" },
+    { "key": "studentId",    "value": "103" },
+    { "key": "token",        "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. STUDENT Login",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"email\": \"{{studentEmail}}\", \"password\": \"{{studentPass}}\" }"
+        },
+        "url": { "raw": "{{authBaseUrl}}/auth/login", "host": ["{{authBaseUrl}}"], "path": ["auth","login"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": [
+            "pm.response.to.have.status(200);",
+            "pm.environment.set('token', pm.response.json().token);"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Create Review Request (STUDENT) → 201",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"grade_id\": {{gradeId}},\n  \"message\": \"Please review question 2\"\n}"
+        },
+        "url": {
+          "raw": "{{reviewBaseUrl}}/review/requests",
+          "host": ["{{reviewBaseUrl}}"],
+          "path": ["review","requests"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": [
+            "pm.response.to.have.status(201);",
+            "pm.expect(pm.response.json()).to.have.property('id');",
+            "pm.environment.set('requestId', pm.response.json().id);"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. GET Status (STUDENT) → 200",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "url": {
+          "raw": "{{reviewBaseUrl}}/review/status",
+          "host": ["{{reviewBaseUrl}}"],
+          "path": ["review","status"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": [
+            "pm.response.to.have.status(200);",
+            "pm.expect(pm.response.json()).to.be.an('array');"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. GET All Requests (STUDENT) → 403",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "url": {
+          "raw": "{{reviewBaseUrl}}/review/requests",
+          "host": ["{{reviewBaseUrl}}"],
+          "path": ["review","requests"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": ["pm.response.to.have.status(403);"]
+        }
+      ]
+    },
+    {
+      "name": "5. GET Instructor Queue (STUDENT) → 403",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "url": {
+          "raw": "{{reviewBaseUrl}}/review/instructor",
+          "host": ["{{reviewBaseUrl}}"],
+          "path": ["review","instructor"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": ["pm.response.to.have.status(403);"]
+        }
+      ]
+    },
+    {
+      "name": "6. GET Student's Own Requests → 200",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "url": {
+          "raw": "{{reviewBaseUrl}}/review/requests/student/{{studentId}}",
+          "host": ["{{reviewBaseUrl}}"],
+          "path": ["review","requests","student","{{studentId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": [
+            "pm.response.to.have.status(200);",
+            "pm.expect(pm.response.json()).to.be.an('array');"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. STUDENT Logout",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "url": {
+          "raw": "{{authBaseUrl}}/auth/logout",
+          "host": ["{{authBaseUrl}}"],
+          "path": ["auth","logout"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": [
+            "pm.response.to.have.status(200);",
+            "pm.environment.unset('token');"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "8. INSTRUCTOR Login",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"email\": \"{{instrEmail}}\", \"password\": \"{{instrPass}}\" }"
+        },
+        "url": { "raw": "{{authBaseUrl}}/auth/login", "host": ["{{authBaseUrl}}"], "path": ["auth","login"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": [
+            "pm.response.to.have.status(200);",
+            "pm.environment.set('token', pm.response.json().token);"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "9. GET All Requests (INSTRUCTOR) → 200",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "url": {
+          "raw": "{{reviewBaseUrl}}/review/requests",
+          "host": ["{{reviewBaseUrl}}"],
+          "path": ["review","requests"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": [
+            "pm.response.to.have.status(200);",
+            "pm.expect(pm.response.json()).to.be.an('array');"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10. GET Instructor Queue (INSTRUCTOR) → 200",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "url": {
+          "raw": "{{reviewBaseUrl}}/review/instructor",
+          "host": ["{{reviewBaseUrl}}"],
+          "path": ["review","instructor"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": [
+            "pm.response.to.have.status(200);",
+            "pm.expect(pm.response.json()).to.be.an('array');"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "11. Respond to Request (INSTRUCTOR) → 201",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"review_request_id\": {{requestId}},\n  \"message\": \"Here is my response\",\n  \"final_grade\": 85.5\n}"
+        },
+        "url": {
+          "raw": "{{reviewBaseUrl}}/review/responses",
+          "host": ["{{reviewBaseUrl}}"],
+          "path": ["review","responses"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": [
+            "pm.response.to.have.status(201);",
+            "pm.expect(pm.response.json()).to.have.property('id');",
+            "pm.environment.set('responseId', pm.response.json().id);"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "12. GET Status After Response → 200",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "url": {
+          "raw": "{{reviewBaseUrl}}/review/status",
+          "host": ["{{reviewBaseUrl}}"],
+          "path": ["review","status"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": [
+            "pm.response.to.have.status(200);",
+            "pm.expect(pm.response.json()).to.be.an('array');"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "13. INSTRUCTOR Logout",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "url": {
+          "raw": "{{authBaseUrl}}/auth/logout",
+          "host": ["{{authBaseUrl}}"],
+          "path": ["auth","logout"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": [
+            "pm.response.to.have.status(200);",
+            "pm.environment.unset('token');"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "14. INST_REP Login",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"email\": \"{{repEmail}}\", \"password\": \"{{repPass}}\" }"
+        },
+        "url": { "raw": "{{authBaseUrl}}/auth/login", "host": ["{{authBaseUrl}}"], "path": ["auth","login"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": [
+            "pm.response.to.have.status(200);",
+            "pm.environment.set('token', pm.response.json().token);"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "15. GET All Requests (REP) → 200",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "url": {
+          "raw": "{{reviewBaseUrl}}/review/requests",
+          "host": ["{{reviewBaseUrl}}"],
+          "path": ["review","requests"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": [
+            "pm.response.to.have.status(200);",
+            "pm.expect(pm.response.json()).to.be.an('array');"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "16. INST_REP Logout",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "url": {
+          "raw": "{{authBaseUrl}}/auth/logout",
+          "host": ["{{authBaseUrl}}"],
+          "path": ["auth","logout"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": [
+            "pm.response.to.have.status(200);",
+            "pm.environment.unset('token');"
+          ]
+        }
+      ]
+    }
+  ]
+}

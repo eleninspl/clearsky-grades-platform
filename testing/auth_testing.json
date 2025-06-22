@@ -1,0 +1,263 @@
+{
+  "info": {
+    "name": "Auth Service—Rep‐First Flow (Expanded)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Rep logs in → creates users → logs out → Admin & Student login+logout → various failure scenarios"
+  },
+  "variable": [
+    { "key": "baseUrl",    "value": "http://localhost:5001" },
+    { "key": "jwt_rep",     "value": "" },
+    { "key": "jwt_admin",   "value": "" },
+    { "key": "jwt_student", "value": "" }
+  ],
+  "item": [
+
+    {
+      "name": "1️⃣  Login ▶ Rep (INST_REP) ✅",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "const j = pm.response.json();",
+            "pm.environment.set('jwt_rep', j.token);"
+          ]
+        }
+      }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key":"Content-Type","value":"application/json" }],
+        "url": { "raw":"{{baseUrl}}/auth/login","host":["{{baseUrl}}"],"path":["auth","login"] },
+        "body": {
+          "mode":"raw",
+          "raw":"{\n  \"email\":\"rep@demo.edu\",\n  \"password\":\"rep\"\n}"
+        }
+      }
+    },
+
+    {
+      "name": "2️⃣  Create User ▶ By Rep (201)",
+      "event":[{ "listen":"test","script":{ "exec":[
+        "pm.test('201 Created', () => pm.response.to.have.status(201));"
+      ]}}],
+      "request":{
+        "method":"POST",
+        "header":[
+          { "key":"Authorization","value":"Bearer {{jwt_rep}}" },
+          { "key":"Content-Type","value":"application/json" }
+        ],
+        "url":{ "raw":"{{baseUrl}}/auth/users","host":["{{baseUrl}}"],"path":["auth","users"] },
+        "body":{
+          "mode":"raw",
+          "raw":"{\n  \"username\":\"newinst1\",\n  \"email\":\"newinst1@demo.edu\",\n  \"password\":\"instpass\",\n  \"role\":\"INSTRUCTOR\"\n}"
+        }
+      }
+    },
+
+    {
+      "name": "3️⃣  Create User ▶ Bad Role (400)",
+      "event":[{ "listen":"test","script":{ "exec":[
+        "pm.test('400 Bad Request', () => pm.response.to.have.status(400));"
+      ]}}],
+      "request":{
+        "method":"POST",
+        "header":[
+          { "key":"Authorization","value":"Bearer {{jwt_rep}}" },
+          { "key":"Content-Type","value":"application/json" }
+        ],
+        "url":{ "raw":"{{baseUrl}}/auth/users","host":["{{baseUrl}}"],"path":["auth","users"] },
+        "body":{
+          "mode":"raw",
+          "raw":"{\n  \"username\":\"badrole\",\n  \"email\":\"bad@demo.edu\",\n  \"password\":\"pass\",\n  \"role\":\"SUPERADMIN\"\n}"
+        }
+      }
+    },
+
+    {
+      "name": "4️⃣  Logout ▶ Rep (200)",
+      "event":[{ "listen":"test","script":{ "exec":[
+        "pm.test('200 OK', () => pm.response.to.have.status(200));"
+      ]}}],
+      "request":{
+        "method":"POST",
+        "header":[
+          { "key":"Authorization","value":"Bearer {{jwt_rep}}" },
+          { "key":"Content-Type","value":"application/json" }
+        ],
+        "url":{ "raw":"{{baseUrl}}/auth/logout","host":["{{baseUrl}}"],"path":["auth","logout"] }
+      }
+    },
+
+    {
+      "name": "5️⃣  Login ▶ Admin (ADMIN) ✅",
+      "event":[{ "listen":"test","script":{ "exec":[
+        "pm.test('200 OK', () => pm.response.to.have.status(200));",
+        "const j = pm.response.json();",
+        "pm.environment.set('jwt_admin', j.token);"
+      ]}}],
+      "request":{
+        "method":"POST",
+        "header":[ { "key":"Content-Type","value":"application/json" } ],
+        "url":{ "raw":"{{baseUrl}}/auth/login","host":["{{baseUrl}}"],"path":["auth","login"] },
+        "body":{
+          "mode":"raw",
+          "raw":"{\n  \"email\":\"admin@demo.edu\",\n  \"password\":\"adminpassword\"\n}"
+        }
+      }
+    },
+
+    {
+      "name": "6️⃣  Logout ▶ Admin (200)",
+      "event":[{ "listen":"test","script":{ "exec":[
+        "pm.test('200 OK', () => pm.response.to.have.status(200));"
+      ]}}],
+      "request":{
+        "method":"POST",
+        "header":[
+          { "key":"Authorization","value":"Bearer {{jwt_admin}}" },
+          { "key":"Content-Type","value":"application/json" }
+        ],
+        "url":{ "raw":"{{baseUrl}}/auth/logout","host":["{{baseUrl}}"],"path":["auth","logout"] }
+      }
+    },
+
+    {
+      "name": "7️⃣  Login ▶ Student (STUDENT) ✅",
+      "event":[{ "listen":"test","script":{ "exec":[
+        "pm.test('200 OK', () => pm.response.to.have.status(200));",
+        "const j = pm.response.json();",
+        "pm.environment.set('jwt_student', j.token);"
+      ]}}],
+      "request":{
+        "method":"POST",
+        "header":[ { "key":"Content-Type","value":"application/json" } ],
+        "url":{ "raw":"{{baseUrl}}/auth/login","host":["{{baseUrl}}"],"path":["auth","login"] },
+        "body":{
+          "mode":"raw",
+          "raw":"{\n  \"email\":\"student@demo.edu\",\n  \"password\":\"student\"\n}"
+        }
+      }
+    },
+
+    {
+      "name": "8️⃣  Logout ▶ Student (200)",
+      "event":[{ "listen":"test","script":{ "exec":[
+        "pm.test('200 OK', () => pm.response.to.have.status(200));"
+      ]}}],
+      "request":{
+        "method":"POST",
+        "header":[
+          { "key":"Authorization","value":"Bearer {{jwt_student}}" },
+          { "key":"Content-Type","value":"application/json" }
+        ],
+        "url":{ "raw":"{{baseUrl}}/auth/logout","host":["{{baseUrl}}"],"path":["auth","logout"] }
+      }
+    },
+
+    {
+      "name": "9️⃣  Login ▶ Wrong Password (401)",
+      "event":[{ "listen":"test","script":{ "exec":[
+        "pm.test('401 Unauthorized', () => pm.response.to.have.status(401));"
+      ]}}],
+      "request":{
+        "method":"POST",
+        "header":[ { "key":"Content-Type","value":"application/json" } ],
+        "url":{ "raw":"{{baseUrl}}/auth/login","host":["{{baseUrl}}"],"path":["auth","login"] },
+        "body":{
+          "mode":"raw",
+          "raw":"{\n  \"email\":\"student@demo.edu\",\n  \"password\":\"wrongpass\"\n}"
+        }
+      }
+    },
+
+    {
+      "name": "🔟  Login ▶ Unknown User (401)",
+      "event":[{ "listen":"test","script":{ "exec":[
+        "pm.test('401 Unauthorized', () => pm.response.to.have.status(401));"
+      ]}}],
+      "request":{
+        "method":"POST",
+        "header":[ { "key":"Content-Type","value":"application/json" } ],
+        "url":{ "raw":"{{baseUrl}}/auth/login","host":["{{baseUrl}}"],"path":["auth","login"] },
+        "body":{
+          "mode":"raw",
+          "raw":"{\n  \"email\":\"noone@demo.edu\",\n  \"password\":\"nopass\"\n}"
+        }
+      }
+    },
+
+    {
+      "name": "⓫  Create User ▶ No Auth Header (401)",
+      "event":[{ "listen":"test","script":{ "exec":[
+        "pm.test('401 Unauthorized', () => pm.response.to.have.status(401));"
+      ]}}],
+      "request":{
+        "method":"POST",
+        "header":[ { "key":"Content-Type","value":"application/json" } ],
+        "url":{ "raw":"{{baseUrl}}/auth/users","host":["{{baseUrl}}"],"path":["auth","users"] },
+        "body":{
+          "mode":"raw",
+          "raw":"{\n  \"username\":\"noauth1\",\n  \"email\":\"noauth1@demo.edu\",\n  \"password\":\"pass\",\n  \"role\":\"STUDENT\"\n}"
+        }
+      }
+    },
+
+    {
+      "name": "⓬  Create User ▶ Rep After Logout (401)",
+      "event":[{ "listen":"test","script":{ "exec":[
+        "pm.test('401 Unauthorized', () => pm.response.to.have.status(401));"
+      ]}}],
+      "request":{
+        "method":"POST",
+        "header":[
+          { "key":"Authorization","value":"Bearer {{jwt_rep}}" },
+          { "key":"Content-Type","value":"application/json" }
+        ],
+        "url":{ "raw":"{{baseUrl}}/auth/users","host":["{{baseUrl}}"],"path":["auth","users"] },
+        "body":{
+          "mode":"raw",
+          "raw":"{\n  \"username\":\"afterlogout\",\n  \"email\":\"afterlogout@demo.edu\",\n  \"password\":\"pass\",\n  \"role\":\"STUDENT\"\n}"
+        }
+      }
+    },
+
+    {
+      "name": "⓭  Create User ▶ Admin Creates Student (201)",
+      "event":[{ "listen":"test","script":{ "exec":[
+        "pm.test('201 Created', () => pm.response.to.have.status(201));"
+      ]}}],
+      "request":{
+        "method":"POST",
+        "header":[
+          { "key":"Authorization","value":"Bearer {{jwt_admin}}" },
+          { "key":"Content-Type","value":"application/json" }
+        ],
+        "url":{ "raw":"{{baseUrl}}/auth/users","host":["{{baseUrl}}"],"path":["auth","users"] },
+        "body":{
+          "mode":"raw",
+          "raw":"{\n  \"username\":\"studbyadmin\",\n  \"email\":\"studbyadmin@demo.edu\",\n  \"password\":\"studpass\",\n  \"role\":\"STUDENT\"\n}"
+        }
+      }
+    },
+
+    {
+      "name": "⓮  Create User ▶ Student Tries (403)",
+      "event":[{ "listen":"test","script":{ "exec":[
+        "pm.test('403 Forbidden', () => pm.response.to.have.status(403));"
+      ]}}],
+      "request":{
+        "method":"POST",
+        "header":[
+          { "key":"Authorization","value":"Bearer {{jwt_student}}" },
+          { "key":"Content-Type","value":"application/json" }
+        ],
+        "url":{ "raw":"{{baseUrl}}/auth/users","host":["{{baseUrl}}"],"path":["auth","users"] },
+        "body":{
+          "mode":"raw",
+          "raw":"{\n  \"username\":\"badstudent\",\n  \"email\":\"badstud@demo.edu\",\n  \"password\":\"pass\",\n  \"role\":\"INST_REP\"\n}"
+        }
+      }
+    }
+
+  ]
+}
