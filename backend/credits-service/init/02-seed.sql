@@ -1,9 +1,7 @@
 -- 📌 Institutions
 INSERT INTO credits_service.institution (id, name, email, credits_balance)
 VALUES
-    (1, 'National Technical University of Athens', 'ntua@example.gr', 0),
-    (2, 'University of Crete', 'uoc@example.gr', 5),
-    (3, 'Aristotle University of Thessaloniki', 'auth@example.gr', 0)
+    (1, 'National Technical University of Athens', 'ntua@example.gr', 0)
 ON CONFLICT (id) DO NOTHING;
 
 

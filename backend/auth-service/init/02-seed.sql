@@ -36,8 +36,6 @@ VALUES (101, 'GOOGLE', 'rep.clearsky@gmail.com');
 -- 📌 INSTRUCTOR
 INSERT INTO users (id, username, email, full_name, role, institution_id, google_email)
 VALUES (102, 'instructor', 'instructor@demo.edu', 'Instructor User', 'INSTRUCTOR', 1, 'instructor.clearsky@gmail.com');
-INSERT INTO users (id, username, email, full_name, role, institution_id, google_email)
-VALUES (105, 'instructor2', 'instructor2@demo.edu', 'Instructor 2 User', 'INSTRUCTOR', 1, 'instructor2.clearsky@gmail.com');
 
 INSERT INTO auth_account (user_id, provider, provider_uid, password_hash)
 VALUES (
@@ -46,19 +44,10 @@ VALUES (
   'instructor@demo.edu',
   '$2b$10$NwuB3yy/LRn9ooLT/W4wGOB6o.NwxS0eYvqQLxWoF0tMZyke.aWz6'
 );
-INSERT INTO auth_account (user_id, provider, provider_uid, password_hash)
-VALUES (
-  105,
-  'LOCAL',
-  'instructor2@demo.edu',
-  '$2b$10$NwuB3yy/LRn9ooLT/W4wGOB6o.NwxS0eYvqQLxWoF0tMZyke.aWz6'
-);
 
 -- Add Google auth accounts for instructors
 INSERT INTO auth_account (user_id, provider, provider_uid)
 VALUES (102, 'GOOGLE', 'instructor.clearsky@gmail.com');
-INSERT INTO auth_account (user_id, provider, provider_uid)
-VALUES (105, 'GOOGLE', 'instructor2.clearsky@gmail.com');
 
 -- 📌 STUDENT (✅ με user_am = 103)
 INSERT INTO users (id, username, email, full_name, role, institution_id, am)

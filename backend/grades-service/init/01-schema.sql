@@ -91,7 +91,7 @@ CREATE TABLE grade_statistic (
 CREATE TABLE grade (
   id SERIAL PRIMARY KEY,
   type grade_type NOT NULL DEFAULT 'INITIAL',
-  value INTEGER NOT NULL CHECK (value BETWEEN 0 AND 100),
+  value INTEGER CHECK (value BETWEEN 0 AND 10),
   uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   detailed_grade_json JSONB,
   user_am INTEGER NOT NULL,

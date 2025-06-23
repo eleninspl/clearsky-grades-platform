@@ -1,7 +1,7 @@
 -- SQLBook: Code
 -- 📌 Institution
 INSERT INTO institution (id, name, email, credits_balance)
-VALUES (1, 'Demo Institution', 'demo@demo.edu', 10);
+VALUES (1, 'Demo Institution', 'demo@demo.edu', 4);
 
 -- SQLBook: Code
 INSERT INTO users (id, username, email, full_name, role)
@@ -31,8 +31,6 @@ VALUES (
 -- 📌 INSTRUCTOR
 INSERT INTO users (id, username, email, full_name, role, institution_id)
 VALUES (102, 'instructor', 'instructor@demo.edu', 'Instructor User', 'INSTRUCTOR', 1);
-INSERT INTO users (id, username, email, full_name, role, institution_id)
-VALUES (105, 'instructor2', 'instructor2@demo.edu', 'Instructor 2 User', 'INSTRUCTOR', 1);
 
 INSERT INTO auth_account (user_id, provider, provider_uid, password_hash)
 VALUES (
@@ -42,13 +40,6 @@ VALUES (
   '$2b$10$NwuB3yy/LRn9ooLT/W4wGOB6o.NwxS0eYvqQLxWoF0tMZyke.aWz6'
 );
 
-INSERT INTO auth_account (user_id, provider, provider_uid, password_hash)
-VALUES (
-  105,
-  'LOCAL',
-  'instructor2@demo.edu',
-  '$2b$10$NwuB3yy/LRn9ooLT/W4wGOB6o.NwxS0eYvqQLxWoF0tMZyke.aWz6'
-);
 
 -- 📌 STUDENT (✅ με user_am = 103)
 INSERT INTO users (id, username, email, full_name, role, institution_id, am)
@@ -81,57 +72,18 @@ VALUES (
   'eleni.nspl@gmail.com'
 );
 
-DO $$
-DECLARE
-  i INT;
-BEGIN
-  FOR i IN 1..10 LOOP
-    INSERT INTO users (id, username, email, full_name, role, institution_id, am)
-    VALUES (
-      300 + i, -- id
-      'student' || i,
-      'student' || i || '@demo.edu',
-      'Student ' || i,
-      'STUDENT',
-      1,
-      400 + i  -- am
-    )
-    ON CONFLICT DO NOTHING;
-
-    INSERT INTO auth_account (user_id, provider, provider_uid, password_hash)
-    VALUES (
-      300 + i,
-      'LOCAL',
-      'student' || i || '@demo.edu',
-      '$2b$10$XButviiFJj1ReOWa6E6mcOvAefg37Jza9ppQBuKH7IvtMN9SjrHMC'
-    )
-    ON CONFLICT DO NOTHING;
-
-    RAISE NOTICE '👤 Created user % with AM %', 300 + i, 400 + i;
-  END LOOP;
-END $$;
-
-DO $$
-BEGIN
-  PERFORM setval(
-    pg_get_serial_sequence('users', 'id'),
-    (SELECT MAX(id) FROM users)
-  );
-END
-$$;
-
 
 -- 📘 COURSES for instructor with id = 102
-INSERT INTO course (id, code, title, exam_period, description, instructor_id, institution_id)
+INSERT INTO course (id, code, title, exam_period, review_state, description, instructor_id, institution_id)
 VALUES 
-(101, 'CS101', 'Intro to Computer Science', 'Spring 2024', 'Introduction to computing, programming fundamentals, and problem-solving.', 102, 1),
-(102, 'CS102', 'Data Structures', 'Spring 2024', 'Covers arrays, linked lists, stacks, queues, trees, graphs, and algorithm analysis.', 102, 1),
-(103, 'CS103', 'Algorithms', 'Spring 2024', 'Covers sorting, searching, and algorithm design and analysis.', 102, 1),
-(201, 'PHY101', 'Physics I', 'Fall 2024', 'Covers classical mechanics, motion, energy, and basic thermodynamics.', 102, 1),
-(3206, 'CS3206', 'Software as a Service', 'Spring 2024', 'Focuses on software development lifecycle, agile methods, and system design.', 102, 1),
-(203, 'MATH101', 'Mathematics I', 'Fall 2024', 'Introduction to linear algebra, calculus, and mathematical reasoning.', 102, 1),
-(3205, 'CS3205', 'Software Engineering', 'Fall 2024', 'Auto-inserted course for upload test with ID 3205.', 102, 1),
-(3207, 'CS3207', 'Artificial Intelligence', 'Fall 2024', 'Auto-inserted course for AI instruction with ID 3207.', 105, 1)
+-- (101, 'CS101', 'Intro to Computer Science', 'Spring 2024', 'Introduction to computing, programming fundamentals, and problem-solving.', 102, 1),
+-- (102, 'CS102', 'Data Structures', 'Spring 2024', 'Covers arrays, linked lists, stacks, queues, trees, graphs, and algorithm analysis.', 102, 1),
+(103, 'CS103', 'Algorithms', 'Spring 2024', 'OPEN', 'Covers sorting, searching, and algorithm design and analysis.', 102, 1),
+-- (201, 'PHY101', 'Physics I', 'Fall 2024', 'Covers classical mechanics, motion, energy, and basic thermodynamics.', 102, 1),
+(3206, 'CS3206', 'Software as a Service', 'Spring 2024', 'VOID', 'Focuses on software development lifecycle, agile methods, and system design.', 102, 1),
+-- (203, 'MATH101', 'Mathematics I', 'Fall 2024', 'Introduction to linear algebra, calculus, and mathematical reasoning.', 102, 1),
+(3205, 'CS3205', 'Software Engineering', 'Fall 2024', 'VOID', 'Auto-inserted course for upload test with ID 3205.', 102, 1)
+-- (3207, 'CS3207', 'Artificial Intelligence', 'Fall 2024', 'VOID', 'Auto-inserted course for AI instruction with ID 3207.', 102, 1)
 ON CONFLICT DO NOTHING;
 
 -- 🧹 Delete previous grades for this student
@@ -140,24 +92,27 @@ DELETE FROM grade WHERE user_am = 103;
 -- 🧾 GRADE BATCHES
 INSERT INTO grade_batch (id, course_id, uploader_id, type)
 VALUES
-(1, 101, 102, 'INITIAL'),
-(2, 102, 102, 'INITIAL'),
+(1, 3206, 102, 'INITIAL'),
+(2, 3205, 102, 'INITIAL'),
 (3, 103, 102, 'INITIAL')
+-- (3, 3207, 102, 'INITIAL')
 ON CONFLICT DO NOTHING;
 
 -- ✅ GRADES για student@demo.edu
 INSERT INTO grade (type, value, user_am, course_id, grade_batch_id)
 VALUES
-('INITIAL', 86, 103, 101, 1),
-('FINAL', 92, 103, 102, 2),
-('INITIAL', 90, 103, 103, 3);
+('INITIAL', NULL, 103, 3206, 1),
+('INITIAL', NULL, 103, 3205, 2),
+('INITIAL', 7, 103, 103, 3);
+-- ('INITIAL', NULL, 103, 3207, 3);
 
--- ✅ GRADES για Steve (AM: 104) - Copy of AM 103 grades
+-- ✅ GRADES για Eleni (AM: 104) - Copy of AM 103 grades
 INSERT INTO grade (type, value, user_am, course_id, grade_batch_id)
 VALUES
-('INITIAL', 86, 104, 101, 1),
-('FINAL', 92, 104, 102, 2),
-('INITIAL', 90, 104, 103, 3);
+('INITIAL', NULL, 104, 3206, 1),
+('INITIAL', NULL, 104, 3205, 2),
+('INITIAL', 9, 104, 103, 3);
+-- ('INITIAL', NULL, 104, 3207, 3);
 
 -- 📌 GRADE BATCH for CS103
 INSERT INTO grade_batch (id, course_id, uploader_id, type)
