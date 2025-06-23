@@ -151,3 +151,11 @@ body, .post-initial-grades-container, .post-initial-grades-title, .post-initial-
   max-height: 400px;
   overflow-y: auto;
 }
+
+.credits-info {
+  padding: 0 24px;
+  margin-top: 12px;
+  color: #444;
+  font-size: 1.05rem;
+  font-weight: 500;
+}

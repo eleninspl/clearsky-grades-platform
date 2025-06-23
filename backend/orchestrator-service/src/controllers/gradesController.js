@@ -10,7 +10,7 @@ const GRADES_SERVICE_URL = process.env.GRADES_SERVICE_URL || 'http://grades-serv
 exports.getQuestionKeys = async (req, res) => {
   try {
     const { courseId, type } = req.params;
-    const response = await axios.get(`${GRADES_SERVICE_URL}/grades/questions/${courseId}/${type}`);    
+    const response = await axios.get(`${GRADES_SERVICE_URL}/grades/questions/${courseId}/${type}`);
     res.json(response.data);
   } catch (err) {
     console.error('❌ Error fetching question keys:', err.message);
@@ -21,7 +21,7 @@ exports.getQuestionKeys = async (req, res) => {
 exports.getTotalDistribution = async (req, res) => {
   try {
     const { courseId, type } = req.params;
-    const response = await axios.get(`${GRADES_SERVICE_URL}/grades/distribution/${courseId}/${type}`);    
+    const response = await axios.get(`${GRADES_SERVICE_URL}/grades/distribution/${courseId}/${type}`);
     res.json(response.data);
   } catch (err) {
     console.error('❌ Error fetching total distribution:', err.message);
@@ -32,7 +32,7 @@ exports.getTotalDistribution = async (req, res) => {
 exports.getQuestionDistribution = async (req, res) => {
   try {
     const { courseId, type, question } = req.params;
-    const response = await axios.get(`${GRADES_SERVICE_URL}/grades/distribution/${courseId}/${type}/q/${question}`);    
+    const response = await axios.get(`${GRADES_SERVICE_URL}/grades/distribution/${courseId}/${type}/q/${question}`);
     res.json(response.data);
   } catch (err) {
     console.error('❌ Error fetching question distribution:', err.message);
@@ -96,9 +96,13 @@ exports.handleUpload = async (req, res) => {
 
     // 🔔 Αν υπάρξουν στοιχεία, στείλε στο RabbitMQ
     const institution_id = response.data?.institution_id;
-
-    if (institution_id) {
+    const uploadType = type?.toUpperCase();
+    
+    // 📣 Publish μόνο αν είναι αρχικό batch
+    if (uploadType === 'INITIAL' && institution_id) {
       await publishGradesUploaded({ institution_id });
+    } else if (uploadType !== 'INITIAL') {
+      console.log(`ℹ️ Δεν έγινε publish γιατί το batch type είναι '${uploadType}', όχι 'INITIAL'`);
     } else {
       console.warn('⚠️ Missing data for publishing grades_uploaded:', { institution_id });
     }
