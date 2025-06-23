@@ -19,8 +19,7 @@ const { initRabbit } = require('./rabbitmq');
 // 🔐 Επιτρεπόμενα origins
 const allowedOrigins = [
   'http://localhost:5173',
-  'http://192.168.2.7:5173',
-  'http://147.102.1.55:5173'
+  'http://147.102.112.123:5173'
 ];
 
 app.use(cors({
