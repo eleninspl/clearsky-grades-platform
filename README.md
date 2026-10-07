@@ -1,37 +1,128 @@
-# NTUA ECE SAAS 2025 PROJECT
+# clearSKY grades platform
 
-## TEAM 21
+clearSKY is a web platform where universities publish course grades and students request grade reviews. Institutions buy credits to use it, instructors upload grade sheets exported from the registrar's system, and students see their grades, the class statistics, and the status of their review requests.
 
-🛠️ Οδηγίες
-Βεβαιώσου ότι το Docker Desktop είναι ανοιχτό και σε λειτουργία!!
+It is built as a set of microservices: Node.js and Express services, each with its own PostgreSQL database, behind an orchestrator, with RabbitMQ for asynchronous events and a React frontend.
 
-Κάνε clone το αποθετήριο και μπες στον φάκελο του project:
+We built it as the team project for **SaaS** (Τεχνολογίες Υπηρεσιών Λογισμικού), School of Electrical and Computer Engineering, National Technical University of Athens (ECE NTUA), spring semester of the academic year 2024–25 (team 21).
 
-git clone https://github.com/ntua/saas25-21.git
-cd your-repo
+## Features
 
-Εκτέλεσε το κατάλληλο script ανάλογα με το λειτουργικό σύστημα σου:
+**Students**
+- See their courses with initial and final grades, and the per-question breakdown of each grade.
+- Compare themselves with the class through grade-distribution charts, overall and per question.
+- Request a review of a grade with a comment, and follow its status and the instructor's reply.
 
-🔵 macOS ή Linux:
+**Instructors**
+- Upload a course's grade sheet (`.xlsx`) as an initial or final grading. The file is parsed and validated, and matched to the course by its course column. Students in the sheet who don't have an account yet get one.
+- See their courses with the initial and final submission dates and the grade statistics.
+- Get notified of review requests and reply to them.
 
-bash terminal
-./start.sh
+**Institution representatives**
+- See the institution's credit balance and transaction history, and buy credits. An institution needs a positive balance before its instructors can upload initial grades.
+- Create accounts for the institution's instructors and students.
 
+**Everyone**
+- Sign in with an email and password, or with Google.
+- Every request carries a JWT, which each service checks against the user's role. Signing out blacklists the token.
 
-🟦 Windows (PowerShell):
+## Architecture
 
-powershell terminal
-.\start.ps1
+```
+                         ┌──────────────┐
+  React frontend ──────► │ orchestrator │ ─── REST ───► auth · institution · credits · grades · review
+  (Vite, :5173)          │   (:5005)    │                (each service has its own PostgreSQL DB)
+                         └──────┬───────┘
+                                │ publishes events
+                                ▼
+                            RabbitMQ ──► user_created · credit_purchased · grades_uploaded
+```
 
+| Service | Port | Responsibility |
+|---|---|---|
+| `orchestrator-service` | 5005 | Single entry point for the frontend. Routes each request to the right service and publishes events to RabbitMQ. |
+| `auth-service` | 5001 | Users, sign-in (local and Google via Passport), JWT issuing, token blacklist on sign-out. |
+| `credits-service` | 5002 | Credit balance, purchases and history per institution. |
+| `grades-service` | 5003 | Grade sheet upload and parsing, grades per student and course, distributions and per-question statistics. |
+| `institution-service` | 5004 | Institutions and their credit adjustments. |
+| `review-service` | 5006 | Review requests from students and instructor replies. |
 
-Το script θα:
+- **One database per service.** No service reads another's tables. Data that more than one service needs is kept in sync through RabbitMQ events. For example, a credit purchase publishes `credit_purchased`, and the grades service updates its copy of the balance.
+- **Role checks in every service.** Each service verifies the JWT and the user's role with its own `authorize.js` middleware.
 
-Μεταβεί στον φάκελο docker/
+## Tech stack
 
-Κλείσει και καθαρίσει τυχόν προηγούμενα containers με docker-compose down -v
+| Area | Technology |
+|---|---|
+| Frontend | React, Vite, React Router, Recharts, Axios |
+| Backend | Node.js, Express, Passport (Google OAuth 2.0), JSON Web Tokens, bcrypt, Multer, SheetJS (`xlsx`) |
+| Data | PostgreSQL 16, one database per service |
+| Messaging | RabbitMQ |
+| Deployment | Docker Compose |
 
-Εκκινήσει ξανά τα containers με docker-compose up -d
+## Getting started
 
-Περιμένει έως ότου το http://localhost:5173/login είναι διαθέσιμο
+You need Docker Desktop, running.
 
-Ανοίξει αυτόματα την σελίδα στον browser
+```bash
+git clone https://github.com/eleninspl/clearsky-grades-platform.git
+cd clearsky-grades-platform
+./start.sh            # macOS or Linux
+.\start.ps1           # Windows PowerShell
+```
+
+The script rebuilds all the containers from scratch (`docker-compose down -v`, then `up -d`), waits for the frontend, and opens http://localhost:5173/login. The RabbitMQ management UI is at http://localhost:15672.
+
+The databases are seeded with a demo institution and one account per role:
+
+| Role | Email | Password |
+|---|---|---|
+| Institution representative | `rep@demo.edu` | `reppass` |
+| Instructor | `instructor@demo.edu` | `instructorpass` |
+| Student | `student@demo.edu` | `studentpass` |
+| Admin (no interface yet) | `admin@demo.edu` | `adminpass` |
+
+The seed is in [`backend/auth-service/init/02-seed.sql`](backend/auth-service/init/02-seed.sql). The password hashes in it were generated by [`hash.js`](backend/auth-service/hash.js).
+
+To try a grade upload, sign in as the instructor and upload one of the sample sheets in [`xlxs files/`](xlxs%20files/). The names, registration numbers and grades in them are fake. They were generated with Faker by [`xlxs_creator.ipynb`](xlxs%20files/xlxs_creator.ipynb). The file with "wrong" in its name lacks the course column, so the upload should reject it.
+
+## Testing
+
+[`testing/`](testing/) has one Postman collection per service: auth, credits, grades, institution and review. They cover the main flows and the role-based access failures. Import them into Postman and run them against the running containers.
+
+## Repository structure
+
+```
+backend/        One folder per microservice, each with its own README, Dockerfile, schema and seed
+frontend/       React app: one route group and set of pages per role
+docker/         docker-compose.yml for the whole system
+testing/        Postman collections
+xlxs files/     Sample grade sheets and the notebook that generates them
+ai-log/         Logs of our AI-assistant use, which the course required
+architecture/   Placeholder for the architecture model (the model file was not committed)
+start.sh, start.ps1   One-command start-up
+```
+
+## Team
+
+- **Eleni Nasopoulou:** most of the frontend for all three roles, and much of the backend: the auth, grades, orchestrator, credits and institution services.
+- **[Angelos Karasavvidis](https://github.com/angeloskarasavvidis):** frontend, mainly the instructor pages.
+- **[Giannisgou](https://github.com/Giannisgou):** the Postman test collections, parts of the auth service, and frontend fixes.
+- Teammates who committed from their academic NTUA accounts worked on the grades service, the grade-sheet upload and the sample sheets, the review service, the credits service, and the frontend.
+
+The repository started from the course's template. The original repository is private to the course's GitHub organization.
+
+## Known limitations
+
+- **Configuration is committed.** Each service reads a committed `.env` file with development defaults, such as the database and RabbitMQ passwords. They are fine for running locally, but they must be replaced before any real deployment.
+- **Google sign-in needs your own OAuth client.** Password sign-in works out of the box. Google sign-in only works with a Google OAuth client configured in the auth service.
+- **The admin role has no interface.** An admin account is seeded, but the frontend only has pages for students, instructors and representatives.
+- **Credits are never spent.** An initial upload checks that the balance is positive, but nothing deducts a credit afterwards.
+- **No automated tests.** The backend is tested only through the Postman collections, and the frontend is not tested.
+- **The architecture model is missing.** The course asked for a Visual Paradigm model in `architecture/`, but it was never committed.
+
+## For students taking the course
+
+- Write down the API contract between the orchestrator and each service before coding. With six services, a route or payload that two of them understand differently is easy to miss.
+- Database-per-service means the same data, such as a credit balance, is held in more than one place. Decide early which service owns each piece of data and which events keep the copies in sync.
+- Keep secrets out of the repository from the first commit, with a `.env.example` instead of a committed `.env`.
