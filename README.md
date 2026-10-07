@@ -6,6 +6,8 @@ It is built as a set of microservices: Node.js and Express services, each with i
 
 We built it as the team project for **SaaS** (Τεχνολογίες Υπηρεσιών Λογισμικού), School of Electrical and Computer Engineering, National Technical University of Athens (ECE NTUA), spring semester of the academic year 2024–25 (team 21).
 
+![Student dashboard: the student's grades and the class grade distributions, overall and per question](docs/screenshots/student-dashboard.png)
+
 ## Features
 
 **Students**
@@ -25,6 +27,16 @@ We built it as the team project for **SaaS** (Τεχνολογίες Υπηρε�
 **Everyone**
 - Sign in with an email and password, or with Google.
 - Every request carries a JWT, which each service checks against the user's role. Signing out blacklists the token.
+
+| A student's grades next to the class statistics | A student's review request, answered |
+|---|---|
+| ![Grades per question next to the class distribution](docs/screenshots/student-grades.png) | ![Review request with its status and the instructor's reply](docs/screenshots/student-review-status.png) |
+| **An instructor replying to a review request** | **The representative's institution overview** |
+| ![Instructor's reply form under the list of review requests](docs/screenshots/instructor-review-reply.png) | ![Students, instructors and courses of the institution](docs/screenshots/rep-dashboard.png) |
+| **The representative's credit balance** | |
+| ![Credit balance with purchase and history buttons](docs/screenshots/rep-credits.png) | |
+
+The screenshots show the seeded demo data from a local run.
 
 ## Architecture
 
@@ -99,6 +111,7 @@ docker/         docker-compose.yml for the whole system
 testing/        Postman collections
 xlxs files/     Sample grade sheets and the notebook that generates them
 ai-log/         Logs of our AI-assistant use, which the course required
+docs/screenshots/   Screenshots used in this README
 architecture/   Placeholder for the architecture model (the model file was not committed)
 start.sh, start.ps1   One-command start-up
 ```
